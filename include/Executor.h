@@ -11,11 +11,15 @@
 #include <stdio.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
+#include <openssl/evp.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 class Executor {
 private:
     std::shared_ptr<Parser> parser;
     void createKey(const std::string& algorithm, int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
+    void sign(const unsigned char* Msg, size_t MsgLen, unsigned char** EncMsg, size_t* MsgLenEnc);
 
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {}
