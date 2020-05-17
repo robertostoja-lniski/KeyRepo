@@ -1,0 +1,1 @@
+add_executable(KeyRepo main.cpp SyntaxAnalyser.cpp Parser.cpp Statement.cpp)
