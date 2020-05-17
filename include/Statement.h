@@ -27,4 +27,18 @@ struct CreateKeyStatement : Statement {
     }
 };
 
+struct GetPrivateKeyStatement : Statement {
+    int privateKeyId;
+    std::string filePathToStorePrivateKey;
+
+    GetPrivateKeyStatement(int privateKeyId, std::string filePathToStorePrivateKey) :
+        privateKeyId(privateKeyId), filePathToStorePrivateKey(filePathToStorePrivateKey) {}
+
+    friend std::ostream& operator<<(std::ostream& os, const GetPrivateKeyStatement& dt);
+    std::string toString() override {
+        return "get-private-key "+ std::to_string(privateKeyId) + " "
+            + filePathToStorePrivateKey;
+    }
+};
+
 #endif //KEYREPO_STATEMENT_H
