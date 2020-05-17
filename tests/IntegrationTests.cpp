@@ -41,23 +41,23 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
-BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
-{
-    std::vector<std::string> input {
-            "program",
-            "get-private-key",
-            "413243",
-            "/home/abc",
-    };
-    TerminalEmulation terminalEmulation(input);
-    auto args = terminalEmulation.getArgs();
-    auto argc = args.argc;
-    auto argv = args.argv;
-
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
-    parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
-    auto serialisedInput = testHelpers::toString(input);
-    BOOST_CHECK_EQUAL(statement, serialisedInput);
-}
+//BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
+//{
+//    std::vector<std::string> input {
+//            "program",
+//            "get-private-key",
+//            "413243",
+//            "/home/abc",
+//    };
+//    TerminalEmulation terminalEmulation(input);
+//    auto args = terminalEmulation.getArgs();
+//    auto argc = args.argc;
+//    auto argv = args.argv;
+//
+//    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+//    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+//    parser->parse();
+//    auto statement = parser->getCurrentParsedStatement();
+//    auto serialisedInput = testHelpers::toString(input);
+//    BOOST_CHECK_EQUAL(statement, serialisedInput);
+//}
