@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
             "SHA",
             "2048",
             "/home/r.ostoja",
-            "123"
+            "/home/r.ostoja",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
     auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
     auto parser = std::make_unique<Parser>(syntaxAnalyser);
     parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
+    auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
     auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
     auto parser = std::make_unique<Parser>(syntaxAnalyser);
     parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
+    auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_2)
     auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
     auto parser = std::make_unique<Parser>(syntaxAnalyser);
     parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
+    auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_3)
     auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
     auto parser = std::make_unique<Parser>(syntaxAnalyser);
     parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
+    auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_4)
     auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
     auto parser = std::make_unique<Parser>(syntaxAnalyser);
     parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
+    auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_5)
     auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
     auto parser = std::make_unique<Parser>(syntaxAnalyser);
     parser->parse();
-    auto statement = parser->getCurrentParsedStatement();
+    auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }

@@ -19,20 +19,18 @@ void Parser::generateCreateKeyOption() {
     auto algorithm = syntaxAnalyser->getNextToken().value;
     auto keySize = syntaxAnalyser->getNextToken().value;
     auto pubKeyPath = syntaxAnalyser->getNextToken().value;
-    auto privateKeyId = syntaxAnalyser->getNextToken().value;
+    auto privateKeyIdFile = syntaxAnalyser->getNextToken().value;
     int numericKeySize;
-    int numericPrivateKeyId;
 
     try {
         numericKeySize = std::stoi(keySize);
-        numericPrivateKeyId = std::stoi(privateKeyId);
-        if(numericKeySize < 0 || numericPrivateKeyId < 0) {
+        if(numericKeySize < 0) {
             throw std::runtime_error("Negative size or id");
         }
     } catch(std::exception &e) {
         std::cout << "Key size and id have to be positive integers\n";
     }
-    CreateKeyStatement createKeyStatement(algorithm, numericKeySize, pubKeyPath, numericPrivateKeyId);
+    CreateKeyStatement createKeyStatement(algorithm, numericKeySize, pubKeyPath, privateKeyIdFile);
     currentParsedStatement = std::make_shared<CreateKeyStatement>(createKeyStatement);
 }
 

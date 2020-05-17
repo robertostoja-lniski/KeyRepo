@@ -34,7 +34,8 @@ public:
         this->syntaxAnalyser = syntaxAnalyser;
     }
     void parse();
-    std::string getCurrentParsedStatement() { return currentParsedStatement->toString(); }
+    std::string getCurrentParsedStatementStr() { return currentParsedStatement->toString(); }
+    std::shared_ptr<Statement> getCurrentParsedStatement() { return currentParsedStatement; }
 };
 
 

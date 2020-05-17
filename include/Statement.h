@@ -15,15 +15,15 @@ struct CreateKeyStatement : Statement {
     std::string algorithm;
     int keyLen;
     std::string pubKeyPath;
-    int privateKeyId;
+    std::string privateKeyIdFile;
 
-    CreateKeyStatement(std::string algorithm, int keyLen, std::string pubKeyPath, int privateKeyId) :
-        algorithm(algorithm), keyLen(keyLen), pubKeyPath(pubKeyPath), privateKeyId(privateKeyId) {}
+    CreateKeyStatement(std::string algorithm, int keyLen, std::string pubKeyPath, std::string privateKeyIdFile) :
+        algorithm(algorithm), keyLen(keyLen), pubKeyPath(pubKeyPath), privateKeyIdFile(privateKeyIdFile) {}
 
     friend std::ostream& operator<<(std::ostream& os, const CreateKeyStatement& dt);
     std::string toString() override {
         return "create-key " + algorithm + " " + std::to_string(keyLen)
-                + " " + pubKeyPath + " " + std::to_string(privateKeyId);
+                + " " + pubKeyPath + " " + privateKeyIdFile;
     }
 };
 struct GetPrivateKeyStatement : Statement {
