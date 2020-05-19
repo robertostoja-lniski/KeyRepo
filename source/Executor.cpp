@@ -1,13 +1,16 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 //
 // Created by robert on 17.05.2020.
 //
 
+#include <cstring>
 #include "../include/Executor.h"
 
 void Executor::execute() {
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
-    std::cout << statementStr;
+    std::cout << "\n" << statementStr;
 
     auto statement = parser->getCurrentParsedStatement();
     if(auto createKeyStatement = std::dynamic_pointer_cast<CreateKeyStatement>(statement)) {
@@ -22,7 +25,7 @@ void Executor::execute() {
 
         createKey(algorithm, keyLen, pubKeyPath, prvKetIdPath);
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
-        char msg[] = "It is my secret message";
+        char msg[] = "message to sign";
         size_t len = sizeof(msg);
         unsigned char **encryptedMsg;
         size_t *encryptedMsgLen;
@@ -30,7 +33,19 @@ void Executor::execute() {
         if(encryptedMsg == nullptr) {
             throw std::runtime_error("Message was not encrypted");
         }
-        std::cout << encryptedMsg;
+        currentlyEncryptedMsgLen = *encryptedMsgLen;
+        currentlyEncryptedMsg = (char** )malloc(sizeof(char) * (*encryptedMsgLen) + 1);
+        strncpy(*currentlyEncryptedMsg, (const char*)*encryptedMsg, *encryptedMsgLen * sizeof(char) + 1);
+        if(strncmp(*currentlyEncryptedMsg, reinterpret_cast<const char *>(*encryptedMsg), currentlyEncryptedMsgLen) == 0) {
+            std::cout << "\nThe same signs\n";
+        }
+        std::cout << '\n' << *encryptedMsg << "\n" << *currentlyEncryptedMsg;
+    } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
+        char msg[] = "message to sign";
+        size_t len = sizeof(msg);
+
+        std::cout << '\n' << *currentlyEncryptedMsg;
+        std::cout << '\n' << checkSignature((unsigned char*)*currentlyEncryptedMsg, currentlyEncryptedMsgLen, msg, len);
     }
 }
 
@@ -74,44 +89,65 @@ void Executor::createKey(const std::string& algorithm, int keyLen, const std::st
     BN_free(bne);
 }
 void Executor::sign(const unsigned char *data, size_t dataSize, unsigned char **encryptedData, size_t *encryptedDataSize) {
-
-    try {
-        BIO *bio = BIO_new(BIO_s_file());
-        if(bio == nullptr) {
-            throw std::runtime_error("Bio could not be initialised\n");
-        }
-        BIO_read_filename(bio, "/home/robert/Desktop/prvkey.pem");
-        RSA* rsa;
-        if((rsa = PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, nullptr)) == nullptr) {
-            throw std::runtime_error("Private key cannot be accessed");
-        }
-        EVP_MD_CTX* mdCtx = EVP_MD_CTX_create();
-        EVP_PKEY* priKey  = EVP_PKEY_new();
-        EVP_PKEY_assign_RSA(priKey, rsa);
-        if (EVP_DigestSignInit(mdCtx,nullptr, EVP_sha256(), nullptr, priKey) != 1) {
-            EVP_MD_CTX_destroy(mdCtx);
-            throw std::runtime_error("Could not initialise evp digest");
-        }
-        if (EVP_DigestSignUpdate(mdCtx, data, dataSize) != 1) {
-            EVP_MD_CTX_destroy(mdCtx);
-            throw std::runtime_error("Could not hash msgLen bytes");
-        }
-        if (EVP_DigestSignFinal(mdCtx, nullptr, encryptedDataSize) != 1) {
-            EVP_MD_CTX_destroy(mdCtx);
-            throw std::runtime_error("Could not set encrypted data size");
-        }
-        *encryptedData = (unsigned char*)malloc(*encryptedDataSize);
-        if(*encryptedData == nullptr) {
-            EVP_MD_CTX_destroy(mdCtx);
-            throw std::runtime_error("Cannot allocate encrypted msg");
-        }
-        if (EVP_DigestSignFinal(mdCtx, *encryptedData, encryptedDataSize) != 1) {
-            EVP_MD_CTX_destroy(mdCtx);
-            throw std::runtime_error("Cannot sign msg");
-        }
-        EVP_MD_CTX_destroy(mdCtx);
-    } catch (std::exception &e) {
-        std::cout << "\nError when signing. " << e.what() << "\n";
+    BIO *bio = BIO_new(BIO_s_file());
+    if(bio == nullptr) {
+        throw std::runtime_error("Bio could not be initialised\n");
     }
+    BIO_read_filename(bio, "/home/robert/Desktop/private.pem");
+    RSA* rsa;
+    if((rsa = PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, nullptr)) == nullptr) {
+        throw std::runtime_error("Private key cannot be accessed");
+    }
+    EVP_MD_CTX* mdCtx = EVP_MD_CTX_create();
+    EVP_PKEY* priKey  = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(priKey, rsa);
+    if (EVP_DigestSignInit(mdCtx,nullptr, EVP_sha256(), nullptr, priKey) != 1) {
+        EVP_MD_CTX_destroy(mdCtx);
+        throw std::runtime_error("Could not initialise evp digest");
+    }
+    if (EVP_DigestSignUpdate(mdCtx, data, dataSize) != 1) {
+        EVP_MD_CTX_destroy(mdCtx);
+        throw std::runtime_error("Could not hash msgLen bytes");
+    }
+    if (EVP_DigestSignFinal(mdCtx, nullptr, encryptedDataSize) != 1) {
+        EVP_MD_CTX_destroy(mdCtx);
+        throw std::runtime_error("Could not set encrypted data size");
+    }
+    *encryptedData = (unsigned char*)malloc(*encryptedDataSize);
+    if(*encryptedData == nullptr) {
+        EVP_MD_CTX_destroy(mdCtx);
+        throw std::runtime_error("Cannot allocate encrypted msg");
+    }
+    if (EVP_DigestSignFinal(mdCtx, *encryptedData, encryptedDataSize) != 1) {
+        EVP_MD_CTX_destroy(mdCtx);
+        throw std::runtime_error("Cannot sign msg");
+    }
+    EVP_MD_CTX_destroy(mdCtx);
+}
+bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *originalData, size_t originalDataSize) {
+    BIO *bio = BIO_new(BIO_s_file());
+    if(bio == nullptr) {
+        throw std::runtime_error("Bio could not be initialised\n");
+    }
+    BIO_read_filename(bio, "/home/robert/Desktop/public.pem");
+    RSA* rsa;
+    if((rsa = PEM_read_bio_RSAPublicKey(bio, nullptr, nullptr, nullptr)) == nullptr) {
+        throw std::runtime_error("Public key cannot be accessed");
+    }
+    
+    EVP_PKEY* pubKey  = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(pubKey, rsa);
+    EVP_MD_CTX* mdCtx = EVP_MD_CTX_create();
+    if (EVP_DigestVerifyInit(mdCtx, nullptr, EVP_sha256(), nullptr, pubKey) != 1) {
+        throw std::runtime_error("Cannot initialise signature check");
+    }
+    if (EVP_DigestVerifyUpdate(mdCtx, originalData, originalDataSize) != 1) {
+        throw std::runtime_error("Cannot update buffer to check signature");
+    }
+    auto res = EVP_DigestVerifyFinal(mdCtx, data, dataLen);
+    EVP_MD_CTX_destroy(mdCtx);
+    return res;
 }
 
+
+#pragma clang diagnostic pop

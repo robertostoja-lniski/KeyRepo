@@ -18,11 +18,14 @@
 class Executor {
 private:
     std::shared_ptr<Parser> parser;
+    size_t currentlyEncryptedMsgLen {0};
+    char** currentlyEncryptedMsg;
     void createKey(const std::string& algorithm, int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
     void sign(const unsigned char* Msg, size_t MsgLen, unsigned char** EncMsg, size_t* MsgLenEnc);
-
+    bool checkSignature(unsigned char *data, size_t dataSize, const char *originalData, size_t originalDataSize);
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {}
+    ~Executor() { free(currentlyEncryptedMsg); }
     void execute();
 };
 
