@@ -50,45 +50,28 @@ void Executor::execute() {
         std::cout << '\n' << checkSignature((unsigned char*)*currentlyEncryptedMsg, currentlyEncryptedMsgLen, msg, len);
     }
 }
-
 void Executor::createKey(const std::string& algorithm, int keyLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath) {
     // dummy
     (void)algorithm;
-
-    RSA	*r = nullptr;
-    BIGNUM *bne = nullptr;
-    BIO *bp_public = nullptr, *bp_private = nullptr;
-    unsigned long e = RSA_F4;
-
+    RSA* r = nullptr;
     try {
-        bne = BN_new();
-        if(BN_set_word(bne,e) != 1) {
-            throw std::runtime_error("Cannot set big num");
-        }
 
-        r = RSA_new();
-        if(RSA_generate_key_ex(r, keyLen, bne, nullptr) != 1) {
-            throw std::runtime_error("Cannot generate RSA keys");
-        }
+        printf("\n%p\n", r);
+        assignRsaKeyToPtr(keyLen, &r);
+        printf("\n%p\n", r);
+        writePublicKeyToFile(pubKeyPath, "wb", r);
+        writePrivateKeyToFile(prvKeyIdPath, "wb", r);
 
-        bp_public = BIO_new_file(pubKeyPath.c_str(), "w+");
-        if(PEM_write_bio_RSAPublicKey(bp_public, r) != 1) {
-            throw std::runtime_error("Cannot save public key");
-        }
+//        auto rsaPub = readPublicKeyFromFile("/home/robert/Desktop/public.pem");
+//        RSA_free(rsaPub);
+//        auto rsaPrv = readPrivateKeyFromFile("/home/robert/Desktop/private.pem");
+//        RSA_free(rsaPrv);
 
-        // should be passed to kernel
-        bp_private = BIO_new_file(prvKeyIdPath.c_str(), "w+");
-        if(PEM_write_bio_RSAPrivateKey(bp_private, r, nullptr, nullptr, 0, nullptr, nullptr) != 1) {
-            throw std::runtime_error("Cannot save private key");
-        }
     } catch(std::exception &e) {
         std::cout << "\nError when generating key " << e.what() << "\n";
     }
-
-    BIO_free_all(bp_public);
-    BIO_free_all(bp_private);
     RSA_free(r);
-    BN_free(bne);
+    std::cout << "Keys are generated\n";
 }
 void Executor::sign(const unsigned char *data, size_t dataSize, unsigned char **encryptedData, size_t *encryptedDataSize) {
     BIO *bio = BIO_new(BIO_s_file());
@@ -128,8 +111,10 @@ void Executor::sign(const unsigned char *data, size_t dataSize, unsigned char **
 }
 bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *originalData, size_t originalDataSize) {
 
-    auto rsaPub = getPublicKeyFromFile("/home/robert/Desktop/public.pem");
-    auto rsaPrv = getPublicKeyFromFile("/home/robert/Desktop/private.pem");
+    auto rsaPub = readPublicKeyFromFile("/home/robert/Desktop/public.pem");
+    RSA_free(rsaPub);
+    auto rsaPrv = readPrivateKeyFromFile("/home/robert/Desktop/private.pem");
+    RSA_free(rsaPrv);
     return true;
     RSA *rsa;
     EVP_PKEY* pubKey  = EVP_PKEY_new();
@@ -145,16 +130,16 @@ bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *o
     EVP_MD_CTX_destroy(mdCtx);
     return res;
 }
-RSA* Executor::getPublicKeyFromFile(std::string filepath) {
+RSA* Executor::readPublicKeyFromFile(std::string filepath) {
      printFile(filepath);
-     auto fp = getFileStructFromPath(filepath);
-     return getPublicKeyFromFpAndClose(fp);
+     auto fp = getFileStructFromPath(filepath, "r");
+     return readPublicKeyFromFpAndClose(fp);
 }
 
-RSA* Executor::getPrivateKeyFromFile(std::string filepath) {
+RSA* Executor::readPrivateKeyFromFile(std::string filepath) {
     printFile(filepath);
-    auto fp = getFileStructFromPath(filepath);
-    return getPrivateKeyFromFpAndClose(fp);
+    auto fp = getFileStructFromPath(filepath, "r");
+    return readPrivateKeyFromFpAndClose(fp);
 }
 
 void Executor::printFile(std::string filepath) {
@@ -173,32 +158,65 @@ void Executor::printFile(std::string filepath) {
 
 }
 
-FILE *Executor::getFileStructFromPath(std::string filepath) {
-    FILE *fp = fopen(filepath.c_str(), "rb");
+FILE *Executor::getFileStructFromPath(std::string filepath, std::string modes) {
+    FILE *fp = fopen(filepath.c_str(), modes.c_str());
     if(fp == nullptr) {
         throw std::runtime_error("Cannot open key file");
     }
     return fp;
 }
 
-RSA *Executor::getPublicKeyFromFpAndClose(FILE * fp) {
-    RSA *rsa = RSA_new();
-    rsa = PEM_read_RSA_PUBKEY(fp, &rsa, nullptr, nullptr);
+RSA *Executor::readPublicKeyFromFpAndClose(FILE * fp) {
+    auto rsa = PEM_read_RSA_PUBKEY(fp, nullptr, nullptr, nullptr);
     fclose(fp);
-    if(rsa) {
+    if(!rsa) {
         throw std::runtime_error("Could not read pubkey from file");
     }
     return rsa;
 }
 
-RSA *Executor::getPrivateKeyFromFpAndClose(FILE * fp) {
-    RSA *rsa = RSA_new();
-    rsa = PEM_read_RSAPrivateKey(fp, &rsa, nullptr, nullptr);
+RSA *Executor::readPrivateKeyFromFpAndClose(FILE * fp) {
+    auto rsa = PEM_read_RSAPrivateKey(fp, nullptr, nullptr, nullptr);
     fclose(fp);
-    if(rsa) {
-        throw std::runtime_error("Could not read pubkey from file");
+    if(!rsa) {
+        throw std::runtime_error("Could not read private key from file");
     }
     return rsa;
+}
+
+void Executor::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r) {
+    auto fp = getFileStructFromPath(filepath, mode);
+    auto success = PEM_write_RSA_PUBKEY(fp, r);
+    if(!success) {
+        throw std::runtime_error("Cannot save public key");
+    }
+}
+
+void Executor::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
+    auto fp = getFileStructFromPath(filepath, mode);
+    auto success = PEM_write_RSAPrivateKey(fp, r, nullptr, nullptr, 0, nullptr, nullptr);
+    if(!success) {
+        throw std::runtime_error("Cannot save private key");
+    }
+}
+
+void Executor::assignRsaKeyToPtr(size_t keyLen, RSA **r) {
+    printf("\n%p\n", r);
+    BIGNUM *bne;
+    bne = BN_new();
+    auto bnSuccess = BN_set_word(bne,RSA_F4);
+    if(!bnSuccess) {
+        throw std::runtime_error("Cannot set big num");
+    }
+
+    *r = RSA_new();
+    auto rsaSuccess = RSA_generate_key_ex(*r, keyLen, bne, nullptr);
+    if(!rsaSuccess) {
+        throw std::runtime_error("Cannot generate RSA keys");
+    }
+
+    BN_free(bne);
+    printf("\n%p\n", r);
 }
 
 
