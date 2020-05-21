@@ -25,8 +25,8 @@ private:
     bool checkSignature(unsigned char *data, size_t dataSize, const char *originalData, size_t originalDataSize);
     void printFile(std::string);
     FILE* getFileStructFromPath(std::string, std::string);
-    RSA* readPrivateKeyFromFpAndClose(FILE*);
-    RSA* readPublicKeyFromFpAndClose(FILE*);
+    RSA* readPrivateKeyFromFpAndClose(FILE**);
+    RSA* readPublicKeyFromFpAndClose(FILE**);
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*);

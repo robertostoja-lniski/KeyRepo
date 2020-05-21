@@ -56,16 +56,14 @@ void Executor::createKey(const std::string& algorithm, int keyLen, const std::st
     RSA* r = nullptr;
     try {
 
-        printf("\n%p\n", r);
         assignRsaKeyToPtr(keyLen, &r);
-        printf("\n%p\n", r);
         writePublicKeyToFile(pubKeyPath, "wb", r);
         writePrivateKeyToFile(prvKeyIdPath, "wb", r);
 
-//        auto rsaPub = readPublicKeyFromFile("/home/robert/Desktop/public.pem");
-//        RSA_free(rsaPub);
-//        auto rsaPrv = readPrivateKeyFromFile("/home/robert/Desktop/private.pem");
-//        RSA_free(rsaPrv);
+        auto rsaPub = readPublicKeyFromFile("/home/robert/Desktop/public.pem");
+        RSA_free(rsaPub);
+        auto rsaPrv = readPrivateKeyFromFile("/home/robert/Desktop/private.pem");
+        RSA_free(rsaPrv);
 
     } catch(std::exception &e) {
         std::cout << "\nError when generating key " << e.what() << "\n";
@@ -133,13 +131,13 @@ bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *o
 RSA* Executor::readPublicKeyFromFile(std::string filepath) {
      printFile(filepath);
      auto fp = getFileStructFromPath(filepath, "r");
-     return readPublicKeyFromFpAndClose(fp);
+     return readPublicKeyFromFpAndClose(&fp);
 }
 
 RSA* Executor::readPrivateKeyFromFile(std::string filepath) {
     printFile(filepath);
     auto fp = getFileStructFromPath(filepath, "r");
-    return readPrivateKeyFromFpAndClose(fp);
+    return readPrivateKeyFromFpAndClose(&fp);
 }
 
 void Executor::printFile(std::string filepath) {
@@ -166,18 +164,18 @@ FILE *Executor::getFileStructFromPath(std::string filepath, std::string modes) {
     return fp;
 }
 
-RSA *Executor::readPublicKeyFromFpAndClose(FILE * fp) {
-    auto rsa = PEM_read_RSA_PUBKEY(fp, nullptr, nullptr, nullptr);
-    fclose(fp);
+RSA *Executor::readPublicKeyFromFpAndClose(FILE **fp) {
+    auto rsa = PEM_read_RSA_PUBKEY(*fp, nullptr, nullptr, nullptr);
+    fclose(*fp);
     if(!rsa) {
         throw std::runtime_error("Could not read pubkey from file");
     }
     return rsa;
 }
 
-RSA *Executor::readPrivateKeyFromFpAndClose(FILE * fp) {
-    auto rsa = PEM_read_RSAPrivateKey(fp, nullptr, nullptr, nullptr);
-    fclose(fp);
+RSA *Executor::readPrivateKeyFromFpAndClose(FILE **fp) {
+    auto rsa = PEM_read_RSAPrivateKey(*fp, nullptr, nullptr, nullptr);
+    fclose(*fp);
     if(!rsa) {
         throw std::runtime_error("Could not read private key from file");
     }
@@ -190,6 +188,7 @@ void Executor::writePublicKeyToFile(std::string filepath, std::string mode, RSA 
     if(!success) {
         throw std::runtime_error("Cannot save public key");
     }
+    fclose(fp);
 }
 
 void Executor::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
@@ -198,10 +197,10 @@ void Executor::writePrivateKeyToFile(std::string filepath, std::string mode, RSA
     if(!success) {
         throw std::runtime_error("Cannot save private key");
     }
+    fclose(fp);
 }
 
 void Executor::assignRsaKeyToPtr(size_t keyLen, RSA **r) {
-    printf("\n%p\n", r);
     BIGNUM *bne;
     bne = BN_new();
     auto bnSuccess = BN_set_word(bne,RSA_F4);
@@ -216,7 +215,6 @@ void Executor::assignRsaKeyToPtr(size_t keyLen, RSA **r) {
     }
 
     BN_free(bne);
-    printf("\n%p\n", r);
 }
 
 
