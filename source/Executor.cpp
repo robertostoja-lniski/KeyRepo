@@ -5,6 +5,8 @@
 //
 
 #include <cstring>
+#include <sstream>
+#include <fstream>
 #include "../include/Executor.h"
 
 void Executor::execute() {
@@ -125,16 +127,11 @@ void Executor::sign(const unsigned char *data, size_t dataSize, unsigned char **
     EVP_MD_CTX_destroy(mdCtx);
 }
 bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *originalData, size_t originalDataSize) {
-    BIO *bio = BIO_new(BIO_s_file());
-    if(bio == nullptr) {
-        throw std::runtime_error("Bio could not be initialised\n");
-    }
-    BIO_read_filename(bio, "/home/robert/Desktop/public.pem");
-    RSA* rsa;
-    if((rsa = PEM_read_bio_RSAPublicKey(bio, nullptr, nullptr, nullptr)) == nullptr) {
-        throw std::runtime_error("Public key cannot be accessed");
-    }
-    
+
+    auto rsaPub = getPublicKeyFromFile("/home/robert/Desktop/public.pem");
+    auto rsaPrv = getPublicKeyFromFile("/home/robert/Desktop/private.pem");
+    return true;
+    RSA *rsa;
     EVP_PKEY* pubKey  = EVP_PKEY_new();
     EVP_PKEY_assign_RSA(pubKey, rsa);
     EVP_MD_CTX* mdCtx = EVP_MD_CTX_create();
@@ -147,6 +144,61 @@ bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *o
     auto res = EVP_DigestVerifyFinal(mdCtx, data, dataLen);
     EVP_MD_CTX_destroy(mdCtx);
     return res;
+}
+RSA* Executor::getPublicKeyFromFile(std::string filepath) {
+     printFile(filepath);
+     auto fp = getFileStructFromPath(filepath);
+     return getPublicKeyFromFpAndClose(fp);
+}
+
+RSA* Executor::getPrivateKeyFromFile(std::string filepath) {
+    printFile(filepath);
+    auto fp = getFileStructFromPath(filepath);
+    return getPrivateKeyFromFpAndClose(fp);
+}
+
+void Executor::printFile(std::string filepath) {
+    std::cout << "\nprinting " + filepath + "\n";
+    std::string line;
+    std::ifstream myfile (filepath);
+    if (myfile.is_open())
+    {
+        while ( getline (myfile,line) )
+        {
+            std::cout << line << '\n';
+        }
+        myfile.close();
+    }
+    else std::cout << "Unable to open file";
+
+}
+
+FILE *Executor::getFileStructFromPath(std::string filepath) {
+    FILE *fp = fopen(filepath.c_str(), "rb");
+    if(fp == nullptr) {
+        throw std::runtime_error("Cannot open key file");
+    }
+    return fp;
+}
+
+RSA *Executor::getPublicKeyFromFpAndClose(FILE * fp) {
+    RSA *rsa = RSA_new();
+    rsa = PEM_read_RSA_PUBKEY(fp, &rsa, nullptr, nullptr);
+    fclose(fp);
+    if(rsa) {
+        throw std::runtime_error("Could not read pubkey from file");
+    }
+    return rsa;
+}
+
+RSA *Executor::getPrivateKeyFromFpAndClose(FILE * fp) {
+    RSA *rsa = RSA_new();
+    rsa = PEM_read_RSAPrivateKey(fp, &rsa, nullptr, nullptr);
+    fclose(fp);
+    if(rsa) {
+        throw std::runtime_error("Could not read pubkey from file");
+    }
+    return rsa;
 }
 
 
