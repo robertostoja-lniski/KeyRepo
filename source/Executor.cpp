@@ -10,8 +10,6 @@
 #include <openssl/evp.h>
 #include "../include/Executor.h"
 void Executor::execute() {
-    if(encMessage != nullptr)
-        encryptedMessage = std::string((char* )encMessage);
 
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
@@ -27,24 +25,16 @@ void Executor::execute() {
         auto keyLen = createKeyStatement->keyLen;
         auto pubKeyPath = createKeyStatement->pubKeyPath;
         auto prvKetIdPath = createKeyStatement->privateKeyIdFile;
-
         createKey(algorithm, keyLen, pubKeyPath, prvKetIdPath);
 
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
         std::string fileToBeSigned = signStatement->filePathToFileToBeSigned;
         auto messageToSign = readMessageFromFile(fileToBeSigned);
-        std::cout << messageToSign;
-
         std::string prvKeyPath = "/home/robert/Desktop/private.pem";
         RSA* rsaPrv = readPrivateKeyFromFile(prvKeyPath);
-        encryptedMessage = sign(rsaPrv, messageToSign);
-        encMessage = (unsigned char* )malloc(sizeof(char) * encryptedMessage.length());
-        if(!encMessage) {
-            throw std::runtime_error("Malloc failed");
-        }
-        memcpy(encMessage, encryptedMessage.c_str(), encryptedMessage.length());
-        encMessageLength = encryptedMessage.length();
-        std::cout << "with ret " << encryptedMessage << '\n';
+        auto encryptedMessage = sign(rsaPrv, messageToSign);
+        std::cout << encryptedMessage << std::endl;
+        writeToFile("/home/robert/Desktop/signature.txt", encryptedMessage);
         RSA_free(rsaPrv);
 
     } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
@@ -52,9 +42,10 @@ void Executor::execute() {
         auto filePathToPublicKey = checkSignatureStatement->filePathToPublicKey;
         std::string messageToCheck = readMessageFromFile(filePathToFileToBeChecked);
         std::cout << messageToCheck << '\n';
+        auto messageToCheckHash = readMessageFromFile("/home/robert/Desktop/signature.txt");
         RSA* rsaPub = readPublicKeyFromFile(filePathToPublicKey);
-        std::cout << encryptedMessage << "it was encrypted msg\n";
-        auto ret = checkSignature(rsaPub, encryptedMessage, messageToCheck);
+        std::cout << messageToCheckHash << "it was encrypted msg\n";
+        auto ret = checkSignature(rsaPub, messageToCheckHash, messageToCheck);
         std::cout << ret << '\n';
         RSA_free(rsaPub);
     }
@@ -168,7 +159,8 @@ std::string Executor::readMessageFromFile(std::string filepath) {
         }
         fileToRead.close();
     }
-    return fileContent;
+    // eliminates endl at the end
+    return fileContent.substr(0, fileContent.size() - 1);
 }
 
 std::string Executor::sign(RSA *r, std::string messageToSign) {

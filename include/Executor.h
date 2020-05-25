@@ -13,16 +13,14 @@
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 #include <stdio.h>
+#include <ostream>
+#include <fstream>
 #include <stdlib.h>
 class Executor {
 private:
     bool checkSignature( RSA*, std::string hash, std::string msg);
     std::string sign( RSA* rsa, std::string toSign);
     std::shared_ptr<Parser> parser;
-    size_t currentlyEncryptedMsgLen {0};
-    unsigned char* encMessage;
-    size_t encMessageLength;
-    std::string encryptedMessage;
     void createKey(const std::string& algorithm, int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
     void printFile(std::string);
     FILE* getFileStructFromPath(std::string, std::string);
@@ -35,6 +33,12 @@ private:
     void assignRsaKeyToPtr(size_t keyLen, RSA**);
     // temporary solution
     std::string readMessageFromFile(std::string filepath);
+    void writeToFile(std::string filepath, std::string data) {
+        std::ofstream myfile;
+        myfile.open (filepath);
+        myfile << data;
+        myfile.close();
+    }
 
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
