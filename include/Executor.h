@@ -8,36 +8,28 @@
 #include <memory>
 #include "Parser.h"
 #include "Statement.h"
+#include "KeyIOInterfaces.h"
+#include "OpenSSLHandler.h"
 #include <stdio.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 #include <stdio.h>
+#include <ostream>
+#include <fstream>
 #include <stdlib.h>
 class Executor {
 private:
-    bool checkSignature( RSA*, std::string hash, std::string msg);
-    std::string sign( RSA* rsa, std::string toSign);
+    // methods for crypto handler
+
     std::shared_ptr<Parser> parser;
-    size_t currentlyEncryptedMsgLen {0};
-    unsigned char* encMessage;
-    size_t encMessageLength;
-    std::string encryptedMessage;
-    void createKey(const std::string& algorithm, int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
-    void printFile(std::string);
-    FILE* getFileStructFromPath(std::string, std::string);
-    RSA* readPrivateKeyFromFpAndClose(FILE**);
-    RSA* readPublicKeyFromFpAndClose(FILE**);
-    RSA* readPublicKeyFromFile(std::string filepath);
-    RSA* readPrivateKeyFromFile(std::string filepath);
-    void writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
-    void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*);
-    void assignRsaKeyToPtr(size_t keyLen, RSA**);
-    // temporary solution
-    std::string readMessageFromFile(std::string filepath);
+    std::unique_ptr<RsaKeyFileIOInterface> interface;
+    std::unique_ptr<OpenSSLHandler> openSSLHandler;
 
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
+        interface = std::make_unique<RsaKeyFileIOInterface>();
+        openSSLHandler = std::unique_ptr<OpenSSLHandler>();
         ERR_load_CRYPTO_strings();
         OpenSSL_add_all_algorithms();
         OpenSSL_add_all_ciphers();
