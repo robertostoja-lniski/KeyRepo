@@ -23,9 +23,11 @@ void Executor::execute() {
             throw std::runtime_error("Algorithm not supported");
         }
         auto keyLen = createKeyStatement->keyLen;
-        auto pubKeyPath = createKeyStatement->pubKeyPath;
-        auto prvKetIdPath = createKeyStatement->privateKeyIdFile;
-        createKey(algorithm, keyLen, pubKeyPath, prvKetIdPath);
+        std::string pubKeyPath = createKeyStatement->pubKeyPath;
+        std::string prvKeyIdPath = createKeyStatement->privateKeyIdFile;
+        auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
+        interface->writePublicKeyToFile(pubKeyPath, "wb", r.get());
+        interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get());
 
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
         std::string fileToBeSigned = signStatement->filePathToFileToBeSigned;
@@ -49,41 +51,6 @@ void Executor::execute() {
         std::cout << ret << '\n';
         RSA_free(rsaPub);
     }
-}
-void Executor::createKey(const std::string& algorithm, int keyLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath) {
-    // dummy
-    (void)algorithm;
-    RSA* r;
-    try {
-        r = RSA_new();
-        assignRsaKeyToPtr(keyLen, &r);
-
-        printf("\nkey pointer is %p\n", r);
-        interface->writePublicKeyToFile(pubKeyPath, "wb", r);
-        printf("\nkey pointer is %p\n", r);
-        interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r);
-
-    } catch(std::exception &e) {
-        std::cout << "\nError when generating key " << e.what() << "\n";
-    }
-    RSA_free(r);
-    std::cout << "Keys are generated\n";
-}
-
-void Executor::assignRsaKeyToPtr(size_t keyLen, RSA** r) {
-    BIGNUM *bne;
-    bne = BN_new();
-    auto bnSuccess = BN_set_word(bne,RSA_F4);
-    if(!bnSuccess) {
-        throw std::runtime_error("Cannot set big num");
-    }
-
-    auto rsaSuccess = RSA_generate_key_ex(*r, keyLen, bne, nullptr);
-    if(!rsaSuccess) {
-        throw std::runtime_error("Cannot generate RSA keys");
-    }
-
-    BN_free(bne);
 }
 
 

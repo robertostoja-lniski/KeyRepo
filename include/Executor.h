@@ -21,8 +21,6 @@
 class Executor {
 private:
     // methods for crypto handler
-    void createKey(const std::string& algorithm, int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
-    void assignRsaKeyToPtr(size_t keyLen, RSA**);
 
     std::shared_ptr<Parser> parser;
     std::unique_ptr<RsaKeyFileIOInterface> interface;

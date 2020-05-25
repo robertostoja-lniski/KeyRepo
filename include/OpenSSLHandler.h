@@ -17,7 +17,7 @@ struct OpenSSLInterface {
 };
 struct OpenSSLHandler : OpenSSLInterface {
     std::string sign(RSA* r, std::string toSign);
-//  void sign(std::string toSign) = 0;
+    std::shared_ptr<RSA> createKey(int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
     bool checkSignature(RSA* r, std::string hash, std::string msg);
 };
 

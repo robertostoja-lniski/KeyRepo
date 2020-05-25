@@ -45,3 +45,17 @@ bool OpenSSLHandler::checkSignature(RSA *rsa, std::string hash, std::string msg)
     EVP_MD_CTX_destroy(m_RSAVerifyCtx);
     return true;
 }
+
+std::shared_ptr<RSA> OpenSSLHandler::createKey(int keyLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath) {
+    std::shared_ptr<BIGNUM> bne(BN_new(), BN_free);
+    auto bnSuccess = BN_set_word(bne.get(),RSA_F4);
+    if(!bnSuccess) {
+        throw std::runtime_error("Cannot set big num");
+    }
+    std::shared_ptr<RSA> r(RSA_new(), RSA_free);
+    auto rsaSuccess = RSA_generate_key_ex(r.get(), keyLen, bne.get(), nullptr);
+    if(!rsaSuccess) {
+        throw std::runtime_error("Cannot generate RSA keys");
+    }
+    return r;
+}
