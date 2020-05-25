@@ -25,41 +25,41 @@ int main(int argc, char** argv) {
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
-//    {
-//        std::vector<std::string> input {
-//                "program",
-//                "sign",
-//                "/home/abc",
-//                "312321",
-//        };
-//
-//        TerminalEmulation terminalEmulation(input);
-//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-//        argc = emulatedTerminalArgs.argc;
-//        argv = emulatedTerminalArgs.argv;
-//
-//        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-//        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-//        auto executor = std::make_shared<Executor>(parser);
-//        executor->execute();
-//    }
-//    {
-//        std::vector<std::string> input {
-//                "program",
-//                "check-signature",
-//                "/home/abc",
-//                "/ewqew/eee",
-//        };
-//
-//        TerminalEmulation terminalEmulation(input);
-//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-//        argc = emulatedTerminalArgs.argc;
-//        argv = emulatedTerminalArgs.argv;
-//
-//        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-//        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-//        auto executor = std::make_shared<Executor>(parser);
-//        executor->execute();
-//        return 0;
-//    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "sign",
+                "/home/robert/Desktop/file.txt",
+                "12321321",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        argc = emulatedTerminalArgs.argc;
+        argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "check-signature",
+                "/home/robert/Desktop/file.txt",
+                "/home/robert/Desktop/public.pem",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        argc = emulatedTerminalArgs.argc;
+        argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        return 0;
+    }
 }

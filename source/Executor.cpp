@@ -7,9 +7,12 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
+#include <openssl/evp.h>
 #include "../include/Executor.h"
-
 void Executor::execute() {
+    if(encMessage != nullptr)
+        encryptedMessage = std::string((char* )encMessage);
+
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
     std::cout << "\n" << statementStr;
@@ -26,44 +29,48 @@ void Executor::execute() {
         auto prvKetIdPath = createKeyStatement->privateKeyIdFile;
 
         createKey(algorithm, keyLen, pubKeyPath, prvKetIdPath);
-    } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
-        char msg[] = "message to sign";
-        size_t len = sizeof(msg);
-        unsigned char **encryptedMsg;
-        size_t *encryptedMsgLen;
-        sign(reinterpret_cast<const unsigned char *>(msg), len, encryptedMsg, encryptedMsgLen);
-        if(encryptedMsg == nullptr) {
-            throw std::runtime_error("Message was not encrypted");
-        }
-        currentlyEncryptedMsgLen = *encryptedMsgLen;
-        currentlyEncryptedMsg = (char** )malloc(sizeof(char) * (*encryptedMsgLen) + 1);
-        strncpy(*currentlyEncryptedMsg, (const char*)*encryptedMsg, *encryptedMsgLen * sizeof(char) + 1);
-        if(strncmp(*currentlyEncryptedMsg, reinterpret_cast<const char *>(*encryptedMsg), currentlyEncryptedMsgLen) == 0) {
-            std::cout << "\nThe same signs\n";
-        }
-        std::cout << '\n' << *encryptedMsg << "\n" << *currentlyEncryptedMsg;
-    } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
-        char msg[] = "message to sign";
-        size_t len = sizeof(msg);
 
-        std::cout << '\n' << *currentlyEncryptedMsg;
-        std::cout << '\n' << checkSignature((unsigned char*)*currentlyEncryptedMsg, currentlyEncryptedMsgLen, msg, len);
+    } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
+        std::string fileToBeSigned = signStatement->filePathToFileToBeSigned;
+        auto messageToSign = readMessageFromFile(fileToBeSigned);
+        std::cout << messageToSign;
+
+        std::string prvKeyPath = "/home/robert/Desktop/private.pem";
+        RSA* rsaPrv = readPrivateKeyFromFile(prvKeyPath);
+        encryptedMessage = sign(rsaPrv, messageToSign);
+        encMessage = (unsigned char* )malloc(sizeof(char) * encryptedMessage.length());
+        if(!encMessage) {
+            throw std::runtime_error("Malloc failed");
+        }
+        memcpy(encMessage, encryptedMessage.c_str(), encryptedMessage.length());
+        encMessageLength = encryptedMessage.length();
+        std::cout << "with ret " << encryptedMessage << '\n';
+        RSA_free(rsaPrv);
+
+    } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
+        auto filePathToFileToBeChecked = checkSignatureStatement->filePathToFileToBeChecked;
+        auto filePathToPublicKey = checkSignatureStatement->filePathToPublicKey;
+        std::string messageToCheck = readMessageFromFile(filePathToFileToBeChecked);
+        std::cout << messageToCheck << '\n';
+        RSA* rsaPub = readPublicKeyFromFile(filePathToPublicKey);
+        std::cout << encryptedMessage << "it was encrypted msg\n";
+        auto ret = checkSignature(rsaPub, encryptedMessage, messageToCheck);
+        std::cout << ret << '\n';
+        RSA_free(rsaPub);
     }
 }
 void Executor::createKey(const std::string& algorithm, int keyLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath) {
     // dummy
     (void)algorithm;
-    RSA* r = nullptr;
+    RSA* r;
     try {
-
+        r = RSA_new();
         assignRsaKeyToPtr(keyLen, &r);
-        writePublicKeyToFile(pubKeyPath, "wb", r);
-        writePrivateKeyToFile(prvKeyIdPath, "wb", r);
 
-        auto rsaPub = readPublicKeyFromFile("/home/robert/Desktop/public.pem");
-        RSA_free(rsaPub);
-        auto rsaPrv = readPrivateKeyFromFile("/home/robert/Desktop/private.pem");
-        RSA_free(rsaPrv);
+        printf("\nkey pointer is %p\n", r);
+        writePublicKeyToFile(pubKeyPath, "wb", r);
+        printf("\nkey pointer is %p\n", r);
+        writePrivateKeyToFile(prvKeyIdPath, "wb", r);
 
     } catch(std::exception &e) {
         std::cout << "\nError when generating key " << e.what() << "\n";
@@ -71,75 +78,17 @@ void Executor::createKey(const std::string& algorithm, int keyLen, const std::st
     RSA_free(r);
     std::cout << "Keys are generated\n";
 }
-void Executor::sign(const unsigned char *data, size_t dataSize, unsigned char **encryptedData, size_t *encryptedDataSize) {
-    BIO *bio = BIO_new(BIO_s_file());
-    if(bio == nullptr) {
-        throw std::runtime_error("Bio could not be initialised\n");
-    }
-    BIO_read_filename(bio, "/home/robert/Desktop/private.pem");
-    RSA* rsa;
-    if((rsa = PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, nullptr)) == nullptr) {
-        throw std::runtime_error("Private key cannot be accessed");
-    }
-    EVP_MD_CTX* mdCtx = EVP_MD_CTX_create();
-    EVP_PKEY* priKey  = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(priKey, rsa);
-    if (EVP_DigestSignInit(mdCtx,nullptr, EVP_sha256(), nullptr, priKey) != 1) {
-        EVP_MD_CTX_destroy(mdCtx);
-        throw std::runtime_error("Could not initialise evp digest");
-    }
-    if (EVP_DigestSignUpdate(mdCtx, data, dataSize) != 1) {
-        EVP_MD_CTX_destroy(mdCtx);
-        throw std::runtime_error("Could not hash msgLen bytes");
-    }
-    if (EVP_DigestSignFinal(mdCtx, nullptr, encryptedDataSize) != 1) {
-        EVP_MD_CTX_destroy(mdCtx);
-        throw std::runtime_error("Could not set encrypted data size");
-    }
-    *encryptedData = (unsigned char*)malloc(*encryptedDataSize);
-    if(*encryptedData == nullptr) {
-        EVP_MD_CTX_destroy(mdCtx);
-        throw std::runtime_error("Cannot allocate encrypted msg");
-    }
-    if (EVP_DigestSignFinal(mdCtx, *encryptedData, encryptedDataSize) != 1) {
-        EVP_MD_CTX_destroy(mdCtx);
-        throw std::runtime_error("Cannot sign msg");
-    }
-    EVP_MD_CTX_destroy(mdCtx);
-}
-bool Executor::checkSignature(unsigned char *data, size_t dataLen, const char *originalData, size_t originalDataSize) {
 
-    auto rsaPub = readPublicKeyFromFile("/home/robert/Desktop/public.pem");
-    RSA_free(rsaPub);
-    auto rsaPrv = readPrivateKeyFromFile("/home/robert/Desktop/private.pem");
-    RSA_free(rsaPrv);
-    return true;
-    RSA *rsa;
-    EVP_PKEY* pubKey  = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(pubKey, rsa);
-    EVP_MD_CTX* mdCtx = EVP_MD_CTX_create();
-    if (EVP_DigestVerifyInit(mdCtx, nullptr, EVP_sha256(), nullptr, pubKey) != 1) {
-        throw std::runtime_error("Cannot initialise signature check");
-    }
-    if (EVP_DigestVerifyUpdate(mdCtx, originalData, originalDataSize) != 1) {
-        throw std::runtime_error("Cannot update buffer to check signature");
-    }
-    auto res = EVP_DigestVerifyFinal(mdCtx, data, dataLen);
-    EVP_MD_CTX_destroy(mdCtx);
-    return res;
-}
 RSA* Executor::readPublicKeyFromFile(std::string filepath) {
-     printFile(filepath);
+//     printFile(filepath);
      auto fp = getFileStructFromPath(filepath, "r");
      return readPublicKeyFromFpAndClose(&fp);
 }
-
 RSA* Executor::readPrivateKeyFromFile(std::string filepath) {
-    printFile(filepath);
+//    printFile(filepath);
     auto fp = getFileStructFromPath(filepath, "r");
     return readPrivateKeyFromFpAndClose(&fp);
 }
-
 void Executor::printFile(std::string filepath) {
     std::cout << "\nprinting " + filepath + "\n";
     std::string line;
@@ -153,9 +102,7 @@ void Executor::printFile(std::string filepath) {
         myfile.close();
     }
     else std::cout << "Unable to open file";
-
 }
-
 FILE *Executor::getFileStructFromPath(std::string filepath, std::string modes) {
     FILE *fp = fopen(filepath.c_str(), modes.c_str());
     if(fp == nullptr) {
@@ -163,7 +110,6 @@ FILE *Executor::getFileStructFromPath(std::string filepath, std::string modes) {
     }
     return fp;
 }
-
 RSA *Executor::readPublicKeyFromFpAndClose(FILE **fp) {
     auto rsa = PEM_read_RSA_PUBKEY(*fp, nullptr, nullptr, nullptr);
     fclose(*fp);
@@ -172,7 +118,6 @@ RSA *Executor::readPublicKeyFromFpAndClose(FILE **fp) {
     }
     return rsa;
 }
-
 RSA *Executor::readPrivateKeyFromFpAndClose(FILE **fp) {
     auto rsa = PEM_read_RSAPrivateKey(*fp, nullptr, nullptr, nullptr);
     fclose(*fp);
@@ -181,7 +126,6 @@ RSA *Executor::readPrivateKeyFromFpAndClose(FILE **fp) {
     }
     return rsa;
 }
-
 void Executor::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r) {
     auto fp = getFileStructFromPath(filepath, mode);
     auto success = PEM_write_RSA_PUBKEY(fp, r);
@@ -190,7 +134,6 @@ void Executor::writePublicKeyToFile(std::string filepath, std::string mode, RSA 
     }
     fclose(fp);
 }
-
 void Executor::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
     auto fp = getFileStructFromPath(filepath, mode);
     auto success = PEM_write_RSAPrivateKey(fp, r, nullptr, nullptr, 0, nullptr, nullptr);
@@ -199,8 +142,7 @@ void Executor::writePrivateKeyToFile(std::string filepath, std::string mode, RSA
     }
     fclose(fp);
 }
-
-void Executor::assignRsaKeyToPtr(size_t keyLen, RSA **r) {
+void Executor::assignRsaKeyToPtr(size_t keyLen, RSA** r) {
     BIGNUM *bne;
     bne = BN_new();
     auto bnSuccess = BN_set_word(bne,RSA_F4);
@@ -208,7 +150,6 @@ void Executor::assignRsaKeyToPtr(size_t keyLen, RSA **r) {
         throw std::runtime_error("Cannot set big num");
     }
 
-    *r = RSA_new();
     auto rsaSuccess = RSA_generate_key_ex(*r, keyLen, bne, nullptr);
     if(!rsaSuccess) {
         throw std::runtime_error("Cannot generate RSA keys");
@@ -217,5 +158,59 @@ void Executor::assignRsaKeyToPtr(size_t keyLen, RSA **r) {
     BN_free(bne);
 }
 
+std::string Executor::readMessageFromFile(std::string filepath) {
+    std::string fileContent;
+    std::string line;
+    std::ifstream fileToRead(filepath);
+    if (fileToRead.is_open()) {
+        while (getline(fileToRead,line)) {
+            fileContent += line + "\n";
+        }
+        fileToRead.close();
+    }
+    return fileContent;
+}
+
+std::string Executor::sign(RSA *r, std::string messageToSign) {
+
+    EVP_MD_CTX* m_RSASignCtx = EVP_MD_CTX_create();
+    EVP_PKEY* prv  = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(prv, r);
+    if (EVP_DigestSignInit(m_RSASignCtx,NULL, EVP_sha256(), NULL, prv) != 1) {
+        throw std::runtime_error("Digest init failed");
+    }
+    if (EVP_DigestSignUpdate(m_RSASignCtx, messageToSign.c_str(), messageToSign.length()) != 1) {
+        throw std::runtime_error("Digest sign update failed");
+    }
+    auto lenAfterSign = std::make_shared<size_t>();
+    if (EVP_DigestSignFinal(m_RSASignCtx, NULL, lenAfterSign.get()) != 1) {
+        throw std::runtime_error("Digest sign final failed");
+    }
+    std::cout << *lenAfterSign << '\n';
+    std::string encryptedMessage(*lenAfterSign, ' ');
+    if (EVP_DigestSignFinal(m_RSASignCtx, (unsigned char*)encryptedMessage.c_str(), lenAfterSign.get()) != 1) {
+        throw std::runtime_error("Digest init failed");
+    }
+    EVP_MD_CTX_destroy(m_RSASignCtx);
+    return encryptedMessage;
+}
+
+bool Executor::checkSignature(RSA *rsa, std::string hash, std::string msg) {
+    EVP_PKEY* pubKey  = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(pubKey, rsa);
+    EVP_MD_CTX* m_RSAVerifyCtx = EVP_MD_CTX_create();
+
+    if(EVP_DigestVerifyInit(m_RSAVerifyCtx,NULL, EVP_sha256(),NULL,pubKey) != 1) {
+        throw std::runtime_error("Digest verify init failed");
+    }
+    if(EVP_DigestVerifyUpdate(m_RSAVerifyCtx, msg.c_str(), msg.length()) != 1) {
+        throw std::runtime_error("Digest verify update failed");
+    }
+    if(EVP_DigestVerifyFinal(m_RSAVerifyCtx, (unsigned char* )hash.c_str(), hash.length()) != 1) {
+        throw std::runtime_error("Verification failed");
+    }
+    EVP_MD_CTX_destroy(m_RSAVerifyCtx);
+    return true;
+}
 
 #pragma clang diagnostic pop

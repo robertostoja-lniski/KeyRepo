@@ -62,7 +62,7 @@ struct SignStatement : Statement {
     friend std::ostream& operator<<(std::ostream& os, const SignStatement& dt);
     std::string toString() override {
         return "sign " + filePathToFileToBeSigned + " "
-            + std::to_string(privateKeyId);
+            + std::to_string(privateKeyId) + "\n";
     }
 };
 struct CheckSignatureStatement : Statement {
@@ -75,7 +75,7 @@ struct CheckSignatureStatement : Statement {
     friend std::ostream& operator<<(std::ostream& os, const CheckSignatureStatement& dt);
     std::string toString() override {
         return "check-signature " + filePathToFileToBeChecked + " "
-               + filePathToPublicKey;
+               + filePathToPublicKey + "\n";
     }
 };
 struct EncryptFileStatement : Statement {
