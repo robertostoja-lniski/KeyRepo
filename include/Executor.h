@@ -9,6 +9,7 @@
 #include "Parser.h"
 #include "Statement.h"
 #include "KeyIOInterfaces.h"
+#include "OpenSSLHandler.h"
 #include <stdio.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
@@ -20,18 +21,17 @@
 class Executor {
 private:
     // methods for crypto handler
-    bool checkSignature( RSA*, std::string hash, std::string msg);
-    std::string sign( RSA* rsa, std::string toSign);
     void createKey(const std::string& algorithm, int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
     void assignRsaKeyToPtr(size_t keyLen, RSA**);
 
     std::shared_ptr<Parser> parser;
     std::unique_ptr<RsaKeyFileIOInterface> interface;
-
+    std::unique_ptr<OpenSSLHandler> openSSLHandler;
 
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
         interface = std::make_unique<RsaKeyFileIOInterface>();
+        openSSLHandler = std::unique_ptr<OpenSSLHandler>();
         ERR_load_CRYPTO_strings();
         OpenSSL_add_all_algorithms();
         OpenSSL_add_all_ciphers();

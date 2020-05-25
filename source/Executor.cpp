@@ -32,7 +32,7 @@ void Executor::execute() {
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
         std::string prvKeyPath = "/home/robert/Desktop/private.pem";
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
-        auto encryptedMessage = sign(rsaPrv, messageToSign);
+        auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
         std::cout << encryptedMessage << std::endl;
         interface->writeToFile("/home/robert/Desktop/signature.txt", encryptedMessage);
         RSA_free(rsaPrv);
@@ -45,7 +45,7 @@ void Executor::execute() {
         auto messageToCheckHash = interface->readMessageFromFile("/home/robert/Desktop/signature.txt");
         RSA* rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
         std::cout << messageToCheckHash << "it was encrypted msg\n";
-        auto ret = checkSignature(rsaPub, messageToCheckHash, messageToCheck);
+        auto ret = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
         std::cout << ret << '\n';
         RSA_free(rsaPub);
     }
@@ -86,46 +86,6 @@ void Executor::assignRsaKeyToPtr(size_t keyLen, RSA** r) {
     BN_free(bne);
 }
 
-std::string Executor::sign(RSA *r, std::string messageToSign) {
 
-    EVP_MD_CTX* m_RSASignCtx = EVP_MD_CTX_create();
-    EVP_PKEY* prv  = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(prv, r);
-    if (EVP_DigestSignInit(m_RSASignCtx,NULL, EVP_sha256(), NULL, prv) != 1) {
-        throw std::runtime_error("Digest init failed");
-    }
-    if (EVP_DigestSignUpdate(m_RSASignCtx, messageToSign.c_str(), messageToSign.length()) != 1) {
-        throw std::runtime_error("Digest sign update failed");
-    }
-    auto lenAfterSign = std::make_shared<size_t>();
-    if (EVP_DigestSignFinal(m_RSASignCtx, NULL, lenAfterSign.get()) != 1) {
-        throw std::runtime_error("Digest sign final failed");
-    }
-    std::cout << *lenAfterSign << '\n';
-    std::string encryptedMessage(*lenAfterSign, ' ');
-    if (EVP_DigestSignFinal(m_RSASignCtx, (unsigned char*)encryptedMessage.c_str(), lenAfterSign.get()) != 1) {
-        throw std::runtime_error("Digest init failed");
-    }
-    EVP_MD_CTX_destroy(m_RSASignCtx);
-    return encryptedMessage;
-}
-
-bool Executor::checkSignature(RSA *rsa, std::string hash, std::string msg) {
-    EVP_PKEY* pubKey  = EVP_PKEY_new();
-    EVP_PKEY_assign_RSA(pubKey, rsa);
-    EVP_MD_CTX* m_RSAVerifyCtx = EVP_MD_CTX_create();
-
-    if(EVP_DigestVerifyInit(m_RSAVerifyCtx,NULL, EVP_sha256(),NULL,pubKey) != 1) {
-        throw std::runtime_error("Digest verify init failed");
-    }
-    if(EVP_DigestVerifyUpdate(m_RSAVerifyCtx, msg.c_str(), msg.length()) != 1) {
-        throw std::runtime_error("Digest verify update failed");
-    }
-    if(EVP_DigestVerifyFinal(m_RSAVerifyCtx, (unsigned char* )hash.c_str(), hash.length()) != 1) {
-        throw std::runtime_error("Verification failed");
-    }
-    EVP_MD_CTX_destroy(m_RSAVerifyCtx);
-    return true;
-}
 
 #pragma clang diagnostic pop
