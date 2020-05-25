@@ -30,6 +30,7 @@ public:
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
     void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*);
     std::string readMessageFromFile(std::string filepath);
+    void writeToFile(std::string filepath, std::string data);
 };
 
 #endif

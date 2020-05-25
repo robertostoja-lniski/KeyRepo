@@ -38,7 +38,8 @@ std::string RsaKeyFileIOInterface::readMessageFromFile(std::string filepath) {
         }
         fileToRead.close();
     }
-    return fileContent;
+        // eliminates endl at the endl
+    return fileContent.substr(0, fileContent.size() - 1);
 }
 FILE *RsaKeyFileIOInterface::getFileStructFromPath(std::string filepath, std::string modes) {
     FILE *fp = fopen(filepath.c_str(), modes.c_str());
@@ -78,4 +79,10 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
         throw std::runtime_error("Cannot save private key");
     }
     fclose(fp);
+}
+void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data) {
+    std::ofstream myfile;
+    myfile.open (filepath);
+    myfile << data;
+    myfile.close();
 }
