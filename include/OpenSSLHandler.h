@@ -15,10 +15,11 @@ struct OpenSSLInterface {
 //  void sign(std::string toSign) = 0;
     virtual bool checkSignature(std::string hash, std::string msg) = 0;
 };
-struct OpenSSLHandler : OpenSSLInterface {
+struct OpenSSLHandler {
     std::string sign(RSA* r, std::string toSign);
     std::shared_ptr<RSA> createKey(int ketLen, const std::string& pubKeyPath, const std::string& prvKeyIdPath);
     bool checkSignature(RSA* r, std::string hash, std::string msg);
+    OpenSSLHandler() = default;
 };
 
 

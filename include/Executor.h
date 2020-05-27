@@ -10,6 +10,7 @@
 #include "Statement.h"
 #include "KeyIOInterfaces.h"
 #include "OpenSSLHandler.h"
+#include "KernelEmulation.h"
 #include <stdio.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
@@ -29,7 +30,7 @@ private:
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
         interface = std::make_unique<RsaKeyFileIOInterface>();
-        openSSLHandler = std::unique_ptr<OpenSSLHandler>();
+        openSSLHandler = std::make_unique<OpenSSLHandler>();
         ERR_load_CRYPTO_strings();
         OpenSSL_add_all_algorithms();
         OpenSSL_add_all_ciphers();
