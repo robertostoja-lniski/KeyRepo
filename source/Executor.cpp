@@ -30,25 +30,31 @@ void Executor::execute() {
         interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get());
 
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
-        std::string fileToBeSigned = signStatement->filePathToFileToBeSigned;
+        auto fileToBeSigned = signStatement->filePathToFileToBeSigned;
+        auto prvKeyPath = signStatement->filePathToPrvKeyId;
+        auto signatureOutput = signStatement->signatureOutput;
+
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
-        std::string prvKeyPath = "/home/robert/Desktop/private.pem";
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
-        std::cout << encryptedMessage << std::endl;
-        interface->writeToFile("/home/robert/Desktop/signature.txt", encryptedMessage);
+
+        std::cout << "encrypted msg is " << encryptedMessage << std::endl;
+        interface->writeToFile(signatureOutput, encryptedMessage);
         RSA_free(rsaPrv);
 
     } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
         auto filePathToFileToBeChecked = checkSignatureStatement->filePathToFileToBeChecked;
         auto filePathToPublicKey = checkSignatureStatement->filePathToPublicKey;
+        auto signatureInput = checkSignatureStatement->signatureInput;
+
         std::string messageToCheck = interface->readMessageFromFile(filePathToFileToBeChecked);
         std::cout << messageToCheck << '\n';
-        auto messageToCheckHash = interface->readMessageFromFile("/home/robert/Desktop/signature.txt");
+
+        auto messageToCheckHash = interface->readMessageFromFile(signatureInput);
         RSA* rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
-        std::cout << messageToCheckHash << "it was encrypted msg\n";
+        std::cout << messageToCheckHash << " it was encrypted msg\n";
         auto ret = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
-        std::cout << ret << '\n';
+        std::cout << "1 if signature correct: " << ret << '\n';
         RSA_free(rsaPub);
     }
 }

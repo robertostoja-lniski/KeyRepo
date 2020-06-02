@@ -54,28 +54,34 @@ struct DeleteKeyStatement : Statement {
 };
 struct SignStatement : Statement {
     std::string filePathToFileToBeSigned;
-    int privateKeyId;
+    std::string filePathToPrvKeyId;
+    std::string signatureOutput;
 
-    SignStatement(std::string filePathToFileToBeSigned, int privateKeyId) :
-            filePathToFileToBeSigned(filePathToFileToBeSigned), privateKeyId(privateKeyId) {}
+    SignStatement(std::string filePathToFileToBeSigned, std::string filePathToPrvKeyId,
+                    std::string signatureOutput) :
+            filePathToFileToBeSigned(filePathToFileToBeSigned), filePathToPrvKeyId(filePathToPrvKeyId),
+            signatureOutput(signatureOutput) {}
 
     friend std::ostream& operator<<(std::ostream& os, const SignStatement& dt);
     std::string toString() override {
         return "sign " + filePathToFileToBeSigned + " "
-            + std::to_string(privateKeyId) + "\n";
+            + filePathToPrvKeyId + "\n";
     }
 };
 struct CheckSignatureStatement : Statement {
     std::string filePathToFileToBeChecked;
     std::string filePathToPublicKey;
+    std::string signatureInput;
 
-    CheckSignatureStatement(std::string filePathToFileToBeChecked, std::string filePathToPublicKey) :
-        filePathToFileToBeChecked(filePathToFileToBeChecked), filePathToPublicKey(filePathToPublicKey) {}
+    CheckSignatureStatement(std::string filePathToFileToBeChecked, std::string filePathToPublicKey,
+                            std::string signatureInput) :
+        filePathToFileToBeChecked(filePathToFileToBeChecked), filePathToPublicKey(filePathToPublicKey),
+        signatureInput(signatureInput) {}
 
     friend std::ostream& operator<<(std::ostream& os, const CheckSignatureStatement& dt);
     std::string toString() override {
-        return "check-signature " + filePathToFileToBeChecked + " "
-               + filePathToPublicKey + "\n";
+        return "check-signature " + filePathToFileToBeChecked + " by key "
+               + filePathToPublicKey + "and compare it with " + signatureInput + "\n";
     }
 };
 struct EncryptFileStatement : Statement {
