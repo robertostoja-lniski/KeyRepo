@@ -68,25 +68,18 @@ void Parser::generateDeleteKeyOption() {
 }
 void Parser::generateSignOption() {
     auto fileToBeSigned = syntaxAnalyser->getNextToken().value;
-    auto privateKeyId = syntaxAnalyser->getNextToken().value;
-    int numericPrivateKeyId;
+    auto privateKeyFilePath = syntaxAnalyser->getNextToken().value;
+    auto signatureOutput = syntaxAnalyser->getNextToken().value;
 
-    try {
-        numericPrivateKeyId = std::stoi(privateKeyId);
-        if(numericPrivateKeyId < 0) {
-            throw std::runtime_error("Negative size or id");
-        }
-    } catch(std::exception &e) {
-        std::cout << "Key size and id have to be positive integers\n";
-    }
-    SignStatement signStatement(fileToBeSigned, numericPrivateKeyId);
+    SignStatement signStatement(fileToBeSigned, privateKeyFilePath, signatureOutput);
     currentParsedStatement = std::make_shared<SignStatement>(signStatement);
 }
 void Parser::generateCheckSignatureOption() {
     auto fileToBeChecked = syntaxAnalyser->getNextToken().value;
     auto pubKeyPath = syntaxAnalyser->getNextToken().value;
+    auto signatureInput = syntaxAnalyser->getNextToken().value;
 
-    CheckSignatureStatement checkSignatureStatement(fileToBeChecked, pubKeyPath);
+    CheckSignatureStatement checkSignatureStatement(fileToBeChecked, pubKeyPath, signatureInput);
     currentParsedStatement = std::make_shared<CheckSignatureStatement>(checkSignatureStatement);
 }
 void Parser::generateEncryptFileOption() {

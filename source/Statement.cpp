@@ -21,8 +21,8 @@ std::ostream &operator<<(std::ostream &os, const DeleteKeyStatement &dt) {
         << dt.fileToPublicKey << " public key\n";
 }
 std::ostream &operator<<(std::ostream &os, const SignStatement &dt) {
-    os << "Signing file " << dt.filePathToFileToBeSigned << " with key with id "
-        << dt.privateKeyId << '\n';
+    os << "Signing file " << dt.filePathToFileToBeSigned << " with key with id stored in "
+        << dt.filePathToPrvKeyId << '\n';
 }
 std::ostream &operator<<(std::ostream &os, const CheckSignatureStatement &dt) {
     os << "Checking signature for " << dt.filePathToFileToBeChecked << " by "
