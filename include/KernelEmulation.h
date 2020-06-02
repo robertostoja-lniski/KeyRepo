@@ -34,7 +34,7 @@ private:
             id = uDist(gen);
         }
         friend std::ostream &operator<<(std::ostream &os, const MapNode &node) {
-            os << node.id << node.offset;
+            os << "\nid: " << node.id << " offset: " << node.offset;
             return os;
         }
     };
@@ -49,7 +49,9 @@ private:
         }
 
         friend std::ostream &operator<<(std::ostream &os, const PartitionInfo &info) {
-            os << info.numberOfKeys << '\n' << info.fileContentSize << '\n' << info.mapSize << '\n';
+            os << "number of keys: " << info.numberOfKeys << '\n'
+               << "offset to add next key " << info.fileContentSize << '\n'
+               << "max number of nodes " << info.mapSize << '\n';
             return os;
         }
     };
@@ -66,11 +68,11 @@ private:
 
     struct KeyPartitionNode {
         uint32_t keySize {0};
-        char* data {nullptr};
+        char data[4096];
     };
 
     const std::string partition = "/home/robert/.keyPartition";
-    const std::string tmpKeyStorage = "/home/robert/.key";
+    const std::string tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
     void initFileIfNotDefined() {
         if(std::experimental::filesystem::exists(partition)) {
             return;
@@ -154,7 +156,7 @@ private:
     }
 
     uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
-        auto fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize * 2;
+        auto fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
         //Open file
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
@@ -171,25 +173,27 @@ private:
         if(fileSize != getFileSize(partition.c_str())) {
             throw std::runtime_error("Truncation failed");
         }
-
+        std::cout << std::endl << "file size is " << fileSize << std::endl;
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
         if(mappedPartition == MAP_FAILED) {
             close(fd);
             throw std::runtime_error("Cannot map file");
         }
 
-        addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd);
+        auto id = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd);
 
         int ret = munmap(mappedPartition, fileSize);
         assert(ret == 0);
         close(fd);
+
+        return id;
     }
 
     uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd) {
 
         auto partitionInfo = (PartitionInfo* )mappedPartition;
         auto keys = partitionInfo->numberOfKeys;
-        auto content = partitionInfo->fileContentSize;
+        auto offsetToAdd = partitionInfo->fileContentSize;
         auto mapSize = partitionInfo->mapSize;
 
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
@@ -197,44 +201,117 @@ private:
         for(int i = 0; i < mapSize; i++) {
             auto offset = currentElementInMap->offset;
             if(offset == 0) {
+                id = currentElementInMap->id;
                 break;
-//                std::cout << id << std::endl;
             }
             currentElementInMap = currentElementInMap + 1;
         }
         auto foundId = currentElementInMap->id;
         auto elementDataToUpdate = std::make_unique<MapNode>();
-        elementDataToUpdate->offset = content;
+        elementDataToUpdate->offset = offsetToAdd;
         elementDataToUpdate->id = foundId;
         memcpy(currentElementInMap, elementDataToUpdate.get(), sizeof(MapNode));
-//        currentElementInMap->offset = content;
-//        partitionInfo->fileContentSize = content + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
-
-        KeyPartitionNode* keyPlaceToAdd = (KeyPartitionNode* )(partitionInfo + sizeof(MapNode) * mapSize);
-        auto keyPartitionNode = std::make_unique<KeyPartitionNode>();
-        auto size = sizeof(*(keyPartitionNode->data)) * keyNodeToAdd.keySize;
-        keyPartitionNode->data = (char* )malloc(size);
-        if(!keyPartitionNode->data) {
-            throw std::runtime_error("Malloc failed");
-        }
-
-        memcpy(keyPartitionNode->data, keyNodeToAdd.keyContent.c_str(), size);
-        keyPartitionNode->keySize = keyNodeToAdd.keySize;
-
-        memcpy(keyPlaceToAdd, 0x00, sizeof(uint32_t));
-        memcpy(keyPlaceToAdd, keyPartitionNode.get(), sizeof(KeyPartitionNode));
-
-        std::cout << '\n' << (KeyPartitionNode* )keyPlaceToAdd->data << '\n';
+        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
+        memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
         auto partitionInfoToUpdate = std::make_unique<PartitionInfo>();
         partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
         partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
-        partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + size;
-
+        partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd.keySize;
         memcpy(partitionInfo, partitionInfoToUpdate.get(), sizeof(PartitionInfo));
 
-        free(keyPartitionNode->data);
-        auto dummy = 0;
-//        auto
+        std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
+        std::cout << "id of added key is: " << id << std::endl;
+        return id;
+    }
+
+    std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
+
+        auto partitionInfo = (PartitionInfo* )mappedPartition;
+        auto mapSize = partitionInfo->mapSize;
+
+        MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+        uint64_t offset;
+        for(int i = 0; i < mapSize; i++) {
+            auto currentId = currentElementInMap->id;
+            if(currentId == id) {
+                offset = currentElementInMap->offset;
+                break;
+            }
+            currentElementInMap = currentElementInMap + 1;
+        }
+//        std::cout << "offset is " << offset << std::endl;
+        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
+        return keyPlaceToAdd->data;
+    }
+
+    uint64_t readIdFromFile(std::string filepath) {
+        std::string line;
+        std::ifstream myfile (filepath);
+        if (myfile.is_open()) {
+            getline (myfile,line);
+            myfile.close();
+            uint64_t id;
+            std::istringstream iss(line);
+            iss >> id;
+            return id;
+        }
+        return 0;
+    }
+
+    std::string getPrvKeyById(uint64_t id) {
+        auto fileSize = getFileSize(partition.c_str());
+        //Open file
+        int fd = open(partition.c_str(), O_RDWR, 0);
+        if(fd < 0) {
+            throw std::runtime_error("Cannot open partition for truncation");
+        }
+        void* mappedPartition = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+        if(mappedPartition == MAP_FAILED) {
+            close(fd);
+            throw std::runtime_error("Cannot map file");
+        }
+
+        std::string key = getKeyValByPartitionPointer(mappedPartition, id);
+
+        int ret = munmap(mappedPartition, fileSize);
+        assert(ret == 0);
+        close(fd);
+
+        return key;
+    }
+
+    void print(std::string str) {
+        int charsInALine = 30;
+        for(int i = 0; i < str.size(); i++) {
+            std::cout << str[i];
+            if(i != 0 && i % charsInALine == 0) {
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    std::string getPathToTmpPrvKeyStorage(std::string key) {
+        std::string header = "-----BEGIN RSA PRIVATE KEY-----";
+        std::string bottom = "-----END RSA PRIVATE KEY-----";
+        int charsInRow = 64;
+        std::string filepath = "/tmp/prvKey.pem";
+        std::ofstream os;
+        os.open(filepath);
+        os << header << "\n";
+        std::cout << header << "\n";
+        for(int i = header.size(); i < key.size() - header.size() - bottom.size();) {
+            std::string nextLine;
+            for(int j = 0; j < charsInRow; j++) {
+                nextLine += key[i];
+                i++;
+            }
+            os << nextLine << "\n";
+            std::cout << nextLine << "\n";
+        }
+        os << bottom << "\n";
+        std::cout << bottom << "\n";
+        os.close();
+        return filepath;
     }
 
 public:
@@ -245,7 +322,17 @@ public:
     uint64_t write(RSA* r) {
         writeKeyToTemporaryFile(r);
         auto keyNode = generateKeyNodeFromKeyInFile();
-        auto id = addKeyNodeToPartition(keyNode);
+        std::cout << "Kernel will add a key to partition with value" << std::endl;
+//        print(keyNode.keyContent);
+        return addKeyNodeToPartition(keyNode);
+    }
+    std::string read(std::string filepath) {
+        uint64_t id = readIdFromFile(filepath);
+        std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
+        std::string prvKey = getPrvKeyById(id);
+        std::cout << "Kernel Emulation found a key with value" << std::endl;
+//        print(prvKey);
+        return getPathToTmpPrvKeyStorage(prvKey);
     }
 
 };
