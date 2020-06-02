@@ -14,17 +14,21 @@
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
-
+#include "KernelEmulation.h"
 // to be changed to template
 // and to abstract interface inheritance
 // currently (may 2020) I am working on the most effective solution
-class RsaKeyFileIOInterface{
+class RsaKeyFileIOInterface {
 private:
     FILE* getFileStructFromPath(std::string, std::string);
     RSA* readPrivateKeyFromFpAndClose(FILE**);
     RSA* readPublicKeyFromFpAndClose(FILE**);
     void printFile(std::string filepath);
+    std::unique_ptr<KernelEmulation> kernelEmulation;
 public:
+    RsaKeyFileIOInterface() {
+            kernelEmulation = std::make_unique<KernelEmulation>();
+    }
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
