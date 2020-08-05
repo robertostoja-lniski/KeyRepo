@@ -73,9 +73,9 @@ private:
 
     const std::string partition = "/home/robert/.keyPartition";
     const std::string tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
-    void initFileIfNotDefined() {
+    int initFileIfNotDefined() {
         if(std::experimental::filesystem::exists(partition)) {
-            return;
+            return 1;
         }
         auto partitionInfo = std::make_unique<PartitionInfo>();
         auto fileSize = sizeof(PartitionInfo) + sizeof(KeyNode) * partitionInfo->mapSize;
@@ -86,24 +86,24 @@ private:
 
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            throw std::runtime_error("Cannot open partition for truncation");
+            return 1;
         }
         ftruncate(fd, fileSize);
         close(fd);
 
         fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            throw std::runtime_error("Cannot open partition for mapping");
+            return 1;
         }
 
         if(fileSize != getFileSize(partition.c_str())) {
-            throw std::runtime_error("Truncation failed");
+            return 1;
         }
 
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_SHARED | MAP_POPULATE, fd, 0);
         if(mappedPartition == MAP_FAILED) {
             close(fd);
-            throw std::runtime_error("Cannot map file");
+            return 1;
         }
 
         auto partitionPtr = partitionInfo.get();
@@ -122,14 +122,14 @@ private:
         close(fd);
     }
 
-    void writeKeyToTemporaryFile(RSA* r) {
+    int writeKeyToTemporaryFile(RSA* r) {
         FILE *fp = fopen(tmpKeyStorage.c_str(), "wb");
         if(fp == nullptr) {
-            throw std::runtime_error("Cannot create file for emulation");
+            return 1;
         }
         auto success = PEM_write_RSAPrivateKey(fp, r, nullptr, nullptr, 0, nullptr, nullptr);
         if(!success) {
-            throw std::runtime_error("Cannot get prv key");
+            return 1;
         }
         fclose(fp);
     }
@@ -160,24 +160,24 @@ private:
         //Open file
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            throw std::runtime_error("Cannot open partition for truncation");
+            return 1;
         }
         ftruncate(fd, fileSize);
         close(fd);
 
         fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            throw std::runtime_error("Cannot open partition for mapping");
+            return 1;
         }
 
         if(fileSize != getFileSize(partition.c_str())) {
-            throw std::runtime_error("Truncation failed");
+            return 1;
         }
         std::cout << std::endl << "file size is " << fileSize << std::endl;
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
         if(mappedPartition == MAP_FAILED) {
             close(fd);
-            throw std::runtime_error("Cannot map file");
+            return 1;
         }
 
         auto id = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd);
@@ -263,12 +263,12 @@ private:
         //Open file
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            throw std::runtime_error("Cannot open partition for truncation");
+            return "";
         }
         void* mappedPartition = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
         if(mappedPartition == MAP_FAILED) {
             close(fd);
-            throw std::runtime_error("Cannot map file");
+            return "";
         }
 
         std::string key = getKeyValByPartitionPointer(mappedPartition, id);
