@@ -24,18 +24,22 @@
 #define DEFAULT_MAP_SIZE 128
 #define DEFAULT_NUMBER_OF_KEYS 0
 
+
+
 class KernelEmulation {
 
 private:
+    // TODO there can be two keys with the same ID
+    uint64_t generateRandomId() {
+        std::random_device dev;
+        std::mt19937 gen(dev());
+        std::uniform_int_distribution<uint64_t> uDist(0, UINT64_MAX);
+        return uDist(gen);
+    }
+
     struct MapNode {
         uint64_t id;
         uint64_t offset {0};
-        MapNode() {
-            std::random_device dev;
-            std::mt19937 gen(dev());
-            std::uniform_int_distribution<uint64_t> uDist(0, UINT64_MAX);
-            id = uDist(gen);
-        }
         friend std::ostream &operator<<(std::ostream &os, const MapNode &node) {
             os << "\nid: " << node.id << " offset: " << node.offset;
             return os;
@@ -119,9 +123,12 @@ private:
         memcpy(mappedPartition, partitionInfo, sizeof(PartitionInfo));
         MapNode* mapPosition = (MapNode* )((PartitionInfo* )mappedPartition + 1);
         for(int i = 0; i < partitionInfo->mapSize; i++) {
-            auto mapData = std::make_unique<MapNode>();
-            memcpy(mapPosition, mapData.get(), sizeof(*mapData));
+            MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
+            mapData -> id = generateRandomId();
+            mapData -> offset = 0;
+            memcpy(mapPosition, mapData, sizeof(*mapData));
             mapPosition = mapPosition + 1;
+            free(mapData);
         }
 
         printPartition(partitionStart);
@@ -263,13 +270,19 @@ private:
             currentElementInMap = currentElementInMap + 1;
         }
 
-        auto elementDataToUpdate = std::make_unique<MapNode>();
+        MapNode* elementDataToUpdate = (MapNode* )malloc(sizeof(MapNode));
+        if(!elementDataToUpdate) {
+            return 1;
+        }
+
         elementDataToUpdate->offset = offsetToAdd;
         elementDataToUpdate->id = id;
 
         assert(currentElementInMap->id == elementDataToUpdate->id);
 
-        memcpy(currentElementInMap, elementDataToUpdate.get(), sizeof(MapNode));
+        memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
+        free(elementDataToUpdate);
+
         std::cout << "map start " << partitionInfo + 1 << std::endl;
         KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offsetToAdd);
         std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
