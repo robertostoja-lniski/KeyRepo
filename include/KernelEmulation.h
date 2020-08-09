@@ -21,6 +21,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#define DEFAULT_MAP_SIZE 128
+#define DEFAULT_NUMBER_OF_KEYS 0
+
 class KernelEmulation {
 
 private:
@@ -43,10 +46,6 @@ private:
         uint64_t numberOfKeys {0};
         uint64_t fileContentSize;
         uint64_t mapSize {128};
-
-        PartitionInfo() {
-            fileContentSize = mapSize * sizeof(MapNode);
-        }
 
         friend std::ostream &operator<<(std::ostream &os, const PartitionInfo &info) {
             os << "\nnumber of keys: " << info.numberOfKeys << '\n'
@@ -77,7 +76,15 @@ private:
         if(std::experimental::filesystem::exists(partition)) {
             return 1;
         }
-        auto partitionInfo = std::make_unique<PartitionInfo>();
+        PartitionInfo* partitionInfo = (PartitionInfo* )malloc(sizeof(PartitionInfo));
+        if(!partitionInfo) {
+            return 1;
+        }
+
+        partitionInfo->mapSize = DEFAULT_MAP_SIZE;
+        partitionInfo->numberOfKeys = DEFAULT_NUMBER_OF_KEYS;
+        partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode);
+
         auto fileSize = sizeof(PartitionInfo) + sizeof(KeyNode) * partitionInfo->mapSize;
         //Open file
         std::ofstream os(partition.c_str());
@@ -109,10 +116,7 @@ private:
             return 1;
         }
 
-        auto partitionPtr = partitionInfo.get();
-        auto size = sizeof(*partitionPtr);
-        auto mappedPart = mappedPartition;
-        memcpy(mappedPartition, partitionInfo.get(), sizeof(*partitionInfo.get()));
+        memcpy(mappedPartition, partitionInfo, sizeof(PartitionInfo));
         MapNode* mapPosition = (MapNode* )((PartitionInfo* )mappedPartition + 1);
         for(int i = 0; i < partitionInfo->mapSize; i++) {
             auto mapData = std::make_unique<MapNode>();
@@ -121,6 +125,7 @@ private:
         }
 
         printPartition(partitionStart);
+        free(partitionInfo);
         int ret = munmap(mappedPartition, fileSize);
         assert(ret == 0);
         close(fd);
