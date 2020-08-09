@@ -292,12 +292,13 @@ private:
         memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
         std::cout << "Key place to add data after cpy: " << keyPlaceToAdd->data <<std::endl;
 
-        auto partitionInfoToUpdate = std::make_unique<PartitionInfo>();
+        PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
         partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
         partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
         partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd.keySize;
-        memcpy(partitionInfo, partitionInfoToUpdate.get(), sizeof(PartitionInfo));
+        memcpy(partitionInfo, partitionInfoToUpdate, sizeof(PartitionInfo));
 
+        free(partitionInfoToUpdate);
         std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
         std::cout << "id of added key is: " << id << std::endl;
         return id;
