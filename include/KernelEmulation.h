@@ -49,7 +49,7 @@ private:
         }
 
         friend std::ostream &operator<<(std::ostream &os, const PartitionInfo &info) {
-            os << "number of keys: " << info.numberOfKeys << '\n'
+            os << "\nnumber of keys: " << info.numberOfKeys << '\n'
                << "offset to add next key " << info.fileContentSize << '\n'
                << "max number of nodes " << info.mapSize << '\n';
             return os;
@@ -68,7 +68,7 @@ private:
 
     struct KeyPartitionNode {
         uint32_t keySize {0};
-        char data[4096];
+        char data[4096] = "UNDEFINED";
     };
 
     const std::string partition = "/home/robert/.keyPartition";
@@ -101,6 +101,9 @@ private:
         }
 
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_SHARED | MAP_POPULATE, fd, 0);
+        memset(mappedPartition, 0x00, fileSize);
+        std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
+        auto partitionStart = mappedPartition;
         if(mappedPartition == MAP_FAILED) {
             close(fd);
             return 1;
@@ -117,6 +120,7 @@ private:
             mapPosition = mapPosition + 1;
         }
 
+        printPartition(partitionStart);
         int ret = munmap(mappedPartition, fileSize);
         assert(ret == 0);
         close(fd);
@@ -156,7 +160,8 @@ private:
     }
 
     uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
-        auto fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
+        auto fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + 16 * sizeof(keyNodeToAdd.keySize) + 16;
+        std::cout << "when adding new node file size is: " << fileSize << std::endl;
         //Open file
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
@@ -175,12 +180,16 @@ private:
         }
         std::cout << std::endl << "file size is " << fileSize << std::endl;
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+        auto partitionStart = mappedPartition;
+        std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
         if(mappedPartition == MAP_FAILED) {
             close(fd);
             return 1;
         }
-
+        printPartition(partitionStart);
         auto id = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd);
+        std::cout << std::endl;
+        printPartition(partitionStart);
 
         int ret = munmap(mappedPartition, fileSize);
         assert(ret == 0);
@@ -189,11 +198,53 @@ private:
         return id;
     }
 
+    void printPartition(const void* mappedPartition) {
+        auto partitionInfo = (PartitionInfo* )mappedPartition;
+        auto keys = partitionInfo->numberOfKeys;
+        auto offsetToAdd = partitionInfo->fileContentSize;
+        auto mapSize = partitionInfo->mapSize;
+
+        std::cout << "This partition has: " << keys << " keys." << std::endl;
+        std::cout << "First free slot is: " << offsetToAdd + sizeof(PartitionInfo) << std::endl;
+        std::cout << "Map has: " << mapSize << " number of nodes" << std::endl;
+
+        MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+        uint64_t id;
+        for(int i = 0; i < mapSize; i++) {
+            auto offset = currentElementInMap->offset;
+            if(offset != 0) {
+                id = currentElementInMap->id;
+                std::cout << "For " << i << " node in map there was found id: " << id << " and offset " << offset <<  std::endl;
+            }
+            currentElementInMap = currentElementInMap + 1;
+        }
+//        auto foundId = currentElementInMap->id;
+//        auto elementDataToUpdate = std::make_unique<MapNode>();
+//        elementDataToUpdate->offset = offsetToAdd;
+//        elementDataToUpdate->id = foundId;
+//        memcpy(currentElementInMap, elementDataToUpdate.get(), sizeof(MapNode));
+//        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
+//        memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
+//        auto partitionInfoToUpdate = std::make_unique<PartitionInfo>();
+//        partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
+//        partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
+//        partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd.keySize;
+//        memcpy(partitionInfo, partitionInfoToUpdate.get(), sizeof(PartitionInfo));
+//
+//        std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
+//        std::cout << "id of added key is: " << id << std::endl;
+//        return id;
+    }
+
     uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd) {
 
         auto partitionInfo = (PartitionInfo* )mappedPartition;
         auto keys = partitionInfo->numberOfKeys;
         auto offsetToAdd = partitionInfo->fileContentSize;
+        std::cout << "offset to add is: " << offsetToAdd << std::endl;
+        std::cout << "The difference should be: " << (uint8_t *)(partitionInfo + 1) - (uint8_t *)(partitionInfo) << std::endl;
+        std::cout << "I think it should be: " << sizeof(PartitionInfo) + sizeof(MapNode) * 128 << std::endl;
+
         auto mapSize = partitionInfo->mapSize;
 
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
@@ -206,13 +257,23 @@ private:
             }
             currentElementInMap = currentElementInMap + 1;
         }
-        auto foundId = currentElementInMap->id;
+
         auto elementDataToUpdate = std::make_unique<MapNode>();
         elementDataToUpdate->offset = offsetToAdd;
-        elementDataToUpdate->id = foundId;
+        elementDataToUpdate->id = id;
+
+        assert(currentElementInMap->id == elementDataToUpdate->id);
+
         memcpy(currentElementInMap, elementDataToUpdate.get(), sizeof(MapNode));
-        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
+        std::cout << "map start " << partitionInfo + 1 << std::endl;
+        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offsetToAdd);
+        std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
+        std::cout << "Key to add size: " << keyNodeToAdd.keySize << std::endl;
+        std::cout << "Key to add content len: " << keyNodeToAdd.keyContent.size() << std::endl;
+        std::cout << "Key place to add data before cpy: " << keyPlaceToAdd->data <<std::endl;
         memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
+        std::cout << "Key place to add data after cpy: " << keyPlaceToAdd->data <<std::endl;
+
         auto partitionInfoToUpdate = std::make_unique<PartitionInfo>();
         partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
         partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
@@ -240,7 +301,7 @@ private:
             currentElementInMap = currentElementInMap + 1;
         }
 //        std::cout << "offset is " << offset << std::endl;
-        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
+        KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
         return keyPlaceToAdd->data;
     }
 
