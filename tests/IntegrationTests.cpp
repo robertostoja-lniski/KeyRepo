@@ -84,10 +84,11 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_2)
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_3)
 {
     std::vector<std::string> input {
-            "program",
+            "program_sign",
             "sign",
             "/home/abc",
             "312321",
+            "outpath",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -108,6 +109,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_4)
             "check-signature",
             "/home/abc",
             "/home/pubKeyPath",
+            "signature_path"
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
