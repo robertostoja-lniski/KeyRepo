@@ -19,6 +19,13 @@
 #include <ostream>
 #include <fstream>
 #include <stdlib.h>
+
+enum class CallResult {
+    NOT_DEFINED,
+    SIGNATURE_THE_SAME,
+    SIGNATURE_NOT_THE_SAME,
+};
+
 class Executor {
 private:
     // methods for crypto handler
@@ -26,6 +33,7 @@ private:
     std::shared_ptr<Parser> parser;
     std::unique_ptr<RsaKeyFileIOInterface> interface;
     std::unique_ptr<OpenSSLHandler> openSSLHandler;
+    CallResult result {CallResult::NOT_DEFINED};
 
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
@@ -35,6 +43,10 @@ public:
         OpenSSL_add_all_algorithms();
         OpenSSL_add_all_ciphers();
         OpenSSL_add_all_digests();
+    }
+
+    CallResult getResult() {
+        return result;
     }
 //    ~Executor() { free(currentlyEncryptedMsg); }
     void execute();

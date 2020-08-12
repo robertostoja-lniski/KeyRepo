@@ -55,6 +55,12 @@ void Executor::execute() {
         std::cout << messageToCheckHash << " it was encrypted msg\n";
         auto ret = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
         std::cout << "1 if signature correct: " << ret << '\n';
+
+        if (ret == 1) {
+            result = CallResult::SIGNATURE_THE_SAME;
+        } else if (ret == 0) {
+            result = CallResult::SIGNATURE_NOT_THE_SAME;
+        }
         RSA_free(rsaPub);
     }
 }
