@@ -2,8 +2,7 @@
 #define BOOST_TEST_MAIN  // in only one cpp file
 #include <boost/test/unit_test.hpp>
 #include "../include/TerminalEmulation.h"
-#include "../include/Statement.h"
-#include "../include/Parser.h"
+#include "../include/Executor.h"
 #include <memory>
 #include <iostream>
 namespace testHelpers {
@@ -143,4 +142,201 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_5)
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
 
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "sign",
+                "/home/robert/Desktop/file.txt",
+                "/home/robert/Desktop/private.pem",
+                "/home/robert/Desktop/signature.txt",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "check-signature",
+                "/home/robert/Desktop/file.txt",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/signature.txt",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+
+        int executorResult = int(executor->getResult());
+        BOOST_CHECK_EQUAL(executorResult, int(CallResult::SIGNATURE_THE_SAME));
+    }
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "sign",
+                "/home/robert/Desktop/file.txt",
+                "/home/robert/Desktop/private.pem",
+                "/home/robert/Desktop/signature.txt",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "check-signature",
+                "/home/robert/Desktop/file.txt",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/signature.txt",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+
+        int executorResult = int(executor->getResult());
+        BOOST_CHECK_EQUAL(executorResult, int(CallResult::SIGNATURE_THE_SAME));
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+// a long test - fills whole partition with keys
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    for (int i = 0; i < 128; i++) {
+        {
+            std::vector<std::string> input {
+                    "program",
+                    "create-key",
+                    "RSA",
+                    "2048",
+                    "/home/robert/Desktop/public.pem",
+                    "/home/robert/Desktop/private.pem",
+            };
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+            executor->execute();
+        }
+        {
+            std::vector<std::string> input {
+                    "program",
+                    "sign",
+                    "/home/robert/Desktop/file.txt",
+                    "/home/robert/Desktop/private.pem",
+                    "/home/robert/Desktop/signature.txt",
+            };
+
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+            executor->execute();
+        }
+        {
+            std::vector<std::string> input {
+                    "program",
+                    "check-signature",
+                    "/home/robert/Desktop/file.txt",
+                    "/home/robert/Desktop/public.pem",
+                    "/home/robert/Desktop/signature.txt",
+            };
+
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+            executor->execute();
+
+            int executorResult = int(executor->getResult());
+            BOOST_CHECK_EQUAL(executorResult, int(CallResult::SIGNATURE_THE_SAME));
+        }
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
