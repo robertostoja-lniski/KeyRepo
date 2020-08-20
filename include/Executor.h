@@ -27,6 +27,9 @@ enum class CallResult {
     WRITE_PRV_KEY_FAIL,
     WRITE_PUB_KEY_FAIL,
     WRITE_KEYS_SUCCESS,
+    NO_PRV_KEY_TO_REMOVE,
+    NO_PUB_KEY_TO_REMOVE,
+    KEY_REMOVE_SUCCESS,
 };
 
 class Executor {

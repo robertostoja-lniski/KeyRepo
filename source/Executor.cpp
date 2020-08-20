@@ -61,6 +61,7 @@ void Executor::execute() {
         RSA_free(rsaPrv);
 
     } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
+
         auto filePathToFileToBeChecked = checkSignatureStatement->filePathToFileToBeChecked;
         auto filePathToPublicKey = checkSignatureStatement->filePathToPublicKey;
         auto signatureInput = checkSignatureStatement->signatureInput;
@@ -85,6 +86,23 @@ void Executor::execute() {
             result = CallResult::SIGNATURE_NOT_THE_SAME;
         }
         RSA_free(rsaPub);
+
+    } else if (auto deleteKeyStatement = std::dynamic_pointer_cast<DeleteKeyStatement>(statement)) {
+
+        auto filePathToPrivateKeyId = deleteKeyStatement->privateKeyIdPath;
+        auto filePathToPublicKey = deleteKeyStatement->fileToPublicKey;
+
+        if(interface->removePrivateKey(filePathToPrivateKeyId) == -1) {
+            result = CallResult::NO_PRV_KEY_TO_REMOVE;
+            return;
+        }
+
+        if(interface->removePublicKey(filePathToPublicKey) == -1){
+            result = CallResult::NO_PUB_KEY_TO_REMOVE;
+            return;
+        }
+
+        result = CallResult::KEY_REMOVE_SUCCESS;
     }
 }
 

@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
-    for (int i = 0; i < 128; i++) {
+    for (int i = 0; i < -1; i++) {
         {
             std::vector<std::string> input {
                     "program",
@@ -366,5 +366,331 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
             BOOST_CHECK_EQUAL(1, keysInPartition);
         }
 
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+// a long test - fills whole partition with keys and checks PartitionInfo
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    for (int i = 0; i < 9; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+        BOOST_CHECK_EQUAL(10, keysInPartition);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+// a long test - fills whole partition with keys and checks PartitionInfo
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    for (int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/home/robert/Desktop/private.pem",
+                "/home/robert/Desktop/public.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+
+        BOOST_CHECK_EQUAL(0, keysInPartition);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    for (int i = 0; i < 128; i++)
+    {
+        auto str = std::to_string(i);
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public" + str + ".pem",
+                "/tmp/private" + str + ".pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+    }
+
+    int keysInPartitionAfterAdd = 128;
+    for(int i = 0; i < 128; i++)
+    {
+        keysInPartitionAfterAdd--;
+
+        auto str = std::to_string(i);
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+        BOOST_CHECK_EQUAL(keysInPartitionAfterAdd, keysInPartition);
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    for (int i = 0; i < 128; i++)
+    {
+        auto str = std::to_string(i);
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public" + str + ".pem",
+                "/tmp/private" + str + ".pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+//        std::cout << "There are: " << keysInPartition << " keys in partition " << std::endl;
+    }
+
+    for(int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/tmp/private0.pem",
+                "/tmp/public0.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+
+        BOOST_CHECK_EQUAL(127, keysInPartition);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    for(int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/home/robert/Desktop/private.pem",
+                "/home/robert/Desktop/public.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        int remove_return = int(executor->getResult());
+
+        BOOST_CHECK_EQUAL(remove_return, int(CallResult::NO_PRV_KEY_TO_REMOVE));
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
+
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    for (int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public.pem",
+                "/tmp/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+    }
+
+    system("rm /tmp/public.pem");
+
+    for(int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        int remove_return = int(executor->getResult());
+
+        BOOST_CHECK_EQUAL(remove_return, int(CallResult::NO_PUB_KEY_TO_REMOVE));
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_16) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    for (int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/home/robert/Desktop/public.pem",
+                "/home/robert/Desktop/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+    }
+
+    for(int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/home/robert/Desktop/private.pem",
+                "/home/robert/Desktop/public.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        int remove_return = int(executor->getResult());
+
+        BOOST_CHECK_EQUAL(remove_return, int(CallResult::KEY_REMOVE_SUCCESS));
+    }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }

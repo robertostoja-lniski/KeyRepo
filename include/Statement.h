@@ -40,15 +40,15 @@ struct GetPrivateKeyStatement : Statement {
     }
 };
 struct DeleteKeyStatement : Statement {
-    int privateKeyId;
+    std::string privateKeyIdPath;
     std::string fileToPublicKey;
 
-    DeleteKeyStatement(int privateKeyId, std::string fileToPublicKey) :
-            privateKeyId(privateKeyId), fileToPublicKey(fileToPublicKey) {}
+    DeleteKeyStatement(std::string privateKeyIdPath, std::string fileToPublicKey) :
+            privateKeyIdPath(privateKeyIdPath), fileToPublicKey(fileToPublicKey) {}
 
     friend std::ostream& operator<<(std::ostream& os, const DeleteKeyStatement& dt);
     std::string toString() override {
-        return "delete-key "+ std::to_string(privateKeyId) + " "
+        return "delete-key "+ privateKeyIdPath + " "
                + fileToPublicKey;
     }
 };
