@@ -17,7 +17,7 @@ std::ostream &operator<<(std::ostream &os, const GetPrivateKeyStatement &dt) {
     return os;
 }
 std::ostream &operator<<(std::ostream &os, const DeleteKeyStatement &dt) {
-    os << "Deleting a pair of keys: " << dt.privateKeyId << " private key and "
+    os << "Deleting a pair of keys: " << dt.privateKeyIdPath << " private key and "
         << dt.fileToPublicKey << " public key\n";
 }
 std::ostream &operator<<(std::ostream &os, const SignStatement &dt) {

@@ -359,15 +359,18 @@ private:
             if(currentId == id) {
                 offset = currentElementInMap->offset;
                 currentElementInMap->offset = 0;
-                break;
+                KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
+                memset(keyPlaceToRemove, 0x00, sizeof(keyPlaceToRemove->keySize) + sizeof(keyPlaceToRemove->data));
+                PartitionInfo* partitionInfoToChange = (PartitionInfo* )mappedPartition;
+                partitionInfoToChange->numberOfKeys -= 1;
+                memcpy(&data, partitionInfoToChange, sizeof(PartitionInfo));
+                // TODO change partition info key num
+                return 0;
             }
             currentElementInMap = currentElementInMap + 1;
         }
 //        std::cout << "offset is " << offset << std::endl;
-        KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
-        memset(keyPlaceToRemove, 0x00, sizeof(keyPlaceToRemove->keySize) + sizeof(keyPlaceToRemove->data));
-        // TODO change partition info key num
-        return 0;
+        return -1;
     }
 
     uint64_t readIdFromFile(std::string filepath) {
@@ -404,6 +407,28 @@ private:
         close(fd);
 
         return key;
+    }
+
+    int removePrvKeyById(uint64_t id) {
+        size_t fileSize = getFileSize(partition.c_str());
+        //Open file
+        int fd = open(partition.c_str(), O_RDWR, 0);
+        if(fd < 0) {
+            return 1;
+        }
+        void* mappedPartition = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+        if(mappedPartition == MAP_FAILED) {
+            close(fd);
+            return 1;
+        }
+
+        int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
+
+        int ret = munmap(mappedPartition, fileSize);
+        assert(ret == 0);
+        close(fd);
+
+        return removeRet;
     }
 
     void print(std::string str) {
@@ -486,5 +511,9 @@ public:
         return getPathToTmpPrvKeyStorage(prvKey);
     }
 
+    int remove(std::string filepath) {
+        uint64_t id = readIdFromFile(filepath);
+        return id == 0 ? 0 : removePrvKeyById(id);
+    }
 };
 #endif //KEYREPO_KERNELEMULATION_H

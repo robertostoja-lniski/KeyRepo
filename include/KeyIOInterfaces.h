@@ -36,6 +36,9 @@ public:
     std::string readMessageFromFile(std::string filepath);
     void writeToFile(std::string filepath, std::string data);
 
+    int removePrivateKey(std::string privateKeyPath);
+    int removePublicKey(std::string publicKeyPath);
+
     int getCurrentKeyNum() {
         return kernelEmulation->getCurrentKeyNum();
     }

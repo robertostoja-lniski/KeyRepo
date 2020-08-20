@@ -94,3 +94,21 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data) 
     myfile << data;
     myfile.close();
 }
+
+int RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
+    auto result = kernelEmulation->remove(privateKeyPath);
+    return result;
+}
+
+int RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
+    auto move_call = "cp " + publicKeyPath + " " + publicKeyPath + ".bak";
+    if(system(move_call.c_str()) == 256) {
+        return -1;
+    }
+    auto rm_call = "rm " + publicKeyPath;
+    if(system(rm_call.c_str()) == -1) {
+        return -1;
+    }
+
+    return 0;
+}

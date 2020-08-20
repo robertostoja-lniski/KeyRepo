@@ -53,17 +53,8 @@ void Parser::generatePrivateKeyOption() {
 void Parser::generateDeleteKeyOption() {
     auto privateKeyId = syntaxAnalyser->getNextToken().value;
     auto pubKeyPath = syntaxAnalyser->getNextToken().value;
-    int numericPrivateKeyId;
 
-    try {
-        numericPrivateKeyId = std::stoi(privateKeyId);
-        if(numericPrivateKeyId < 0) {
-            throw std::runtime_error("Negative size or id");
-        }
-    } catch(std::exception &e) {
-        std::cout << "Key size and id have to be positive integers\n";
-    }
-    DeleteKeyStatement deleteKeyStatement(numericPrivateKeyId, pubKeyPath);
+    DeleteKeyStatement deleteKeyStatement(privateKeyId, pubKeyPath);
     currentParsedStatement = std::make_shared<DeleteKeyStatement>(deleteKeyStatement);
 }
 void Parser::generateSignOption() {
