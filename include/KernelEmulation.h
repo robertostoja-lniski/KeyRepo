@@ -23,8 +23,13 @@
 
 #define DEFAULT_MAP_SIZE 128
 #define DEFAULT_NUMBER_OF_KEYS 0
+enum {
+    VERBOSE_NO = 0,
+    VERBOSE_LOW = 1,
+    VERBOSE_HIGH = 2,
+};
 
-
+#define VERBOSE_LEVEL VERBOSE_NO
 
 class KernelEmulation {
 
@@ -114,7 +119,10 @@ private:
 
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_SHARED | MAP_POPULATE, fd, 0);
         memset(mappedPartition, 0x00, fileSize);
-        std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
+        }
+
         void* partitionStart = mappedPartition;
         if(mappedPartition == MAP_FAILED) {
             close(fd);
@@ -174,7 +182,10 @@ private:
 
     uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
         size_t fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + 16 * sizeof(keyNodeToAdd.keySize) + 16;
-        std::cout << "when adding new node file size is: " << fileSize << std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "when adding new node file size is: " << fileSize << std::endl;
+        }
+
         //Open file
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
@@ -191,17 +202,28 @@ private:
         if(fileSize != getFileSize(partition.c_str())) {
             return 1;
         }
-        std::cout << std::endl << "file size is " << fileSize << std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << std::endl << "file size is " << fileSize << std::endl;
+        }
+
         void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
         void* partitionStart = mappedPartition;
-        std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
+
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
+        }
+
         if(mappedPartition == MAP_FAILED) {
             close(fd);
             return 1;
         }
         printPartition(partitionStart);
         uint64_t id = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd);
-        std::cout << std::endl;
+
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << std::endl;
+        }
+
         printPartition(partitionStart);
 
         int ret = munmap(mappedPartition, fileSize);
@@ -212,6 +234,9 @@ private:
     }
 
     void printPartition(const void* mappedPartition) {
+        if(VERBOSE_LEVEL == VERBOSE_NO) {
+            return;
+        }
         PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
         uint64_t keys = partitionInfo->numberOfKeys;
         uint64_t offsetToAdd = partitionInfo->fileContentSize;
@@ -238,9 +263,12 @@ private:
 
         PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
         uint64_t offsetToAdd = partitionInfo->fileContentSize;
-        std::cout << "offset to add is: " << offsetToAdd << std::endl;
-        std::cout << "The difference should be: " << (uint8_t *)(partitionInfo + 1) - (uint8_t *)(partitionInfo) << std::endl;
-        std::cout << "I think it should be: " << sizeof(PartitionInfo) + sizeof(MapNode) * 128 << std::endl;
+
+        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+            std::cout << "offset to add is: " << offsetToAdd << std::endl;
+            std::cout << "The difference should be: " << (uint8_t *)(partitionInfo + 1) - (uint8_t *)(partitionInfo) << std::endl;
+            std::cout << "I think it should be: " << sizeof(PartitionInfo) + sizeof(MapNode) * 128 << std::endl;
+        }
 
         uint64_t mapSize = partitionInfo->mapSize;
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
@@ -267,14 +295,21 @@ private:
         memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
         free(elementDataToUpdate);
 
-        std::cout << "map start " << partitionInfo + 1 << std::endl;
+
         KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offsetToAdd);
-        std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
-        std::cout << "Key to add size: " << keyNodeToAdd.keySize << std::endl;
-        std::cout << "Key to add content len: " << keyNodeToAdd.keyContent.size() << std::endl;
-        std::cout << "Key place to add data before cpy: " << keyPlaceToAdd->data <<std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+            std::cout << "map start " << partitionInfo + 1 << std::endl;
+            std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
+            std::cout << "Key to add size: " << keyNodeToAdd.keySize << std::endl;
+            std::cout << "Key to add content len: " << keyNodeToAdd.keyContent.size() << std::endl;
+            std::cout << "Key place to add data before cpy: " << keyPlaceToAdd->data <<std::endl;
+        }
+
         memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
-        std::cout << "Key place to add data after cpy: " << keyPlaceToAdd->data <<std::endl;
+
+        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+            std::cout << "Key place to add data after cpy: " << keyPlaceToAdd->data <<std::endl;
+        }
 
         PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
         partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
@@ -284,8 +319,11 @@ private:
         memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
         free(partitionInfoToUpdate);
-        std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
-        std::cout << "id of added key is: " << id << std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
+            std::cout << "id of added key is: " << id << std::endl;
+        }
+
         return id;
     }
 
@@ -386,7 +424,10 @@ private:
         std::ofstream os;
         os.open(filepath);
         os << header << "\n";
-        std::cout << header << "\n";
+        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+            std::cout << header << "\n";
+        }
+
         for(int i = header.size(); i < key.size() - header.size() - bottom.size();) {
             std::string nextLine;
             for(int j = 0; j < charsInRow; j++) {
@@ -394,10 +435,15 @@ private:
                 i++;
             }
             os << nextLine << "\n";
-            std::cout << nextLine << "\n";
+
+            if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+                std::cout << nextLine << "\n";
+            }
         }
         os << bottom << "\n";
-        std::cout << bottom << "\n";
+        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+            std::cout << bottom << "\n";
+        }
         os.close();
         return filepath;
     }
@@ -420,15 +466,22 @@ public:
     AddKeyInfo write(RSA* r) {
         writeKeyToTemporaryFile(r);
         KeyNode keyNode = generateKeyNodeFromKeyInFile();
-        std::cout << "Kernel will add a key to partition with value" << std::endl;
+
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "Kernel will add a key to partition with value" << std::endl;
+        }
 //        print(keyNode.keyContent);
         return {addKeyNodeToPartition(keyNode), data.numberOfKeys};
     }
     std::string read(std::string filepath) {
         uint64_t id = readIdFromFile(filepath);
-        std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
+        }
         std::string prvKey = getPrvKeyById(id);
-        std::cout << "Kernel Emulation found a key with value" << std::endl;
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "Kernel Emulation found a key with value" << std::endl;
+        }
 //        print(prvKey);
         return getPathToTmpPrvKeyStorage(prvKey);
     }

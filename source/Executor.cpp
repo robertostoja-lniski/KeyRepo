@@ -9,6 +9,9 @@
 #include <fstream>
 #include <openssl/evp.h>
 #include "../include/Executor.h"
+
+#define VERBOSE 0
+
 void Executor::execute() {
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
@@ -50,7 +53,10 @@ void Executor::execute() {
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
 
-        std::cout << "encrypted msg is " << encryptedMessage << std::endl;
+        if(VERBOSE) {
+            std::cout << "encrypted msg is " << encryptedMessage << std::endl;
+        }
+
         interface->writeToFile(signatureOutput, encryptedMessage);
         RSA_free(rsaPrv);
 
@@ -60,11 +66,16 @@ void Executor::execute() {
         auto signatureInput = checkSignatureStatement->signatureInput;
 
         std::string messageToCheck = interface->readMessageFromFile(filePathToFileToBeChecked);
-        std::cout << messageToCheck << '\n';
+        if(VERBOSE) {
+            std::cout << messageToCheck << '\n';
+        }
 
         auto messageToCheckHash = interface->readMessageFromFile(signatureInput);
         RSA* rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
-        std::cout << messageToCheckHash << " it was encrypted msg\n";
+        if(VERBOSE) {
+            std::cout << messageToCheckHash << " it was encrypted msg\n";
+        }
+
         auto ret = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
         std::cout << "1 if signature correct: " << ret << '\n';
 
