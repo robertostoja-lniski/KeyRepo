@@ -10,7 +10,6 @@
 #include <openssl/evp.h>
 #include "../include/Executor.h"
 void Executor::execute() {
-
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
     std::cout << "\n" << statementStr;
@@ -26,8 +25,21 @@ void Executor::execute() {
         std::string pubKeyPath = createKeyStatement->pubKeyPath;
         std::string prvKeyIdPath = createKeyStatement->privateKeyIdFile;
         auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
-        interface->writePublicKeyToFile(pubKeyPath, "wb", r.get());
-        interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get());
+
+        auto ret = interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get());
+        if(ret == -1) {
+            result = CallResult::WRITE_PRV_KEY_FAIL;
+            return;
+        }
+
+        ret = interface->writePublicKeyToFile(pubKeyPath, "wb", r.get());
+        if(ret == 1) {
+            result = CallResult::WRITE_PUB_KEY_FAIL;
+            return;
+        }
+
+        result = CallResult::WRITE_KEYS_SUCCESS;
+
 
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
         auto fileToBeSigned = signStatement->filePathToFileToBeSigned;
@@ -58,7 +70,7 @@ void Executor::execute() {
 
         if (ret == 1) {
             result = CallResult::SIGNATURE_THE_SAME;
-        } else if (ret == 0) {
+        } else {
             result = CallResult::SIGNATURE_NOT_THE_SAME;
         }
         RSA_free(rsaPub);

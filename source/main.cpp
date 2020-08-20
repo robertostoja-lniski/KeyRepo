@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
+        exit(0);
     }
     {
         std::vector<std::string> input {

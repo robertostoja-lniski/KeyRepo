@@ -24,6 +24,9 @@ enum class CallResult {
     NOT_DEFINED,
     SIGNATURE_THE_SAME,
     SIGNATURE_NOT_THE_SAME,
+    WRITE_PRV_KEY_FAIL,
+    WRITE_PUB_KEY_FAIL,
+    WRITE_KEYS_SUCCESS,
 };
 
 class Executor {
@@ -31,13 +34,14 @@ private:
     // methods for crypto handler
 
     std::shared_ptr<Parser> parser;
-    std::unique_ptr<RsaKeyFileIOInterface> interface;
+    std::shared_ptr<RsaKeyFileIOInterface> interface;
     std::unique_ptr<OpenSSLHandler> openSSLHandler;
     CallResult result {CallResult::NOT_DEFINED};
 
+
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
-        interface = std::make_unique<RsaKeyFileIOInterface>();
+        interface = std::make_shared<RsaKeyFileIOInterface>();
         openSSLHandler = std::make_unique<OpenSSLHandler>();
         ERR_load_CRYPTO_strings();
         OpenSSL_add_all_algorithms();
@@ -47,6 +51,10 @@ public:
 
     CallResult getResult() {
         return result;
+    }
+
+    std::shared_ptr<RsaKeyFileIOInterface> getCurrentInterface() {
+        return interface;
     }
 //    ~Executor() { free(currentlyEncryptedMsg); }
     void execute();

@@ -340,3 +340,31 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
+
+// a long test - fills whole partition with keys and checks PartitionInfo
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+        {
+            std::vector<std::string> input {
+                    "program",
+                    "create-key",
+                    "RSA",
+                    "2048",
+                    "/home/robert/Desktop/public.pem",
+                    "/home/robert/Desktop/private.pem",
+            };
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+            executor->execute();
+            auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+            BOOST_CHECK_EQUAL(1, keysInPartition);
+        }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
