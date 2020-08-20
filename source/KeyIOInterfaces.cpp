@@ -65,20 +65,28 @@ RSA *RsaKeyFileIOInterface::readPrivateKeyFromFpAndClose(FILE **fp) {
     }
     return rsa;
 }
-void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r) {
+int RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r) {
     auto fp = getFileStructFromPath(filepath, mode);
     auto success = PEM_write_RSA_PUBKEY(fp, r);
-    if(!success) {
-        throw std::runtime_error("Cannot save public key");
-    }
     fclose(fp);
+
+    if(!success) {
+        return 1;
+    }
+    return 0;
 }
-void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
-    auto id = kernelEmulation->write(r);
+int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
+    auto result = kernelEmulation->write(r);
+    if(result.id == 1) {
+        return -1;
+    }
+
     std::ofstream os;
     os.open(filepath);
-    os << id;
+    os << result.id;
     os.close();
+
+    return result.numberOfKeys;
 }
 void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data) {
     std::ofstream myfile;

@@ -31,10 +31,14 @@ public:
     }
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
-    void writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
-    void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*);
+    int writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
+    int writePrivateKeyToFile(std::string filepath, std::string modes, RSA*);
     std::string readMessageFromFile(std::string filepath);
     void writeToFile(std::string filepath, std::string data);
+
+    int getCurrentKeyNum() {
+        return kernelEmulation->getCurrentKeyNum();
+    }
 };
 
 #endif

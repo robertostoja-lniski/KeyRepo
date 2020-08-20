@@ -89,6 +89,7 @@ private:
         partitionInfo->numberOfKeys = DEFAULT_NUMBER_OF_KEYS;
         partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode);
 
+        memcpy(&data, partitionInfo, sizeof(PartitionInfo));
         size_t fileSize = sizeof(PartitionInfo) + sizeof(KeyNode) * partitionInfo->mapSize;
         //Open file
         std::ofstream os(partition.c_str());
@@ -242,7 +243,6 @@ private:
         std::cout << "I think it should be: " << sizeof(PartitionInfo) + sizeof(MapNode) * 128 << std::endl;
 
         uint64_t mapSize = partitionInfo->mapSize;
-
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
         uint64_t id;
         for(int i = 0; i < mapSize; i++) {
@@ -281,6 +281,7 @@ private:
         partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
         partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd.keySize;
         memcpy(partitionInfo, partitionInfoToUpdate, sizeof(PartitionInfo));
+        memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
         free(partitionInfoToUpdate);
         std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
@@ -306,6 +307,29 @@ private:
 //        std::cout << "offset is " << offset << std::endl;
         KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
         return keyPlaceToAdd->data;
+    }
+
+    int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
+
+        PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+        uint64_t mapSize = partitionInfo->mapSize;
+
+        MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+        uint64_t offset;
+        for(int i = 0; i < mapSize; i++) {
+            uint64_t currentId = currentElementInMap->id;
+            if(currentId == id) {
+                offset = currentElementInMap->offset;
+                currentElementInMap->offset = 0;
+                break;
+            }
+            currentElementInMap = currentElementInMap + 1;
+        }
+//        std::cout << "offset is " << offset << std::endl;
+        KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
+        memset(keyPlaceToRemove, 0x00, sizeof(keyPlaceToRemove->keySize) + sizeof(keyPlaceToRemove->data));
+        // TODO change partition info key num
+        return 0;
     }
 
     uint64_t readIdFromFile(std::string filepath) {
@@ -378,17 +402,27 @@ private:
         return filepath;
     }
 
+    struct AddKeyInfo {
+        uint64_t id;
+        uint64_t numberOfKeys;
+    };
+
+    PartitionInfo data;
+
 public:
     KernelEmulation() {
         initFileIfNotDefined();
     }
 
-    uint64_t write(RSA* r) {
+    int getCurrentKeyNum() {
+        return data.numberOfKeys;
+    }
+    AddKeyInfo write(RSA* r) {
         writeKeyToTemporaryFile(r);
         KeyNode keyNode = generateKeyNodeFromKeyInFile();
         std::cout << "Kernel will add a key to partition with value" << std::endl;
 //        print(keyNode.keyContent);
-        return addKeyNodeToPartition(keyNode);
+        return {addKeyNodeToPartition(keyNode), data.numberOfKeys};
     }
     std::string read(std::string filepath) {
         uint64_t id = readIdFromFile(filepath);
