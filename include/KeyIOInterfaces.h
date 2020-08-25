@@ -24,11 +24,8 @@ private:
     RSA* readPrivateKeyFromFpAndClose(FILE**);
     RSA* readPublicKeyFromFpAndClose(FILE**);
     void printFile(std::string filepath);
-    std::unique_ptr<KernelEmulation> kernelEmulation;
 public:
-    RsaKeyFileIOInterface() {
-            kernelEmulation = std::make_unique<KernelEmulation>();
-    }
+    RsaKeyFileIOInterface() = default;
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
     int writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
@@ -40,7 +37,7 @@ public:
     int removePublicKey(std::string publicKeyPath);
 
     int getCurrentKeyNum() {
-        return kernelEmulation->getCurrentKeyNum();
+        return getCurrentKeyNumFromEmulation();
     }
 };
 
