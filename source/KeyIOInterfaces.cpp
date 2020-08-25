@@ -11,7 +11,7 @@ RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
 }
 RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
-    auto prvKeyPath = kernelEmulation->read(filepath);
+    auto prvKeyPath = read(filepath);
     auto fp = getFileStructFromPath(prvKeyPath, "r");
     return readPrivateKeyFromFpAndClose(&fp);
 }
@@ -76,7 +76,7 @@ int RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::strin
     return 0;
 }
 int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
-    auto result = kernelEmulation->write(r);
+    auto result = write(r);
     if(result.id == 1) {
         return -1;
     }
@@ -96,7 +96,7 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data) 
 }
 
 int RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
-    auto result = kernelEmulation->remove(privateKeyPath);
+    auto result = remove(privateKeyPath);
     return result;
 }
 

@@ -4,14 +4,14 @@
 
 #include "../include/KernelEmulation.h"
 
-uint64_t KernelEmulation::generateRandomId(){
+uint64_t generateRandomId(){
     std::random_device dev;
     std::mt19937 gen(dev());
     std::uniform_int_distribution<uint64_t> uDist(0, UINT64_MAX);
     return uDist(gen);
 }
 
-int KernelEmulation::initFileIfNotDefined() {
+int initFileIfNotDefined() {
     if(std::experimental::filesystem::exists(partition)) {
         return 1;
     }
@@ -77,7 +77,7 @@ int KernelEmulation::initFileIfNotDefined() {
     close(fd);
 }
 
-int KernelEmulation::writeKeyToTemporaryFile(RSA* r) {
+int writeKeyToTemporaryFile(RSA* r) {
     FILE *fp = fopen(tmpKeyStorage.c_str(), "wb");
     if(fp == nullptr) {
         return 1;
@@ -89,7 +89,7 @@ int KernelEmulation::writeKeyToTemporaryFile(RSA* r) {
     fclose(fp);
 }
 
-KernelEmulation::KeyNode KernelEmulation::generateKeyNodeFromKeyInFile() {
+KeyNode generateKeyNodeFromKeyInFile() {
     KeyNode keyNode;
     std::string line;
     std::ifstream keyTmpFile(tmpKeyStorage);
@@ -104,13 +104,18 @@ KernelEmulation::KeyNode KernelEmulation::generateKeyNodeFromKeyInFile() {
     return keyNode;
 }
 
-size_t KernelEmulation::getFileSize(const char* filename) {
-    struct stat st;
+size_t getFileSize(const char* filename) {
+    struct stat st{};
     stat(filename, &st);
     return st.st_size;
 }
 
-uint64_t KernelEmulation::addKeyNodeToPartition(KeyNode keyNodeToAdd) {
+int getCurrentKeyNumFromEmulation() {
+    return data.numberOfKeys;
+}
+
+uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
+    initFileIfNotDefined();
     size_t fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + 16 * sizeof(keyNodeToAdd.keySize) + 16;
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "when adding new node file size is: " << fileSize << std::endl;
@@ -163,7 +168,7 @@ uint64_t KernelEmulation::addKeyNodeToPartition(KeyNode keyNodeToAdd) {
     return id;
 }
 
-void KernelEmulation::printPartition(const void* mappedPartition) {
+void printPartition(const void* mappedPartition) {
     if(VERBOSE_LEVEL == VERBOSE_NO) {
         return;
     }
@@ -189,8 +194,7 @@ void KernelEmulation::printPartition(const void* mappedPartition) {
 
 }
 
-uint64_t KernelEmulation::addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd) {
-
+uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd) {
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
@@ -250,14 +254,13 @@ uint64_t KernelEmulation::addKeyNodeByPartitionPointer(void* mappedPartition, Ke
 
     free(partitionInfoToUpdate);
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "partition after adding a key: " << *partitionInfo << std::endl;
         std::cout << "id of added key is: " << id << std::endl;
     }
 
     return id;
 }
 
-std::string KernelEmulation::getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
+std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
@@ -277,7 +280,7 @@ std::string KernelEmulation::getKeyValByPartitionPointer(void* mappedPartition, 
     return keyPlaceToAdd->data;
 }
 
-int KernelEmulation::removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
+int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
@@ -303,7 +306,7 @@ int KernelEmulation::removeKeyValByPartitionPointer(void* mappedPartition, uint6
     return -1;
 }
 
-uint64_t KernelEmulation::readIdFromFile(std::string filepath) {
+uint64_t readIdFromFile(std::string filepath) {
     std::string line;
     std::ifstream myfile (filepath);
     if (myfile.is_open()) {
@@ -317,7 +320,7 @@ uint64_t KernelEmulation::readIdFromFile(std::string filepath) {
     return 0;
 }
 
-std::string KernelEmulation::getPrvKeyById(uint64_t id) {
+std::string getPrvKeyById(uint64_t id) {
     size_t fileSize = getFileSize(partition.c_str());
     //Open file
     int fd = open(partition.c_str(), O_RDWR, 0);
@@ -339,7 +342,7 @@ std::string KernelEmulation::getPrvKeyById(uint64_t id) {
     return key;
 }
 
-int KernelEmulation::removePrvKeyById(uint64_t id) {
+int removePrvKeyById(uint64_t id) {
     size_t fileSize = getFileSize(partition.c_str());
     //Open file
     int fd = open(partition.c_str(), O_RDWR, 0);
@@ -361,7 +364,7 @@ int KernelEmulation::removePrvKeyById(uint64_t id) {
     return removeRet;
 }
 
-void KernelEmulation::print(std::string str) {
+void print(std::string str) {
     int charsInALine = 30;
     for(int i = 0; i < str.size(); i++) {
         std::cout << str[i];
@@ -371,7 +374,7 @@ void KernelEmulation::print(std::string str) {
     }
 }
 
-std::string KernelEmulation::getPathToTmpPrvKeyStorage(std::string key) {
+std::string getPathToTmpPrvKeyStorage(std::string key) {
     std::string header = "-----BEGIN RSA PRIVATE KEY-----";
     std::string bottom = "-----END RSA PRIVATE KEY-----";
     int charsInRow = 64;
@@ -403,15 +406,7 @@ std::string KernelEmulation::getPathToTmpPrvKeyStorage(std::string key) {
     return filepath;
 }
 
-KernelEmulation::KernelEmulation() {
-    initFileIfNotDefined();
-}
-
-int KernelEmulation::getCurrentKeyNum() {
-    return data.numberOfKeys;
-}
-
-KernelEmulation::AddKeyInfo KernelEmulation::write(RSA* r) {
+AddKeyInfo write(RSA* r) {
     writeKeyToTemporaryFile(r);
     KeyNode keyNode = generateKeyNodeFromKeyInFile();
 
@@ -421,7 +416,7 @@ KernelEmulation::AddKeyInfo KernelEmulation::write(RSA* r) {
 //        print(keyNode.keyContent);
     return {addKeyNodeToPartition(keyNode), data.numberOfKeys};
 }
-std::string KernelEmulation::read(std::string filepath) {
+std::string read(std::string filepath) {
     uint64_t id = readIdFromFile(filepath);
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
@@ -434,9 +429,9 @@ std::string KernelEmulation::read(std::string filepath) {
     return getPathToTmpPrvKeyStorage(prvKey);
 }
 
-int KernelEmulation::remove(std::string filepath) {
+int remove(std::string filepath) {
     uint64_t id = readIdFromFile(filepath);
-    return id == 0 ? 0 : removePrvKeyById(id);
+    return id == 0 ? -1 : removePrvKeyById(id);
 }
 
 

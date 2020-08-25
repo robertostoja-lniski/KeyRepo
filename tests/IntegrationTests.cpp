@@ -577,8 +577,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
         std::vector<std::string> input {
                 "program",
                 "delete-key",
-                "/home/robert/Desktop/private.pem",
-                "/home/robert/Desktop/public.pem",
+                "/tmp/private_test_14.pem",
+                "/tmp/public.pem",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();

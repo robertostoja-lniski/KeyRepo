@@ -31,77 +31,61 @@ enum {
 
 #define VERBOSE_LEVEL VERBOSE_NO
 
-class KernelEmulation {
 
-private:
-    // TODO there can be two keys with the same ID
-    static uint64_t generateRandomId();
-    struct MapNode {
-        uint64_t id;
-        uint64_t offset {0};
-        friend std::ostream &operator<<(std::ostream &os, const MapNode &node) {
-            os << "\nid: " << node.id << " offset: " << node.offset;
-            return os;
-        }
-    };
-
-    struct PartitionInfo {
-        uint64_t numberOfKeys {0};
-        uint64_t fileContentSize;
-        uint64_t mapSize {128};
-
-        friend std::ostream &operator<<(std::ostream &os, const PartitionInfo &info) {
-            os << "\nnumber of keys: " << info.numberOfKeys << '\n'
-               << "offset to add next key " << info.fileContentSize << '\n'
-               << "max number of nodes " << info.mapSize << '\n';
-            return os;
-        }
-    };
-
-    struct KeyNode {
-        uint32_t keySize {0};
-        std::string keyContent;
-
-        friend std::ostream &operator<<(std::ostream &os, const KeyNode &node) {
-            os << node.keySize << node.keyContent;
-            return os;
-        }
-    };
-
-    struct KeyPartitionNode {
-        uint32_t keySize {0};
-        char data[4096] = "UNDEFINED";
-    };
-
-    const std::string partition = "/home/robert/.keyPartition";
-    const std::string tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
-    int initFileIfNotDefined();
-    int writeKeyToTemporaryFile(RSA* r);
-    KeyNode  generateKeyNodeFromKeyInFile();
-    size_t getFileSize(const char* filename);
-    uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd);
-    void printPartition(const void* mappedPartition);
-    uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd);
-    std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
-    int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
-    uint64_t readIdFromFile(std::string filepath);
-    std::string getPrvKeyById(uint64_t id);
-    int removePrvKeyById(uint64_t id);
-    void print(std::string str);
-    std::string getPathToTmpPrvKeyStorage(std::string key);
-
-    struct AddKeyInfo {
-        uint64_t id;
-        uint64_t numberOfKeys;
-    };
-
-    PartitionInfo data;
-
-public:
-    KernelEmulation();
-    int getCurrentKeyNum();
-    AddKeyInfo write(RSA* r);
-    std::string read(std::string filepath);
-    int remove(std::string filepath);
+struct AddKeyInfo {
+    uint64_t id;
+    uint64_t numberOfKeys;
 };
+
+struct MapNode {
+    uint64_t id;
+    uint64_t offset {0};
+};
+
+struct PartitionInfo {
+    uint64_t numberOfKeys {0};
+    uint64_t fileContentSize;
+    uint64_t mapSize {128};
+};
+
+struct KeyNode {
+    uint32_t keySize {0};
+    std::string keyContent;
+};
+
+struct KeyPartitionNode {
+    uint32_t keySize {0};
+    char data[4096] = "UNDEFINED";
+};
+
+static PartitionInfo data;
+const std::string partition = "/home/robert/.keyPartition";
+const std::string tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
+
+// TODO there can be two keys with the same ID
+static uint64_t generateRandomId();
+
+int initFileIfNotDefined();
+int writeKeyToTemporaryFile(RSA* r);
+KeyNode  generateKeyNodeFromKeyInFile();
+size_t getFileSize(const char* filename);
+uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd);
+void printPartition(const void* mappedPartition);
+uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd);
+std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
+int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
+uint64_t readIdFromFile(std::string filepath);
+std::string getPrvKeyById(uint64_t id);
+int removePrvKeyById(uint64_t id);
+void print(std::string str);
+std::string getPathToTmpPrvKeyStorage(std::string key);
+
+int getCurrentKeyNumFromEmulation();
+
+// PUBLIC
+int getCurrentKeyNum();
+AddKeyInfo write(RSA* r);
+std::string read(std::string filepath);
+int remove(std::string filepath);
+
 #endif //KEYREPO_KERNELEMULATION_H
