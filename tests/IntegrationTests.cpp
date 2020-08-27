@@ -4,6 +4,9 @@
 #include "../include/TerminalEmulation.h"
 #include "../include/Executor.h"
 #include <memory>
+
+#define LONG_RUN 0
+
 #include <iostream>
 namespace testHelpers {
     std::string toString(std::vector<std::string> input) {
@@ -465,6 +468,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
+#if(LONG_RUN)
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
 
@@ -569,6 +573,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -693,4 +698,203 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_16) {
         BOOST_CHECK_EQUAL(remove_return, int(CallResult::KEY_REMOVE_SUCCESS));
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_1)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "unknown_command",
+            "RSA",
+            "2048",
+            "/home/robert/Desktop/public.pem",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+    BOOST_CHECK_EQUAL(errorFound, true);
+}
+
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_2)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "NO-ALGORITHM",
+            "2048",
+            "/home/robert/Desktop/public.pem",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+
+    BOOST_CHECK_EQUAL(errorFound, true);
+}
+
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_3)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "RSA",
+            "-2048",
+            "/home/robert/Desktop/public.pem",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+
+    BOOST_CHECK_EQUAL(errorFound, true);
+}
+
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_4)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "RSA",
+            "0",
+            "/home/robert/Desktop/public.pem",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+
+    BOOST_CHECK_EQUAL(errorFound, true);
+}
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_5)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "RSA",
+            "10000000",
+            "/home/robert/Desktop/public.pem",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+
+    BOOST_CHECK_EQUAL(errorFound, true);
+}
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_6)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "RSA",
+            "100000000000000000000",
+            "/home/robert/Desktop/public.pem",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+
+    BOOST_CHECK_EQUAL(errorFound, true);
+}
+BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
+{
+    bool errorFound = false;
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "RSA",
+            "204w8",
+            "qwertyuio",
+            "/home/robert/Desktop/private.pem",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        errorFound = true;
+    }
+
+    BOOST_CHECK_EQUAL(errorFound, true);
 }
