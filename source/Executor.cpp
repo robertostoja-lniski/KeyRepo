@@ -11,6 +11,8 @@
 #include "../include/Executor.h"
 
 #define VERBOSE 0
+#define MAX_KEY_LEN 16 * 4096
+#define MIN_KEY_LEN 1
 
 void Executor::execute() {
     parser->parse();
@@ -24,7 +26,17 @@ void Executor::execute() {
         if(algorithm != "RSA") {
             throw std::runtime_error("Algorithm not supported");
         }
+
         auto keyLen = createKeyStatement->keyLen;
+        if(keyLen <= 0) {
+            throw std::runtime_error("Key cannot be negative");
+        }
+
+        if(keyLen > MAX_KEY_LEN) {
+            throw std::runtime_error("Keys with len greater that "
+                    + std::to_string(MAX_KEY_LEN) + " are not supperted");
+        }
+
         std::string pubKeyPath = createKeyStatement->pubKeyPath;
         std::string prvKeyIdPath = createKeyStatement->privateKeyIdFile;
         auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);

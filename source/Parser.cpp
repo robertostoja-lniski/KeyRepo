@@ -22,6 +22,10 @@ void Parser::generateCreateKeyOption() {
     auto privateKeyIdFile = syntaxAnalyser->getNextToken().value;
     int numericKeySize;
 
+    if(keySize.length() > 9) {
+        throw std::runtime_error("Far too long key len");
+    }
+
     try {
         numericKeySize = std::stoi(keySize);
         if(numericKeySize < 0) {
