@@ -30,6 +30,8 @@ enum class CallResult {
     NO_PRV_KEY_TO_REMOVE,
     NO_PUB_KEY_TO_REMOVE,
     KEY_REMOVE_SUCCESS,
+    TRIED_TO_READ_NOT_EXISTING_PRV_KEY,
+    SIGN_SUCCESS,
 };
 
 class Executor {
