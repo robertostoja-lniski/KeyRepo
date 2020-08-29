@@ -63,6 +63,12 @@ void Executor::execute() {
 
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
+
+        if(rsaPrv == nullptr) {
+            result = CallResult::TRIED_TO_READ_NOT_EXISTING_PRV_KEY;
+            return;
+        }
+
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
 
         if(VERBOSE) {
@@ -71,6 +77,7 @@ void Executor::execute() {
 
         interface->writeToFile(signatureOutput, encryptedMessage);
         RSA_free(rsaPrv);
+        result = CallResult::SIGN_SUCCESS;
 
     } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
 
@@ -84,19 +91,19 @@ void Executor::execute() {
         }
 
         auto messageToCheckHash = interface->readMessageFromFile(signatureInput);
-        RSA* rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
         if(VERBOSE) {
             std::cout << messageToCheckHash << " it was encrypted msg\n";
         }
 
-        auto ret = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
-        std::cout << "1 if signature correct: " << ret << '\n';
-
-        if (ret == 1) {
+        try {
+            RSA* rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
+            openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
             result = CallResult::SIGNATURE_THE_SAME;
-        } else {
+
+        } catch(std::exception &e) {
             result = CallResult::SIGNATURE_NOT_THE_SAME;
         }
+
         RSA_free(rsaPub);
 
     } else if (auto deleteKeyStatement = std::dynamic_pointer_cast<DeleteKeyStatement>(statement)) {

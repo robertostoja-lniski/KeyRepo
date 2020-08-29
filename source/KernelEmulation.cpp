@@ -267,13 +267,18 @@ std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
+    bool found = false;
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
             offset = currentElementInMap->offset;
+            found = true;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
+    }
+    if(!found) {
+        return "";
     }
 //        std::cout << "offset is " << offset << std::endl;
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
@@ -418,10 +423,19 @@ AddKeyInfo write(RSA* r) {
 }
 std::string read(std::string filepath) {
     uint64_t id = readIdFromFile(filepath);
+    if(id == 0) {
+        return "";
+    }
+
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
     }
+
     std::string prvKey = getPrvKeyById(id);
+    if(prvKey.empty()) {
+        return "";
+    }
+
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel Emulation found a key with value" << std::endl;
     }

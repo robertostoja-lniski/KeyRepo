@@ -12,6 +12,10 @@ RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
 RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
     auto prvKeyPath = read(filepath);
+    if(prvKeyPath.empty()) {
+        return nullptr;
+    }
+
     auto fp = getFileStructFromPath(prvKeyPath, "r");
     return readPrivateKeyFromFpAndClose(&fp);
 }
@@ -38,6 +42,9 @@ std::string RsaKeyFileIOInterface::readMessageFromFile(std::string filepath) {
             fileContent += line + "\n";
         }
         fileToRead.close();
+    }
+    if(fileContent.empty()) {
+        return {""};
     }
         // eliminates endl at the endl
     return fileContent.substr(0, fileContent.size() - 1);
