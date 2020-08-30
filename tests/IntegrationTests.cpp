@@ -131,6 +131,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_5)
             "program",
             "encrypt-file",
             "/home/file-to-encrypt",
+            "output",
             "413243",
     };
     TerminalEmulation terminalEmulation(input);
@@ -151,6 +152,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
             "program",
             "decrypt-file",
             "/home/file-to-decrypt",
+            "output",
             "413243",
     };
     TerminalEmulation terminalEmulation(input);
