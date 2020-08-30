@@ -1346,3 +1346,115 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_WRONG_ID)
     }
     BOOST_CHECK_EQUAL(error_caught, true);
 }
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
+{
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "SHA",
+            "2048",
+            "/home/r.ostoja",
+            "/home/r.ostoja",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_GET_PRV_TEST)
+{
+    std::vector<std::string> input {
+            "program",
+            "get-private-key",
+            "413243",
+            "/home/abc",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST)
+{
+    std::vector<std::string> input {
+            "program_sign",
+            "sign",
+            "/home/abc",
+            "312321",
+            "outpath",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_ENCRYPT_FILE_TEST)
+{
+    std::vector<std::string> input {
+            "program",
+            "encrypt-file",
+            "/home/file-to-encrypt",
+            "output",
+            "413243",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_DECRYPT_FILE_TEST)
+{
+    std::vector<std::string> input {
+            "program",
+            "decrypt-file",
+            "/home/file-to-decrypt",
+            "output",
+            "413243",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
