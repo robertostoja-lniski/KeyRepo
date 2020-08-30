@@ -16,27 +16,31 @@ struct CreateKeyStatement : Statement {
     int keyLen;
     std::string pubKeyPath;
     std::string privateKeyIdFile;
+    bool overwrite {false};
 
     CreateKeyStatement(std::string algorithm, int keyLen, std::string pubKeyPath, std::string privateKeyIdFile) :
         algorithm(algorithm), keyLen(keyLen), pubKeyPath(pubKeyPath), privateKeyIdFile(privateKeyIdFile) {}
 
     friend std::ostream& operator<<(std::ostream& os, const CreateKeyStatement& dt);
     std::string toString() override {
-        return "create-key " + algorithm + " " + std::to_string(keyLen)
+        auto ret =  "create-key " + algorithm + " " + std::to_string(keyLen)
                 + " " + pubKeyPath + " " + privateKeyIdFile;
+        return overwrite ? ret + " overwrite" : ret;
     }
 };
 struct GetPrivateKeyStatement : Statement {
     std::string filePathWithPrivateKeyId;
     std::string filePathToStorePrivateKey;
+    bool overwrite {false};
 
     GetPrivateKeyStatement(std::string filePathWithPrivateKeyId, std::string filePathToStorePrivateKey) :
             filePathWithPrivateKeyId(filePathWithPrivateKeyId), filePathToStorePrivateKey(filePathToStorePrivateKey) {}
 
     friend std::ostream& operator<<(std::ostream& os, const GetPrivateKeyStatement& dt);
     std::string toString() override {
-        return "get-private-key "+ filePathWithPrivateKeyId + " "
+        auto ret =  "get-private-key "+ filePathWithPrivateKeyId + " "
             + filePathToStorePrivateKey;
+        return overwrite ? ret + " overwrite" : ret;
     }
 };
 struct DeleteKeyStatement : Statement {
@@ -56,6 +60,7 @@ struct SignStatement : Statement {
     std::string filePathToFileToBeSigned;
     std::string filePathToPrvKeyId;
     std::string signatureOutput;
+    bool overwrite {false};
 
     SignStatement(std::string filePathToFileToBeSigned, std::string filePathToPrvKeyId,
                     std::string signatureOutput) :
@@ -64,8 +69,9 @@ struct SignStatement : Statement {
 
     friend std::ostream& operator<<(std::ostream& os, const SignStatement& dt);
     std::string toString() override {
-        return "sign " + filePathToFileToBeSigned + " "
+        auto ret = "sign " + filePathToFileToBeSigned + " "
             + filePathToPrvKeyId + " " + signatureOutput;
+        return overwrite ? ret + " overwrite " : ret;
     }
 };
 struct CheckSignatureStatement : Statement {
@@ -86,28 +92,34 @@ struct CheckSignatureStatement : Statement {
 };
 struct EncryptFileStatement : Statement {
     std::string filePathToFileToBeEncrypted;
+    std::string output;
     std::string filePathWithPrivateKeyId;
+    bool overwrite {false};
 
-    EncryptFileStatement(std::string filePathToFileToBeEncrypted, std::string filePathWithPrivateKeyId) :
-            filePathToFileToBeEncrypted(filePathToFileToBeEncrypted), filePathWithPrivateKeyId(filePathWithPrivateKeyId) {}
+    EncryptFileStatement(std::string filePathToFileToBeEncrypted, std::string output, std::string filePathWithPrivateKeyId) :
+            filePathToFileToBeEncrypted(filePathToFileToBeEncrypted), output(output), filePathWithPrivateKeyId(filePathWithPrivateKeyId) {}
 
     friend std::ostream& operator<<(std::ostream& os, const EncryptFileStatement& dt);
     std::string toString() override {
-        return "encrypt-file " + filePathToFileToBeEncrypted + " "
+        auto ret =  "encrypt-file " + filePathToFileToBeEncrypted + " " + output + " "
                + filePathWithPrivateKeyId;
+        return overwrite ? ret + " overwrite" : ret;
     }
 };
 struct DecryptFileStatement : Statement {
     std::string filePathToFileToBeDecrypted;
+    std::string output;
     std::string filePathToFileToPublicKey;
+    bool overwrite {false};
 
-    DecryptFileStatement(std::string filePathToFileToBeDecrypted, std::string filePathToFileToPublicKey) :
-            filePathToFileToBeDecrypted(filePathToFileToBeDecrypted), filePathToFileToPublicKey(filePathToFileToPublicKey) {}
+    DecryptFileStatement(std::string filePathToFileToBeDecrypted, std::string output, std::string filePathToFileToPublicKey) :
+            filePathToFileToBeDecrypted(filePathToFileToBeDecrypted), output(output), filePathToFileToPublicKey(filePathToFileToPublicKey) {}
 
     friend std::ostream& operator<<(std::ostream& os, const EncryptFileStatement& dt);
     std::string toString() override {
-        return "decrypt-file " + filePathToFileToBeDecrypted + " "
+        auto ret =  "decrypt-file " + filePathToFileToBeDecrypted + " " + output + " "
                + filePathToFileToPublicKey;
+        return overwrite ? ret + " overwrite" : ret;
     }
 };
 #endif //KEYREPO_STATEMENT_H

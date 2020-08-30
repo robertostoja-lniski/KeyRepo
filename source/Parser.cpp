@@ -70,14 +70,16 @@ void Parser::generateCheckSignatureOption() {
 
 void Parser::generateEncryptFileOption() {
     auto fileToBeEncrypted = syntaxAnalyser->getNextToken().value;
+    auto output = syntaxAnalyser->getNextToken().value;
     auto filePathWithPrivateKey = syntaxAnalyser->getNextToken().value;
-    EncryptFileStatement encryptFileStatement(fileToBeEncrypted, filePathWithPrivateKey);
+    EncryptFileStatement encryptFileStatement(fileToBeEncrypted, output, filePathWithPrivateKey);
     currentParsedStatement = std::make_shared<EncryptFileStatement>(encryptFileStatement);
 }
 
 void Parser::generateDecryptFileOption() {
     auto fileToBeDecrypted = syntaxAnalyser->getNextToken().value;
+    auto output = syntaxAnalyser->getNextToken().value;
     auto filePathToPublicKey = syntaxAnalyser->getNextToken().value;
-    DecryptFileStatement encryptFileStatement(fileToBeDecrypted, filePathToPublicKey);
+    DecryptFileStatement encryptFileStatement(fileToBeDecrypted, output, filePathToPublicKey);
     currentParsedStatement = std::make_shared<DecryptFileStatement>(encryptFileStatement);
 }
