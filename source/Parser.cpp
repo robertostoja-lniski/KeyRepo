@@ -34,14 +34,32 @@ void Parser::generateCreateKeyOption() {
     } catch(std::exception &e) {
         std::cout << "Key size and id have to be positive integers\n";
     }
+
     CreateKeyStatement createKeyStatement(algorithm, numericKeySize, pubKeyPath, privateKeyIdFile);
+
+    try {
+        auto overwrite = syntaxAnalyser->getNextToken().value;
+        if(overwrite == "overwrite") {
+            createKeyStatement.enableOverwrite();
+        }
+    } catch (std::exception &e) { /* dummy */ }
+
     currentParsedStatement = std::make_shared<CreateKeyStatement>(createKeyStatement);
 }
 
 void Parser::generatePrivateKeyOption() {
     auto pathToFileWithPrivateKeyId = syntaxAnalyser->getNextToken().value;
     auto pathToStorePrivateKey = syntaxAnalyser->getNextToken().value;
+
     GetPrivateKeyStatement getPrivateKeyStatement(pathToFileWithPrivateKeyId, pathToStorePrivateKey);
+
+    try {
+        auto overwrite = syntaxAnalyser->getNextToken().value;
+        if(overwrite == "overwrite") {
+            getPrivateKeyStatement.enableOverwrite();
+        }
+    } catch (std::exception &e) { /* dummy */ }
+
     currentParsedStatement = std::make_shared<GetPrivateKeyStatement>(getPrivateKeyStatement);
 }
 void Parser::generateDeleteKeyOption() {
@@ -57,6 +75,14 @@ void Parser::generateSignOption() {
     auto signatureOutput = syntaxAnalyser->getNextToken().value;
 
     SignStatement signStatement(fileToBeSigned, privateKeyFilePath, signatureOutput);
+
+    try {
+        auto overwrite = syntaxAnalyser->getNextToken().value;
+        if(overwrite == "overwrite") {
+            signStatement.enableOverwrite();
+        }
+    } catch (std::exception &e) { /* dummy */ }
+
     currentParsedStatement = std::make_shared<SignStatement>(signStatement);
 }
 void Parser::generateCheckSignatureOption() {
@@ -72,7 +98,16 @@ void Parser::generateEncryptFileOption() {
     auto fileToBeEncrypted = syntaxAnalyser->getNextToken().value;
     auto output = syntaxAnalyser->getNextToken().value;
     auto filePathWithPrivateKey = syntaxAnalyser->getNextToken().value;
+
     EncryptFileStatement encryptFileStatement(fileToBeEncrypted, output, filePathWithPrivateKey);
+
+    try {
+        auto overwrite = syntaxAnalyser->getNextToken().value;
+        if(overwrite == "overwrite") {
+            encryptFileStatement.enableOverwrite();
+        }
+    } catch (std::exception &e) { /* dummy */ }
+
     currentParsedStatement = std::make_shared<EncryptFileStatement>(encryptFileStatement);
 }
 
@@ -80,6 +115,15 @@ void Parser::generateDecryptFileOption() {
     auto fileToBeDecrypted = syntaxAnalyser->getNextToken().value;
     auto output = syntaxAnalyser->getNextToken().value;
     auto filePathToPublicKey = syntaxAnalyser->getNextToken().value;
-    DecryptFileStatement encryptFileStatement(fileToBeDecrypted, output, filePathToPublicKey);
-    currentParsedStatement = std::make_shared<DecryptFileStatement>(encryptFileStatement);
+
+    DecryptFileStatement decryptFileStatement(fileToBeDecrypted, output, filePathToPublicKey);
+
+    try {
+        auto overwrite = syntaxAnalyser->getNextToken().value;
+        if(overwrite == "overwrite") {
+            decryptFileStatement.enableOverwrite();
+        }
+    } catch (std::exception &e) { /* dummy */ }
+
+    currentParsedStatement = std::make_shared<DecryptFileStatement>(decryptFileStatement);
 }

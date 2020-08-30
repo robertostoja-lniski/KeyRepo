@@ -11,12 +11,8 @@ Token SyntaxAnalyser::getNextToken() {
     return {value};
 }
 std::string SyntaxAnalyser::getNextAndRead() {
-    auto toReturn = *it;
-    try {
-        it++;
-    } catch(std::exception &e) {
-        std::cout << "End of args";
-        exit(1);
-    }
+    std::string toReturn;
+    toReturn = *it;
+    it++;
     return toReturn;
 }

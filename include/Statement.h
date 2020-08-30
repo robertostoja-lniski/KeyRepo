@@ -27,6 +27,9 @@ struct CreateKeyStatement : Statement {
                 + " " + pubKeyPath + " " + privateKeyIdFile;
         return overwrite ? ret + " overwrite" : ret;
     }
+    void enableOverwrite() {
+        overwrite = true;
+    }
 };
 struct GetPrivateKeyStatement : Statement {
     std::string filePathWithPrivateKeyId;
@@ -41,6 +44,9 @@ struct GetPrivateKeyStatement : Statement {
         auto ret =  "get-private-key "+ filePathWithPrivateKeyId + " "
             + filePathToStorePrivateKey;
         return overwrite ? ret + " overwrite" : ret;
+    }
+    void enableOverwrite() {
+        overwrite = true;
     }
 };
 struct DeleteKeyStatement : Statement {
@@ -71,7 +77,10 @@ struct SignStatement : Statement {
     std::string toString() override {
         auto ret = "sign " + filePathToFileToBeSigned + " "
             + filePathToPrvKeyId + " " + signatureOutput;
-        return overwrite ? ret + " overwrite " : ret;
+        return overwrite ? ret + " overwrite" : ret;
+    }
+    void enableOverwrite() {
+        overwrite = true;
     }
 };
 struct CheckSignatureStatement : Statement {
@@ -105,6 +114,9 @@ struct EncryptFileStatement : Statement {
                + filePathWithPrivateKeyId;
         return overwrite ? ret + " overwrite" : ret;
     }
+    void enableOverwrite() {
+        overwrite = true;
+    }
 };
 struct DecryptFileStatement : Statement {
     std::string filePathToFileToBeDecrypted;
@@ -120,6 +132,9 @@ struct DecryptFileStatement : Statement {
         auto ret =  "decrypt-file " + filePathToFileToBeDecrypted + " " + output + " "
                + filePathToFileToPublicKey;
         return overwrite ? ret + " overwrite" : ret;
+    }
+    void enableOverwrite() {
+        overwrite = true;
     }
 };
 #endif //KEYREPO_STATEMENT_H
