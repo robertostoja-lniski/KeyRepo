@@ -39,19 +39,9 @@ void Parser::generateCreateKeyOption() {
 }
 
 void Parser::generatePrivateKeyOption() {
-    auto privateKeyId = syntaxAnalyser->getNextToken().value;
+    auto pathToFileWithPrivateKeyId = syntaxAnalyser->getNextToken().value;
     auto pathToStorePrivateKey = syntaxAnalyser->getNextToken().value;
-    int numericPrivateKeyId;
-
-    try {
-        numericPrivateKeyId = std::stoi(privateKeyId);
-        if(numericPrivateKeyId < 0) {
-            throw std::runtime_error("Negative id");
-        }
-    } catch(std::exception &e) {
-        std::cout << "Key id has to be a positive number\n";
-    }
-    GetPrivateKeyStatement getPrivateKeyStatement(numericPrivateKeyId, pathToStorePrivateKey);
+    GetPrivateKeyStatement getPrivateKeyStatement(pathToFileWithPrivateKeyId, pathToStorePrivateKey);
     currentParsedStatement = std::make_shared<GetPrivateKeyStatement>(getPrivateKeyStatement);
 }
 void Parser::generateDeleteKeyOption() {
@@ -77,19 +67,17 @@ void Parser::generateCheckSignatureOption() {
     CheckSignatureStatement checkSignatureStatement(fileToBeChecked, pubKeyPath, signatureInput);
     currentParsedStatement = std::make_shared<CheckSignatureStatement>(checkSignatureStatement);
 }
-void Parser::generateEncryptFileOption() {
-    auto fileToBeSigned = syntaxAnalyser->getNextToken().value;
-    auto privateKeyId = syntaxAnalyser->getNextToken().value;
-    int numericPrivateKeyId;
 
-    try {
-        numericPrivateKeyId = std::stoi(privateKeyId);
-        if(numericPrivateKeyId < 0) {
-            throw std::runtime_error("Negative size or id");
-        }
-    } catch(std::exception &e) {
-        std::cout << "Key size and id have to be positive integers\n";
-    }
-    EncryptFileStatement encryptFileStatement(fileToBeSigned, numericPrivateKeyId);
+void Parser::generateEncryptFileOption() {
+    auto fileToBeEncrypted = syntaxAnalyser->getNextToken().value;
+    auto filePathWithPrivateKey = syntaxAnalyser->getNextToken().value;
+    EncryptFileStatement encryptFileStatement(fileToBeEncrypted, filePathWithPrivateKey);
     currentParsedStatement = std::make_shared<EncryptFileStatement>(encryptFileStatement);
+}
+
+void Parser::generateDecryptFileOption() {
+    auto fileToBeDecrypted = syntaxAnalyser->getNextToken().value;
+    auto filePathToPublicKey = syntaxAnalyser->getNextToken().value;
+    DecryptFileStatement encryptFileStatement(fileToBeDecrypted, filePathToPublicKey);
+    currentParsedStatement = std::make_shared<DecryptFileStatement>(encryptFileStatement);
 }

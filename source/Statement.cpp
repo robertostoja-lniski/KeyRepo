@@ -12,7 +12,7 @@ std::ostream& operator<<(std::ostream& os, const CreateKeyStatement& dt)
 }
 
 std::ostream &operator<<(std::ostream &os, const GetPrivateKeyStatement &dt) {
-    os << "Get private key with: " << dt.privateKeyId << " id " << dt.filePathToStorePrivateKey
+    os << "Get private key with: " << dt.filePathWithPrivateKeyId << " id " << dt.filePathToStorePrivateKey
         << " and filepath to store it.\n";
     return os;
 }
@@ -30,5 +30,9 @@ std::ostream &operator<<(std::ostream &os, const CheckSignatureStatement &dt) {
 }
 std::ostream &operator<<(std::ostream &os, const EncryptFileStatement &dt) {
     os << "Encrypting file " << dt.filePathToFileToBeEncrypted << " by "
-        << dt.privateKeyId << " private key\n";
+        << dt.filePathWithPrivateKeyId << " private key\n";
+}
+std::ostream &operator<<(std::ostream &os, const DecryptFileStatement &dt) {
+    os << "Decrypting file " << dt.filePathToFileToBeDecrypted << " by "
+       << dt.filePathToFileToPublicKey << " public key\n";
 }
