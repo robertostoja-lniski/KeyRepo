@@ -20,6 +20,7 @@ private:
     void generateSignOption();
     void generateCheckSignatureOption();
     void generateEncryptFileOption();
+    void generateDecryptFileOption();
 
     std::map<std::string, std::function<void()>> tokenGenerator {
             {"create-key", [&]() { return generateCreateKeyOption(); }},
@@ -28,6 +29,7 @@ private:
             {"sign", [&]() { return generateSignOption(); }},
             {"check-signature", [&]() { return generateCheckSignatureOption(); }},
             {"encrypt-file", [&]() { return generateEncryptFileOption(); }},
+            {"decrypt-file", [&]() { return generateDecryptFileOption(); }},
     };
 public:
     Parser(std::shared_ptr<SyntaxAnalyser> syntaxAnalyser) {

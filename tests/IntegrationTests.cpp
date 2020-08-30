@@ -145,6 +145,26 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_5)
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
+{
+    std::vector<std::string> input {
+            "program",
+            "decrypt-file",
+            "/home/file-to-decrypt",
+            "413243",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
 {
     {
@@ -1295,4 +1315,32 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
         }
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_WRONG_ID)
+{
+    std::vector<std::string> input {
+            "program",
+            "get-private-key",
+            "11111111111111111",
+            "/home/abc",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    bool error_caught = false;
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+
+        if(std::string(e.what()) != "Not implemented") {
+            error_caught = true;
+        }
+    }
+    BOOST_CHECK_EQUAL(error_caught, true);
 }

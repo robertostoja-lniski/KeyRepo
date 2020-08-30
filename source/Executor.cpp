@@ -95,16 +95,23 @@ void Executor::execute() {
             std::cout << messageToCheckHash << " it was encrypted msg\n";
         }
 
+        RSA* rsaPub = nullptr;
         try {
-            RSA* rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
-            openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
-            result = CallResult::SIGNATURE_THE_SAME;
-
+            rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
         } catch(std::exception &e) {
             result = CallResult::SIGNATURE_NOT_THE_SAME;
+            RSA_free(rsaPub);
+            return;
         }
 
-        RSA_free(rsaPub);
+        try {
+            openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
+        } catch(std::exception &e) {
+            result = CallResult::SIGNATURE_NOT_THE_SAME;
+            return;
+        }
+
+        result = CallResult::SIGNATURE_THE_SAME;
 
     } else if (auto deleteKeyStatement = std::dynamic_pointer_cast<DeleteKeyStatement>(statement)) {
 
@@ -122,6 +129,18 @@ void Executor::execute() {
         }
 
         result = CallResult::KEY_REMOVE_SUCCESS;
+    } else if (auto getPrivateKeyStatement = std::dynamic_pointer_cast<GetPrivateKeyStatement>(statement)) {
+
+        throw std::runtime_error("Not implemented");
+
+    } else if (auto encryptFileStatement = std::dynamic_pointer_cast<EncryptFileStatement>(statement)) {
+
+        throw std::runtime_error("Not implemented");
+
+    } else if (auto decryptFileStatement = std::dynamic_pointer_cast<DecryptFileStatement>(statement)) {
+
+        throw std::runtime_error("Not implemented");
+
     }
 }
 
