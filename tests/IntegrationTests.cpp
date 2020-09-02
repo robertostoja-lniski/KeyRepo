@@ -1972,3 +1972,65 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
         BOOST_CHECK_EQUAL(caught, true);
     }
 }
+
+BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
+
+    std::vector<std::string> input{
+            "program",
+            "create-key",
+            "RSA",
+            "2048",
+            "/tmp/same_path.pem",
+            "/tmp/same_path.pem",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    bool caught = false;
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        caught = true;
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
+
+    system("echo a > /tmp/same_path.pem");
+    std::vector<std::string> input{
+            "program",
+            "create-key",
+            "RSA",
+            "2048",
+            "/tmp/same_path.pem",
+            "/tmp/same_path.pem",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    try {
+        executor->execute();
+    } catch (std::exception &e) {
+        /* dummy */
+    }
+
+    std::string afterPotentialCreate = testHelpers::readFileIntoString("/tmp/same_path.pem");
+    bool areSame = (afterPotentialCreate == "a");
+    BOOST_CHECK_EQUAL(areSame, true);
+}
