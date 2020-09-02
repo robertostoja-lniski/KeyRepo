@@ -26,6 +26,7 @@ void Executor::execute() {
         // currently only RSA support implemented
         auto algorithm = createKeyStatement->algorithm;
         auto overwrite = createKeyStatement->overwrite;
+
         if(algorithm != "RSA") {
             throw std::runtime_error("Algorithm not supported");
         }
@@ -42,6 +43,11 @@ void Executor::execute() {
 
         std::string pubKeyPath = createKeyStatement->pubKeyPath;
         std::string prvKeyIdPath = createKeyStatement->privateKeyIdFile;
+
+        if(pubKeyPath == prvKeyIdPath) {
+            throw std::runtime_error("Prv and Pub files have to differ");
+        }
+
         auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
 
         auto ret = interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
