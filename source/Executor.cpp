@@ -23,6 +23,7 @@ void Executor::execute() {
     if(auto createKeyStatement = std::dynamic_pointer_cast<CreateKeyStatement>(statement)) {
         // currently only RSA support implemented
         auto algorithm = createKeyStatement->algorithm;
+        auto overwrite = createKeyStatement->overwrite;
         if(algorithm != "RSA") {
             throw std::runtime_error("Algorithm not supported");
         }
@@ -41,13 +42,13 @@ void Executor::execute() {
         std::string prvKeyIdPath = createKeyStatement->privateKeyIdFile;
         auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
 
-        auto ret = interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get());
+        auto ret = interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
         if(ret == -1) {
             result = CallResult::WRITE_PRV_KEY_FAIL;
             return;
         }
 
-        ret = interface->writePublicKeyToFile(pubKeyPath, "wb", r.get());
+        ret = interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
         if(ret == 1) {
             result = CallResult::WRITE_PUB_KEY_FAIL;
             return;
@@ -60,6 +61,7 @@ void Executor::execute() {
         auto fileToBeSigned = signStatement->filePathToFileToBeSigned;
         auto prvKeyPath = signStatement->filePathToPrvKeyId;
         auto signatureOutput = signStatement->signatureOutput;
+        auto overwrite = signStatement->overwrite;
 
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
@@ -75,7 +77,7 @@ void Executor::execute() {
             std::cout << "encrypted msg is " << encryptedMessage << std::endl;
         }
 
-        interface->writeToFile(signatureOutput, encryptedMessage);
+        interface->writeToFile(signatureOutput, encryptedMessage, overwrite);
         RSA_free(rsaPrv);
         result = CallResult::SIGN_SUCCESS;
 
