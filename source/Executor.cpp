@@ -17,7 +17,9 @@
 void Executor::execute() {
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
-    std::cout << "\n" << statementStr;
+    if(VERBOSE) {
+        std::cout << "\n" << statementStr;
+    }
 
     auto statement = parser->getCurrentParsedStatement();
     if(auto createKeyStatement = std::dynamic_pointer_cast<CreateKeyStatement>(statement)) {
