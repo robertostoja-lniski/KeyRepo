@@ -20,6 +20,20 @@ namespace testHelpers {
         serialisedArgs += input[input.size()-1];
         return serialisedArgs;
     }
+
+    std::string readFileIntoString(std::string path){
+        std::string fileContent;
+        std::string line;
+        std::ifstream fileToRead(path);
+        if (fileToRead.is_open()) {
+            while (getline(fileToRead,line)) {
+                fileContent += line;
+            }
+            fileToRead.close();
+        }
+        return fileContent;
+    }
+
 };
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
 {
@@ -177,6 +191,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
                 "2048",
                 "/home/robert/Desktop/public.pem",
                 "/home/robert/Desktop/private.pem",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -195,6 +210,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
                 "/home/robert/Desktop/file.txt",
                 "/home/robert/Desktop/private.pem",
                 "/home/robert/Desktop/signature.txt",
+                "overwrite"
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -242,6 +258,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
                 "2048",
                 "/home/robert/Desktop/public.pem",
                 "/home/robert/Desktop/private.pem",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -260,6 +277,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
                 "/home/robert/Desktop/file.txt",
                 "/home/robert/Desktop/private.pem",
                 "/home/robert/Desktop/signature.txt",
+                "overwrite"
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -377,6 +395,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
                     "2048",
                     "/home/robert/Desktop/public.pem",
                     "/home/robert/Desktop/private.pem",
+                    "overwrite",
             };
             TerminalEmulation terminalEmulation(input);
             auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -406,6 +425,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
                 "2048",
                 "/home/robert/Desktop/public.pem",
                 "/home/robert/Desktop/private.pem",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -426,6 +446,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
                 "2048",
                 "/home/robert/Desktop/public.pem",
                 "/home/robert/Desktop/private.pem",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -455,6 +476,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
                 "2048",
                 "/home/robert/Desktop/public.pem",
                 "/home/robert/Desktop/private.pem",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -635,6 +657,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
                 "2048",
                 "/tmp/public.pem",
                 "/tmp/private.pem",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -685,6 +708,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_16) {
                 "2048",
                 "/home/robert/Desktop/public.pem",
                 "/home/robert/Desktop/private.pem",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -958,6 +982,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
                 "2048",
                 "/tmp/sign_error_2_public.pem",
                 "/tmp/sign_error_2_private.pem",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -979,6 +1004,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
                 "/tmp/sign_error_2_file.txt",
                 "/tmp/sign_error_2_private.pem",
                 "/tmp/sign_error_2_signature.txt",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1007,6 +1033,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
                 "2048",
                 "/tmp/sign_error_3_public.pem",
                 "/tmp/sign_error_3_private.pem",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1056,6 +1083,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
                 "2048",
                 "/tmp/sing_error_4_public.pem",
                 "/tmp/sing_error_4_private.pem",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1106,6 +1134,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
                     "2048",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
+                    "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
             auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1124,6 +1153,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_signature.txt",
+                    "overwrite"
             };
 
             TerminalEmulation terminalEmulation(input);
@@ -1175,6 +1205,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_PUB)
                     "2048",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_public.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_private.pem",
+                    "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
             auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1193,6 +1224,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_PUB)
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_signature.txt",
+                    "overwrite"
             };
 
             TerminalEmulation terminalEmulation(input);
@@ -1262,6 +1294,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
                     "2048",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_public.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_private.pem",
+                    "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
             auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1280,6 +1313,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_signature.txt",
+                    "overwrite"
             };
 
             TerminalEmulation terminalEmulation(input);
@@ -1318,6 +1352,9 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
+
+/*
+ * FEATURE TO BE IMPLEMENTED
 BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_WRONG_ID)
 {
     std::vector<std::string> input {
@@ -1346,6 +1383,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_WRONG_ID)
     }
     BOOST_CHECK_EQUAL(error_caught, true);
 }
+*/
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
 {
     std::vector<std::string> input {
@@ -1457,4 +1495,479 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_DECRYPT_FILE_TEST)
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
+    std::string contentBeforeOverwrite;
+    std::string contentAfterOverwrite;
+
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+
+        contentAfterOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
+        bool areSame = (contentBeforeOverwrite == contentAfterOverwrite);
+
+        BOOST_CHECK_EQUAL(areSame, false);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
+    std::string contentBeforeOverwrite;
+    std::string contentAfterOverwrite;
+
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite_prv.pem");
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+
+        contentAfterOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite_prv.pem");
+        bool areSame = (contentBeforeOverwrite == contentAfterOverwrite);
+
+        BOOST_CHECK_EQUAL(areSame, false);
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
+    std::string contentBeforeOverwrite;
+    std::string contentAfterOverwrite;
+
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite_prv.pem");
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            /*dummy*/
+        }
+
+        contentAfterOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite_prv.pem");
+        bool areSame = (contentBeforeOverwrite == contentAfterOverwrite);
+
+        BOOST_CHECK_EQUAL(areSame, true);
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
+    std::string contentBeforeOverwrite;
+    std::string contentAfterOverwrite;
+
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            /*dummy*/
+        }
+
+        contentAfterOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
+        bool areSame = (contentBeforeOverwrite == contentAfterOverwrite);
+
+        BOOST_CHECK_EQUAL(areSame, true);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught = false;
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            caught = true;
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
+    std::string contentBeforeOverwrite;
+    std::string contentAfterOverwrite;
+
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/to_overwrite.pem",
+                "/tmp/to_overwrite_prv.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught = false;
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            caught = true;
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
+    std::string afterOverwrite;
+    system("echo a > /tmp/result");
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/sign_test.pem",
+                "/tmp/sign_test_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program_sign",
+                "sign",
+                "/tmp/to_check",
+                "/tmp/sign_test_prv.pem",
+                "/tmp/result",
+                "overwrite"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        afterOverwrite = testHelpers::readFileIntoString("/tmp/result");
+    }
+
+    bool areSame = ("a" == afterOverwrite);
+    BOOST_CHECK_EQUAL(areSame, false);
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
+    std::string afterOverwrite;
+    system("echo a > /tmp/result");
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/sign_test.pem",
+                "/tmp/sign_test_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program_sign",
+                "sign",
+                "/tmp/to_check",
+                "/tmp/sign_test_prv.pem",
+                "/tmp/result",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            /* dummy */
+        }
+
+        afterOverwrite = testHelpers::readFileIntoString("/tmp/result");
+    }
+
+    bool areSame = ("a" == afterOverwrite);
+    BOOST_CHECK_EQUAL(areSame, true);
+}
+
+BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
+    system("echo a > /tmp/result");
+    {
+        std::vector<std::string> input{
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/sign_test.pem",
+                "/tmp/sign_test_prv.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program_sign",
+                "sign",
+                "/tmp/to_check",
+                "/tmp/sign_test_prv.pem",
+                "/tmp/result",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught = false;
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            caught = true;
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
 }

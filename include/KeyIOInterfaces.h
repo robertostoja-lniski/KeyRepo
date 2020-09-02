@@ -28,10 +28,10 @@ public:
     RsaKeyFileIOInterface() = default;
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
-    int writePublicKeyToFile(std::string filepath, std::string modes, RSA*);
-    int writePrivateKeyToFile(std::string filepath, std::string modes, RSA*);
+    int writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
+    int writePrivateKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     std::string readMessageFromFile(std::string filepath);
-    void writeToFile(std::string filepath, std::string data);
+    void writeToFile(std::string filepath, std::string data, bool overwrite);
 
     int removePrivateKey(std::string privateKeyPath);
     int removePublicKey(std::string publicKeyPath);

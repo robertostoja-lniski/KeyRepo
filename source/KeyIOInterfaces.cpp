@@ -64,6 +64,7 @@ RSA *RsaKeyFileIOInterface::readPublicKeyFromFpAndClose(FILE **fp) {
     }
     return rsa;
 }
+
 RSA *RsaKeyFileIOInterface::readPrivateKeyFromFpAndClose(FILE **fp) {
     auto rsa = PEM_read_RSAPrivateKey(*fp, nullptr, nullptr, nullptr);
     fclose(*fp);
@@ -72,7 +73,8 @@ RSA *RsaKeyFileIOInterface::readPrivateKeyFromFpAndClose(FILE **fp) {
     }
     return rsa;
 }
-int RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r) {
+
+int RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     auto fp = getFileStructFromPath(filepath, mode);
     auto success = PEM_write_RSA_PUBKEY(fp, r);
     fclose(fp);
@@ -82,10 +84,15 @@ int RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::strin
     }
     return 0;
 }
-int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r) {
+int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     auto result = write(r);
     if(result.id == 1) {
         return -1;
+    }
+
+    std::ifstream f(filepath);
+    if(f.good() && !overwrite) {
+        throw std::runtime_error("Overwrite forbidden!");
     }
 
     std::ofstream os;
@@ -95,7 +102,13 @@ int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::stri
 
     return result.numberOfKeys;
 }
-void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data) {
+void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, bool overwrite) {
+
+    std::ifstream f(filepath);
+    if(f.good() && !overwrite) {
+        throw std::runtime_error("Overwrite forbidden!");
+    }
+
     std::ofstream myfile;
     myfile.open (filepath);
     myfile << data;
