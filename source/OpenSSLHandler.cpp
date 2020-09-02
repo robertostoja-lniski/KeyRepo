@@ -19,7 +19,6 @@ std::string OpenSSLHandler::sign(RSA *r, std::string messageToSign) {
     if (EVP_DigestSignFinal(m_RSASignCtx, NULL, lenAfterSign.get()) != 1) {
         throw std::runtime_error("Digest sign final failed");
     }
-    std::cout << *lenAfterSign << '\n';
     std::string encryptedMessage(*lenAfterSign, ' ');
     if (EVP_DigestSignFinal(m_RSASignCtx, (unsigned char*)encryptedMessage.c_str(), lenAfterSign.get()) != 1) {
         throw std::runtime_error("Digest init failed");

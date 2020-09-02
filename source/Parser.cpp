@@ -26,13 +26,9 @@ void Parser::generateCreateKeyOption() {
         throw std::runtime_error("Far too long key len");
     }
 
-    try {
-        numericKeySize = std::stoi(keySize);
-        if(numericKeySize < 0) {
-            throw std::runtime_error("Negative size or id");
-        }
-    } catch(std::exception &e) {
-        std::cout << "Key size and id have to be positive integers\n";
+    numericKeySize = std::stoi(keySize);
+    if(numericKeySize < 0) {
+        throw std::runtime_error("Negative size or id");
     }
 
     CreateKeyStatement createKeyStatement(algorithm, numericKeySize, pubKeyPath, privateKeyIdFile);
