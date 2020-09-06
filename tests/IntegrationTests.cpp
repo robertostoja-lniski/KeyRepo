@@ -1354,15 +1354,104 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-/*
- * FEATURE TO BE IMPLEMENTED
-BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_WRONG_ID)
+BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_ID)
+{
+    system("echo 1 > /tmp/key_not_existing_id");
+    std::vector<std::string> input {
+            "program",
+            "get-private-key",
+            "/tmp/key_not_existing_id",
+            "/tmp/saved_key",
+            "overwrite"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    executor->execute();
+    auto result = executor->getResult();
+
+    BOOST_CHECK_EQUAL(int(result), int(CallResult::TRIED_TO_GET_NON_EXISTING_PRIVATE_KEY));
+}
+
+BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_FILE)
+{
+    std::vector<std::string> input {
+            "program",
+            "get-private-key",
+            "not_existing_file",
+            "/tmp/key",
+            "overwrite"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    executor->execute();
+    auto result = executor->getResult();
+
+    BOOST_CHECK_EQUAL(int(result), int(CallResult::TRIED_TO_GET_NON_EXISTING_PRIVATE_KEY));
+}
+
+BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_TEST)
 {
     std::vector<std::string> input {
             "program",
             "get-private-key",
             "11111111111111111",
-            "/home/abc",
+            "/tmp/get-private-key",
+            "overwrite"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    executor->execute();
+}
+
+BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/pubkey.pem",
+                "/tmp/prvkey.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    system("touch /tmp/get_prv_no_overwrite");
+    std::vector<std::string> input {
+            "program",
+            "get-private-key",
+            "/tmp/prvkey.pem",
+            "/tmp/get_prv_no_overwrite",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -1377,14 +1466,12 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_WRONG_ID)
     try {
         executor->execute();
     } catch (std::exception &e) {
-
-        if(std::string(e.what()) != "Not implemented") {
-            error_caught = true;
-        }
+        error_caught = true;
     }
+
     BOOST_CHECK_EQUAL(error_caught, true);
 }
-*/
+
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
 {
     std::vector<std::string> input {

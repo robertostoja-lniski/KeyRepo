@@ -39,6 +39,8 @@ public:
     int getCurrentKeyNum() {
         return getCurrentKeyNumFromEmulation();
     }
+
+    std::string getPrivateKey(std::string filepathWithPrvKeyId);
 };
 
 #endif

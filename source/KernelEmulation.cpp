@@ -443,6 +443,19 @@ std::string read(std::string filepath) {
     return getPathToTmpPrvKeyStorage(prvKey);
 }
 
+std::string get(std::string filepath) {
+    uint64_t id = readIdFromFile(filepath);
+    if(id == 0) {
+        return "";
+    }
+
+    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+        std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
+    }
+
+    return getPrvKeyById(id);
+}
+
 int remove(std::string filepath) {
     uint64_t id = readIdFromFile(filepath);
     return id == 0 ? -1 : removePrvKeyById(id);

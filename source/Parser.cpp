@@ -43,7 +43,7 @@ void Parser::generateCreateKeyOption() {
     currentParsedStatement = std::make_shared<CreateKeyStatement>(createKeyStatement);
 }
 
-void Parser::generatePrivateKeyOption() {
+void Parser::generateGetPrivateKeyOption() {
     auto pathToFileWithPrivateKeyId = syntaxAnalyser->getNextToken().value;
     auto pathToStorePrivateKey = syntaxAnalyser->getNextToken().value;
 

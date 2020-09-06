@@ -86,6 +86,7 @@ int getCurrentKeyNumFromEmulation();
 int getCurrentKeyNum();
 AddKeyInfo write(RSA* r);
 std::string read(std::string filepath);
+std::string get(std::string filepath);
 int remove(std::string filepath);
 
 #endif //KEYREPO_KERNELEMULATION_H
