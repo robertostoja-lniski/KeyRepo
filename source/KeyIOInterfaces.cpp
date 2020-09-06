@@ -13,7 +13,7 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
     auto prvKeyPath = read(filepath);
     if(prvKeyPath.empty()) {
-        return nullptr;
+        throw std::runtime_error("Failed to read private key");
     }
 
     auto fp = getFileStructFromPath(prvKeyPath, "r");
@@ -74,20 +74,19 @@ RSA *RsaKeyFileIOInterface::readPrivateKeyFromFpAndClose(FILE **fp) {
     return rsa;
 }
 
-int RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
+void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     auto fp = getFileStructFromPath(filepath, mode);
     auto success = PEM_write_RSA_PUBKEY(fp, r);
     fclose(fp);
 
     if(!success) {
-        return 1;
+        throw std::runtime_error("Failed to write public key");
     }
-    return 0;
 }
-int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
+void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     auto result = write(r);
     if(result.id == 1) {
-        return -1;
+        throw std::runtime_error("Write key to partition failed");
     }
 
     std::ifstream f(filepath);
@@ -100,7 +99,6 @@ int RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::stri
     os << result.id;
     os.close();
 
-    return result.numberOfKeys;
 }
 void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, bool overwrite) {
 
@@ -115,22 +113,22 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, 
     myfile.close();
 }
 
-int RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
+void RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
     auto result = remove(privateKeyPath);
-    return result;
+    if(result == -1) {
+        throw std::runtime_error("Failed to remove private key");
+    }
 }
 
-int RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
+void RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
     auto move_call = "cp " + publicKeyPath + " " + publicKeyPath + ".bak";
     if(system(move_call.c_str()) == 256) {
-        return -1;
+        throw std::runtime_error("Failed to remove public key");
     }
     auto rm_call = "rm " + publicKeyPath;
     if(system(rm_call.c_str()) == -1) {
-        return -1;
+        throw std::runtime_error("Failed to remove public key");
     }
-
-    return 0;
 }
 
 std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {

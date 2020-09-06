@@ -28,13 +28,13 @@ public:
     RsaKeyFileIOInterface() = default;
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
-    int writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
-    int writePrivateKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
+    void writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
+    void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     std::string readMessageFromFile(std::string filepath);
     void writeToFile(std::string filepath, std::string data, bool overwrite);
 
-    int removePrivateKey(std::string privateKeyPath);
-    int removePublicKey(std::string publicKeyPath);
+    void removePrivateKey(std::string privateKeyPath);
+    void removePublicKey(std::string publicKeyPath);
 
     int getCurrentKeyNum() {
         return getCurrentKeyNumFromEmulation();

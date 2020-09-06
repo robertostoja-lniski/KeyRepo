@@ -41,29 +41,16 @@ void Executor::execute() {
                     + std::to_string(MAX_KEY_LEN) + " are not supperted");
         }
 
-        std::string pubKeyPath = createKeyStatement->pubKeyPath;
-        std::string prvKeyIdPath = createKeyStatement->privateKeyIdFile;
+        auto pubKeyPath = createKeyStatement->pubKeyPath;
+        auto prvKeyIdPath = createKeyStatement->privateKeyIdFile;
 
         if(pubKeyPath == prvKeyIdPath) {
             throw std::runtime_error("Prv and Pub files have to differ");
         }
 
         auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
-
-        auto ret = interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
-        if(ret == -1) {
-            result = CallResult::WRITE_PRV_KEY_FAIL;
-            return;
-        }
-
-        ret = interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
-        if(ret == 1) {
-            result = CallResult::WRITE_PUB_KEY_FAIL;
-            return;
-        }
-
-        result = CallResult::WRITE_KEYS_SUCCESS;
-
+        interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
+        interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
 
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
         auto fileToBeSigned = signStatement->filePathToFileToBeSigned;
@@ -74,20 +61,13 @@ void Executor::execute() {
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
 
-        if(rsaPrv == nullptr) {
-            result = CallResult::TRIED_TO_READ_NOT_EXISTING_PRV_KEY;
-            return;
-        }
-
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
 
         if(VERBOSE) {
             std::cout << "encrypted msg is " << encryptedMessage << std::endl;
         }
-
         interface->writeToFile(signatureOutput, encryptedMessage, overwrite);
         RSA_free(rsaPrv);
-        result = CallResult::SIGN_SUCCESS;
 
     } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
 
@@ -105,56 +85,25 @@ void Executor::execute() {
             std::cout << messageToCheckHash << " it was encrypted msg\n";
         }
 
-        RSA* rsaPub = nullptr;
-        try {
-            rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
-        } catch(std::exception &e) {
-            result = CallResult::SIGNATURE_NOT_THE_SAME;
-            RSA_free(rsaPub);
-            return;
-        }
-
-        try {
-            openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
-        } catch(std::exception &e) {
-            result = CallResult::SIGNATURE_NOT_THE_SAME;
-            return;
-        }
-
-        result = CallResult::SIGNATURE_THE_SAME;
+        auto rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
+        openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
 
     } else if (auto deleteKeyStatement = std::dynamic_pointer_cast<DeleteKeyStatement>(statement)) {
 
         auto filePathToPrivateKeyId = deleteKeyStatement->privateKeyIdPath;
         auto filePathToPublicKey = deleteKeyStatement->fileToPublicKey;
 
-        if(interface->removePrivateKey(filePathToPrivateKeyId) == -1) {
-            result = CallResult::NO_PRV_KEY_TO_REMOVE;
-            return;
-        }
+        interface->removePrivateKey(filePathToPrivateKeyId);
+        interface->removePublicKey(filePathToPublicKey);
 
-        if(interface->removePublicKey(filePathToPublicKey) == -1){
-            result = CallResult::NO_PUB_KEY_TO_REMOVE;
-            return;
-        }
-
-        result = CallResult::KEY_REMOVE_SUCCESS;
     } else if (auto getPrivateKeyStatement = std::dynamic_pointer_cast<GetPrivateKeyStatement>(statement)) {
 
         auto filePathWithPrvKeyId = getPrivateKeyStatement->filePathWithPrivateKeyId;
         auto filePathToStoreKey = getPrivateKeyStatement->filePathToStorePrivateKey;
         auto overwrite = getPrivateKeyStatement->overwrite;
 
-        std::string prvKey;
-        try {
-            prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
-        } catch(std::exception &e) {
-            result = CallResult::TRIED_TO_GET_NON_EXISTING_PRIVATE_KEY;
-            return;
-        }
-
+        auto prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
         interface->writeToFile(filePathToStoreKey, prvKey, overwrite);
-        result = CallResult::GET_PRV_KEY_SUCCESS;
 
     } else if (auto encryptFileStatement = std::dynamic_pointer_cast<EncryptFileStatement>(statement)) {
 
