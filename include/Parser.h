@@ -15,7 +15,7 @@ private:
     std::shared_ptr<SyntaxAnalyser> syntaxAnalyser;
     std::shared_ptr<Statement> currentParsedStatement;
     void generateCreateKeyOption();
-    void generatePrivateKeyOption();
+    void generateGetPrivateKeyOption();
     void generateDeleteKeyOption();
     void generateSignOption();
     void generateCheckSignatureOption();
@@ -24,7 +24,7 @@ private:
 
     std::map<std::string, std::function<void()>> tokenGenerator {
             {"create-key", [&]() { return generateCreateKeyOption(); }},
-            {"get-private-key", [&]() { return generatePrivateKeyOption(); }},
+            {"get-private-key", [&]() { return generateGetPrivateKeyOption(); }},
             {"delete-key", [&]() { return generateDeleteKeyOption(); }},
             {"sign", [&]() { return generateSignOption(); }},
             {"check-signature", [&]() { return generateCheckSignatureOption(); }},

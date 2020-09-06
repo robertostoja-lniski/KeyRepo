@@ -141,7 +141,20 @@ void Executor::execute() {
         result = CallResult::KEY_REMOVE_SUCCESS;
     } else if (auto getPrivateKeyStatement = std::dynamic_pointer_cast<GetPrivateKeyStatement>(statement)) {
 
-        throw std::runtime_error("Not implemented");
+        auto filePathWithPrvKeyId = getPrivateKeyStatement->filePathWithPrivateKeyId;
+        auto filePathToStoreKey = getPrivateKeyStatement->filePathToStorePrivateKey;
+        auto overwrite = getPrivateKeyStatement->overwrite;
+
+        std::string prvKey;
+        try {
+            prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
+        } catch(std::exception &e) {
+            result = CallResult::TRIED_TO_GET_NON_EXISTING_PRIVATE_KEY;
+            return;
+        }
+
+        interface->writeToFile(filePathToStoreKey, prvKey, overwrite);
+        result = CallResult::GET_PRV_KEY_SUCCESS;
 
     } else if (auto encryptFileStatement = std::dynamic_pointer_cast<EncryptFileStatement>(statement)) {
 
