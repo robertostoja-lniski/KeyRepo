@@ -14,7 +14,7 @@
 #define MAX_KEY_LEN 16 * 4096
 #define MIN_KEY_LEN 1
 
-void Executor::execute() {
+std::string Executor::execute() {
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
     if(VERBOSE) {
@@ -52,6 +52,8 @@ void Executor::execute() {
         interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
         interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
 
+        return {"Keys created"};
+
     } else if (auto signStatement = std::dynamic_pointer_cast<SignStatement>(statement)) {
         auto fileToBeSigned = signStatement->filePathToFileToBeSigned;
         auto prvKeyPath = signStatement->filePathToPrvKeyId;
@@ -68,6 +70,8 @@ void Executor::execute() {
         }
         interface->writeToFile(signatureOutput, encryptedMessage, overwrite);
         RSA_free(rsaPrv);
+
+        return {"File signed"};
 
     } else if (auto checkSignatureStatement = std::dynamic_pointer_cast<CheckSignatureStatement>(statement)) {
 
@@ -86,7 +90,11 @@ void Executor::execute() {
         }
 
         auto rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
-        openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
+        auto isSignatureCorrect = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
+        if(isSignatureCorrect) {
+            return {"Signature correct"};
+        }
+        return {"Signature not correct"};
 
     } else if (auto deleteKeyStatement = std::dynamic_pointer_cast<DeleteKeyStatement>(statement)) {
 
@@ -96,6 +104,8 @@ void Executor::execute() {
         interface->removePrivateKey(filePathToPrivateKeyId);
         interface->removePublicKey(filePathToPublicKey);
 
+        return {"Keys deleted"};
+
     } else if (auto getPrivateKeyStatement = std::dynamic_pointer_cast<GetPrivateKeyStatement>(statement)) {
 
         auto filePathWithPrvKeyId = getPrivateKeyStatement->filePathWithPrivateKeyId;
@@ -104,6 +114,7 @@ void Executor::execute() {
 
         auto prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
         interface->writeToFile(filePathToStoreKey, prvKey, overwrite);
+        return {"Private key saved"};
 
     } else if (auto encryptFileStatement = std::dynamic_pointer_cast<EncryptFileStatement>(statement)) {
 
@@ -114,6 +125,8 @@ void Executor::execute() {
         throw std::runtime_error("Not implemented");
 
     }
+
+    throw std::runtime_error("Critical error\n");
 }
 
 

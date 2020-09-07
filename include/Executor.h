@@ -41,7 +41,7 @@ public:
         return interface;
     }
 //    ~Executor() { free(currentlyEncryptedMsg); }
-    void execute();
+    std::string execute();
 };
 
 
