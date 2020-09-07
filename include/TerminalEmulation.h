@@ -4,6 +4,8 @@
 
 #ifndef KEYREPO_TERMINALEMULATION_H
 #define KEYREPO_TERMINALEMULATION_H
+
+#include <vector>
 #include "string.h"
 
 class TerminalEmulation {

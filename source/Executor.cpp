@@ -7,7 +7,7 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
-#include <openssl/evp.h>
+
 #include "../include/Executor.h"
 
 #define VERBOSE 0
