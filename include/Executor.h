@@ -12,9 +12,18 @@
 #include "OpenSSLHandler.h"
 #include "KernelEmulation.h"
 #include <stdio.h>
+
+#if __APPLE__
+#include "openssl/rsa.h"
+#include "openssl/pem.h"
+#include "openssl/evp.h"
+#else
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#endif
+
+
 #include <stdio.h>
 #include <ostream>
 #include <fstream>

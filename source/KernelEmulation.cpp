@@ -2,6 +2,7 @@
 // Created by robert on 25.08.2020.
 //
 
+#include <sstream>
 #include "../include/KernelEmulation.h"
 
 uint64_t generateRandomId(){
@@ -47,7 +48,7 @@ int initFileIfNotDefined() {
         return 1;
     }
 
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_SHARED | MAP_POPULATE, fd, 0);
+    void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_SHARED, fd, 0);
     memset(mappedPartition, 0x00, fileSize);
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;

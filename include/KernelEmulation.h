@@ -9,9 +9,18 @@
 #include <iostream>
 #include <experimental/filesystem>
 #include <random>
+
+#if __APPLE__
+#include "openssl/rsa.h"
+#include "openssl/pem.h"
+#include "openssl/evp.h"
+#include "openssl/ossl_typ.h"
+#else
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#endif
+
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -59,7 +68,11 @@ struct KeyPartitionNode {
 };
 
 static PartitionInfo data;
+#if __APPLE__
+const std::string partition = "/Users/robertostoja-lniski/.keyPartition";
+#else
 const std::string partition = "/home/robert/.keyPartition";
+#endif
 const std::string tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
 
 // TODO there can be two keys with the same ID

@@ -6,9 +6,16 @@
 #define KEYREPO_OPENSSLHANDLER_H
 
 #include <memory>
+#if __APPLE__
+#include "openssl/rsa.h"
+#include "openssl/pem.h"
+#include "openssl/evp.h"
+#include "openssl/ossl_typ.h"
+#else
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#endif
 #include <iostream>
 struct OpenSSLInterface {
     virtual std::string sign(std::string toSign) = 0;
