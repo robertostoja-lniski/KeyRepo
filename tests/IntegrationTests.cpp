@@ -35,6 +35,7 @@ namespace testHelpers {
     }
 
 };
+
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
 {
     std::vector<std::string> input {
@@ -182,9 +183,31 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
 
-/* TODO
- * to be reimplemented
-BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
+{
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "RSA",
+            "2048",
+            "/tmp/public.pem",
+            "/tmp/private.pem",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+    auto msg = executor->execute();
+
+    BOOST_CHECK_EQUAL(msg, "Keys created");
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
 {
     {
         std::vector<std::string> input {
@@ -224,15 +247,40 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
         auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File signed");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public.pem",
+                "/tmp/private.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
     {
         std::vector<std::string> input {
                 "program",
-                "check-signature",
-                "/tmp/file.txt",
+                "delete-key",
+                "/tmp/private.pem",
                 "/tmp/public.pem",
-                "/tmp/signature.txt",
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -243,10 +291,191 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
         auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
-        executor->execute();
+        auto msg = executor->execute();
 
-        int executorResult = int(executor->getResult());
-        BOOST_CHECK_EQUAL(executorResult, int(CallResult::SIGNATURE_THE_SAME));
+        BOOST_CHECK_EQUAL(msg, "Keys deleted");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public.pem",
+                "/tmp/private.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "get-private-key",
+                "/tmp/private.pem",
+                "/tmp/private_key_value",
+                "overwrite",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "Private key saved");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public.pem",
+                "/tmp/private.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "get-private-key",
+                "/tmp/private.pem",
+                "/tmp/private_key_value",
+                "overwrite",
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "Private key saved");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public.pem",
+                "/tmp/private.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/file_to_encrypt.txt",
+                "/tmp/encrypted_file.txt",
+                "/tmp/private.pem",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File encrypted");
+    }
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
+{
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public.pem",
+                "/tmp/private.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/file_to_decrypt.txt",
+                "/tmp/decrypted_file.txt",
+                "/tmp/public.pem",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File decrypted");
     }
 }
 
@@ -310,10 +539,9 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
-        executor->execute();
+        auto msg = executor->execute();
 
-        int executorResult = int(executor->getResult());
-        BOOST_CHECK_EQUAL(executorResult, int(CallResult::SIGNATURE_THE_SAME));
+        BOOST_CHECK_EQUAL(msg, "Signature correct");
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
@@ -379,15 +607,14 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
             auto parser = std::make_shared<Parser>(syntaxAnalyser);
             auto executor = std::make_shared<Executor>(parser);
-            executor->execute();
+            auto msg = executor->execute();
 
-            int executorResult = int(executor->getResult());
-            BOOST_CHECK_EQUAL(executorResult, int(CallResult::SIGNATURE_THE_SAME));
+            BOOST_CHECK_EQUAL(msg, "Signature correct\n");
         }
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
-*/
+
 // a long test - fills whole partition with keys and checks PartitionInfo
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -715,66 +942,6 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-/*
- * TODO to be reimplemented
-BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_16) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    for (int i = 0; i < 1; i++)
-    {
-        std::vector<std::string> input {
-                "program",
-                "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
-                "/tmp/private.pem",
-                "overwrite",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        executor->execute();
-        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
-    }
-
-    for(int i = 0; i < 1; i++)
-    {
-        std::vector<std::string> input {
-                "program",
-                "delete-key",
-                "/tmp/private.pem",
-                "/tmp/public.pem",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        bool caught {false};
-        try {
-            executor->execute();
-        } catch(std::exception &e) {
-            auto tmp = e.what();
-            if(e.what() == std::string("Failed to remove public key")) {
-                caught = true;
-            }
-        }
-
-        BOOST_CHECK_EQUAL(caught, true);
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-*/
-
 BOOST_AUTO_TEST_CASE(WRONG_INPUT_1)
 {
     bool errorFound = false;
@@ -1012,7 +1179,6 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
     }
 }
 
-/* issue to be solved
 BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -1056,14 +1222,12 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
         auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
 
-        executor->execute();
-        int remove_return = int(executor->getResult());
-        BOOST_CHECK_EQUAL(remove_return, int(CallResult::SIGN_SUCCESS));
+        BOOST_CHECK_EQUAL(msg, "File signed");
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
-*/
 BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
