@@ -9,7 +9,7 @@ void Parser::parse() {
     auto currentToken = syntaxAnalyser->getNextToken();
     auto currentValue = currentToken.value;
     if(tokenGenerator.find(currentValue) == tokenGenerator.end()) {
-        throw std::runtime_error("Unknown token");
+        throw std::runtime_error("Parser: Unknown token");
     }
     auto generator = tokenGenerator[currentValue];
     generator();
@@ -23,12 +23,12 @@ void Parser::generateCreateKeyOption() {
     int numericKeySize;
 
     if(keySize.length() > 9) {
-        throw std::runtime_error("Far too long key len");
+        throw std::runtime_error("Parser: Far too long key len");
     }
 
     numericKeySize = std::stoi(keySize);
     if(numericKeySize < 0) {
-        throw std::runtime_error("Negative size or id");
+        throw std::runtime_error("Parser: Negative size or id");
     }
 
     CreateKeyStatement createKeyStatement(algorithm, numericKeySize, pubKeyPath, privateKeyIdFile);
