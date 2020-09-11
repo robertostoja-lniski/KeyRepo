@@ -13,7 +13,7 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
     auto prvKeyPath = read(filepath);
     if(prvKeyPath.empty()) {
-        throw std::runtime_error("Failed to read private key");
+        throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
     auto fp = getFileStructFromPath(prvKeyPath, "r");
@@ -52,7 +52,7 @@ std::string RsaKeyFileIOInterface::readMessageFromFile(std::string filepath) {
 FILE *RsaKeyFileIOInterface::getFileStructFromPath(std::string filepath, std::string modes) {
     FILE *fp = fopen(filepath.c_str(), modes.c_str());
     if(fp == nullptr) {
-        throw std::runtime_error("Cannot open key file");
+        throw std::runtime_error("KeyIOInterface: Cannot open key file");
     }
     return fp;
 }
@@ -60,7 +60,7 @@ RSA *RsaKeyFileIOInterface::readPublicKeyFromFpAndClose(FILE **fp) {
     auto rsa = PEM_read_RSA_PUBKEY(*fp, nullptr, nullptr, nullptr);
     fclose(*fp);
     if(!rsa) {
-        throw std::runtime_error("Could not read pubkey from file");
+        throw std::runtime_error("KeyIOInterface: Could not read pubkey from file");
     }
     return rsa;
 }
@@ -69,7 +69,7 @@ RSA *RsaKeyFileIOInterface::readPrivateKeyFromFpAndClose(FILE **fp) {
     auto rsa = PEM_read_RSAPrivateKey(*fp, nullptr, nullptr, nullptr);
     fclose(*fp);
     if(!rsa) {
-        throw std::runtime_error("Could not read private key from file");
+        throw std::runtime_error("KeyIOInterface: Could not read private key from file");
     }
     return rsa;
 }
@@ -80,18 +80,18 @@ void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::stri
     fclose(fp);
 
     if(!success) {
-        throw std::runtime_error("Failed to write public key");
+        throw std::runtime_error("KeyIOInterface: Failed to write public key");
     }
 }
 void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     auto result = write(r);
     if(result.id == 1) {
-        throw std::runtime_error("Write key to partition failed");
+        throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
     std::ifstream f(filepath);
     if(f.good() && !overwrite) {
-        throw std::runtime_error("Overwrite forbidden!");
+        throw std::runtime_error("KeyIOInterface: Overwrite forbidden!");
     }
 
     std::ofstream os;
@@ -104,7 +104,7 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, 
 
     std::ifstream f(filepath);
     if(f.good() && !overwrite) {
-        throw std::runtime_error("Overwrite forbidden!");
+        throw std::runtime_error("KeyIOInterface: Overwrite forbidden!");
     }
 
     std::ofstream myfile;
@@ -116,25 +116,25 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, 
 void RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
     auto result = remove(privateKeyPath);
     if(result == -1) {
-        throw std::runtime_error("Failed to remove private key");
+        throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
 }
 
 void RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
     auto move_call = "cp " + publicKeyPath + " " + publicKeyPath + ".bak";
     if(system(move_call.c_str()) == 256) {
-        throw std::runtime_error("Failed to remove public key");
+        throw std::runtime_error("KeyIOInterface: Failed to remove public key");
     }
     auto rm_call = "rm " + publicKeyPath;
     if(system(rm_call.c_str()) == -1) {
-        throw std::runtime_error("Failed to remove public key");
+        throw std::runtime_error("KeyIOInterface: Failed to remove public key");
     }
 }
 
 std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {
     auto prvKey = get(filepathWithPrvKeyId);
     if(prvKey.empty()) {
-        throw std::runtime_error("Cannot get private key");
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
     return prvKey;
 }

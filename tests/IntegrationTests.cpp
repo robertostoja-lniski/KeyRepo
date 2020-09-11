@@ -873,7 +873,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("Failed to remove private key")) {
+            auto a = e.what();
+            if(e.what() == std::string("KeyIOInterface: Failed to remove private key")) {
                 caught = true;
             }
         }
@@ -932,7 +933,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("Failed to remove public key")) {
+            if(e.what() == std::string("KeyIOInterface: Failed to remove public key")) {
                 caught = true;
             }
         }
@@ -1138,7 +1139,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
         executor->execute();
     } catch (std::exception &e) {
 
-        if(e.what() == std::string("Cannot generate RSA keys")) {
+        if(e.what() == std::string("OpenSSLHandler: Cannot generate RSA keys")) {
             caught = true;
         }
     }
@@ -1170,7 +1171,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
                 caught = true;
             }
         }
@@ -1275,7 +1276,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
                 caught = true;
             }
         }
@@ -1333,7 +1334,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
             executor->execute();
         } catch(std::exception &e) {
             auto tmp = e.what();
-            if(e.what() == std::string("Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
                 caught = true;
             }
         }
@@ -1410,7 +1411,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             try {
                 executor->execute();
             } catch(std::exception &e) {
-                if(e.what() == std::string("Verification failed")) {
+                if(e.what() == std::string("OpenSSLHandler: Verification failed")) {
                     caught = true;
                 }
             }
@@ -1506,7 +1507,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_PUB)
             try {
                 executor->execute();
             } catch (std::exception &e) {
-                if(e.what() == std::string("Could not read pubkey from file")) {
+                if(e.what() == std::string("KeyIOInterface: Could not read pubkey from file")) {
                     caught = true;
                 }
             }
@@ -1585,7 +1586,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
                 executor->execute();
             } catch(std::exception &e) {
                 auto tmp = e.what();
-                if(e.what() == std::string("Verification failed")) {
+                if(e.what() == std::string("OpenSSLHandler: Verification failed")) {
                     caught = true;
                 }
             }
@@ -1620,7 +1621,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_ID)
         executor->execute();
     } catch(std::exception &e) {
         auto tmp = e.what();
-        if(e.what() == std::string("Cannot get private key")) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
             caught = true;
         }
     }
@@ -1651,7 +1652,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_FILE)
         executor->execute();
     } catch(std::exception &e) {
         auto tmp = e.what();
-        if(e.what() == std::string("Cannot get private key")) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
             caught = true;
         }
     }
@@ -1682,7 +1683,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_TEST)
         executor->execute();
     } catch(std::exception &e) {
         auto tmp = e.what();
-        if(e.what() == std::string("Cannot get private key")) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
             caught = true;
         }
     }

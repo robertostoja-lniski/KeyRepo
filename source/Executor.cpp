@@ -28,16 +28,16 @@ std::string Executor::execute() {
         auto overwrite = createKeyStatement->overwrite;
 
         if(algorithm != "RSA") {
-            throw std::runtime_error("Algorithm not supported");
+            throw std::runtime_error("Create key: Algorithm not supported");
         }
 
         auto keyLen = createKeyStatement->keyLen;
         if(keyLen <= 0) {
-            throw std::runtime_error("Key cannot be negative");
+            throw std::runtime_error("Create key: Key cannot be negative");
         }
 
         if(keyLen > MAX_KEY_LEN) {
-            throw std::runtime_error("Keys with len greater that "
+            throw std::runtime_error("Create key: Keys with len greater that "
                     + std::to_string(MAX_KEY_LEN) + " are not supperted");
         }
 
@@ -45,7 +45,7 @@ std::string Executor::execute() {
         auto prvKeyIdPath = createKeyStatement->privateKeyIdFile;
 
         if(pubKeyPath == prvKeyIdPath) {
-            throw std::runtime_error("Prv and Pub files have to differ");
+            throw std::runtime_error("Create key: Prv and Pub files have to differ");
         }
 
         auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
