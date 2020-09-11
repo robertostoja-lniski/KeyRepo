@@ -183,6 +183,182 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
 
+BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
+{
+    std::vector<std::string> input {
+            "program",
+            "create-key",
+            "SHA",
+            "2048",
+            "/tmp/r.ostoja",
+            "/tmp/r.ostoja",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(GetPrivateKeyTooManyParams)
+{
+    std::vector<std::string> input {
+            "program",
+            "get-private-key",
+            "413243",
+            "/tmp/abc",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(DeleteKeyTooManyParams)
+{
+    std::vector<std::string> input {
+            "program",
+            "delete-key",
+            "413243",
+            "/tmp/pubKeyPath",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(DeleteKeyTooManyParamsOverwrite)
+{
+    std::vector<std::string> input {
+            "program",
+            "delete-key",
+            "413243",
+            "/tmp/pubKeyPath",
+            "overwrite"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " overwrite", serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(SignTooManyParams)
+{
+    std::vector<std::string> input {
+            "program_sign",
+            "sign",
+            "/tmp/abc",
+            "312321",
+            "outpath",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(CheckSignatureTooManyParams)
+{
+    std::vector<std::string> input {
+            "program",
+            "check-signature",
+            "/home/abc",
+            "/tmp/pubKeyPath",
+            "signature_path",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+BOOST_AUTO_TEST_CASE(EncryptFileTooManyParams)
+{
+    std::vector<std::string> input {
+            "program",
+            "encrypt-file",
+            "/tmp/file-to-encrypt",
+            "output",
+            "413243",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(DecryptFileTooManyParams)
+{
+    std::vector<std::string> input {
+            "program",
+            "decrypt-file",
+            "/tmp/file-to-decrypt",
+            "output",
+            "413243",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
 {
     std::vector<std::string> input {
