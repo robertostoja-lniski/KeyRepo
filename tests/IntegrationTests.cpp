@@ -1134,7 +1134,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
     auto parser = std::make_shared<Parser>(syntaxAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
-    bool caught = false;
+    bool caught {false};
     try {
         executor->execute();
     } catch (std::exception &e) {
@@ -1729,7 +1729,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
     auto parser = std::make_shared<Parser>(syntaxAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
-    bool error_caught = false;
+    bool error_caught {false};
     try {
         executor->execute();
     } catch (std::exception &e) {
@@ -2110,7 +2110,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
-        bool caught = false;
+        bool caught {false};
         try {
             executor->execute();
         } catch(std::exception &e) {
@@ -2165,7 +2165,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
-        bool caught = false;
+        bool caught {false};
         try {
             executor->execute();
         } catch(std::exception &e) {
@@ -2316,7 +2316,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
         auto parser = std::make_shared<Parser>(syntaxAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
-        bool caught = false;
+        bool caught {false};
         try {
             executor->execute();
         } catch(std::exception &e) {
@@ -2347,7 +2347,7 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
     auto parser = std::make_shared<Parser>(syntaxAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
-    bool caught = false;
+    bool caught {false};
     try {
         executor->execute();
     } catch (std::exception &e) {
