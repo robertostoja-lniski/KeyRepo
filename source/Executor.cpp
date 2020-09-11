@@ -48,7 +48,7 @@ std::string Executor::execute() {
             throw std::runtime_error("Create key: Prv and Pub files have to differ");
         }
 
-        auto r = openSSLHandler->createKey(keyLen, pubKeyPath, prvKeyIdPath);
+        auto r = openSSLHandler->createKey(keyLen);
         interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
         interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
 
