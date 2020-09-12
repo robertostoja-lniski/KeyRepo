@@ -26,6 +26,12 @@ void Parser::generateCreateKeyOption() {
         throw std::runtime_error("Parser: Far too long key len");
     }
 
+    for(auto it = keySize.begin(); it < keySize.end(); it++) {
+        if(!isdigit(*it)) {
+            throw std::runtime_error("Parser: Error in keyLen - unacceptable symbol");
+        }
+    }
+
     numericKeySize = std::stoi(keySize);
     if(numericKeySize < 0) {
         throw std::runtime_error("Parser: Negative size or id");

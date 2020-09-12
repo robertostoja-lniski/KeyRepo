@@ -383,6 +383,38 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
     BOOST_CHECK_EQUAL(msg, "Keys created");
 }
 
+BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
+    std::vector<std::string> input{
+            "program",
+            "create-key",
+            "RSA",
+            "1024",
+            "/tmp/public.pem",
+            "/tmp/private.pem",
+            "overwrite",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto emulatedTerminalArgs = terminalEmulation.getArgs();
+    auto argc = emulatedTerminalArgs.argc;
+    auto argv = emulatedTerminalArgs.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("Create key: Use value of 2048 or higher")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
 {
     {
@@ -1297,9 +1329,10 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
             "program",
             "create-key",
             "RSA",
-            "204w8",
+            "2W0W1",
             "qwertyuio",
             "/tmp/private.pem",
+            "overwrite"
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1315,7 +1348,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
         executor->execute();
     } catch (std::exception &e) {
 
-        if(e.what() == std::string("OpenSSLHandler: Cannot generate RSA keys")) {
+        auto msg = e.what();
+        if(e.what() == std::string("Parser: Error in keyLen - unacceptable symbol")) {
             caught = true;
         }
     }
