@@ -5,11 +5,39 @@
 #include <sstream>
 #include "../include/KernelEmulation.h"
 
-uint64_t generateRandomId(){
+uint64_t generateRandomId(void* mappedPartition){
     std::random_device dev;
     std::mt19937 gen(dev());
     std::uniform_int_distribution<uint64_t> uDist(0, UINT64_MAX);
-    return uDist(gen);
+    int generateTrials = 10;
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t mapSize = partitionInfo->mapSize;
+
+    int foundSameId = false;
+    uint64_t newId;
+    while(generateTrials--) {
+
+        newId = uDist(gen);
+        MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+        uint64_t id;
+        for(int i = 0; i < mapSize; i++) {
+            uint64_t offset = currentElementInMap->offset;
+            id = currentElementInMap->id;
+
+            if(id == newId) {
+                foundSameId = true;
+            }
+        }
+
+        if(!foundSameId) {
+            break;
+        }
+    }
+
+    return newId;
+    // assertion implies that there is an error with random function
+    assert(generateTrials == 0);
 }
 
 int initFileIfNotDefined() {
@@ -56,6 +84,7 @@ int initFileIfNotDefined() {
 
     void* partitionStart = mappedPartition;
     if(mappedPartition == MAP_FAILED) {
+        munmap(mappedPartition, fileSize);
         close(fd);
         return 1;
     }
@@ -64,7 +93,12 @@ int initFileIfNotDefined() {
     MapNode* mapPosition = (MapNode* )((PartitionInfo* )mappedPartition + 1);
     for(int i = 0; i < partitionInfo->mapSize; i++) {
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
-        mapData -> id = generateRandomId();
+        if(!mapData) {
+            munmap(mappedPartition, fileSize);
+            close(fd);
+            return 1;
+        }
+        mapData -> id = 0;
         mapData -> offset = 0;
         memcpy(mapPosition, mapData, sizeof(*mapData));
         mapPosition = mapPosition + 1;
@@ -114,6 +148,8 @@ size_t getFileSize(const char* filename) {
 int getCurrentKeyNumFromEmulation() {
     return data.numberOfKeys;
 }
+
+
 
 uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
     initFileIfNotDefined();
@@ -211,7 +247,8 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
     for(int i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
         if(offset == 0) {
-            id = currentElementInMap->id;
+            id = generateRandomId(mappedPartition);
+            currentElementInMap->id = id;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
