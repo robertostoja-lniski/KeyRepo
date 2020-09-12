@@ -30,13 +30,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#define DEFAULT_MAP_SIZE 128
+#define MAX_KEY_NUM 128
+#define DEFAULT_MAP_SIZE MAX_KEY_NUM
 #define DEFAULT_NUMBER_OF_KEYS 0
 enum {
     VERBOSE_NO = 0,
     VERBOSE_LOW = 1,
     VERBOSE_HIGH = 2,
 };
+
+// VERBOSE_NO for no prints
+// VERBOSE_LOW for the most important info
 
 #define VERBOSE_LEVEL VERBOSE_NO
 
@@ -54,7 +58,7 @@ struct MapNode {
 struct PartitionInfo {
     uint64_t numberOfKeys {0};
     uint64_t fileContentSize;
-    uint64_t mapSize {128};
+    uint64_t mapSize {MAX_KEY_NUM};
 };
 
 struct KeyNode {
@@ -92,9 +96,8 @@ std::string getPrvKeyById(uint64_t id);
 int removePrvKeyById(uint64_t id);
 void print(std::string str);
 std::string getPathToTmpPrvKeyStorage(std::string key);
-
+int isPartitionFull();
 int getCurrentKeyNumFromEmulation();
-
 // PUBLIC
 int getCurrentKeyNum();
 AddKeyInfo write(RSA* r);

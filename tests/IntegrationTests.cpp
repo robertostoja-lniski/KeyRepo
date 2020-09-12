@@ -5,7 +5,7 @@
 #include "../include/Executor.h"
 #include <memory>
 
-#define LONG_RUN 0
+#define LONG_RUN 1
 
 #include <iostream>
 namespace testHelpers {
@@ -965,6 +965,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
                 "2048",
                 "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1019,6 +1020,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
                 "2048",
                 "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1053,6 +1055,63 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
 
         BOOST_CHECK_EQUAL(127, keysInPartition);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    for (int i = 0; i < 128; i++)
+    {
+        auto str = std::to_string(i);
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public" + str + ".pem",
+                "/tmp/private" + str + ".pem",
+                "overwrite"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "RSA",
+                "2048",
+                "/tmp/public128.pem",
+                "/tmp/private128.pem",
+                "overwrite"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            if(e.what() == std::string("KeyIOInterface: Partition full")) {
+                caught = true;
+            }
+        }
+        BOOST_CHECK_EQUAL(caught, true);
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }

@@ -149,26 +149,47 @@ int getCurrentKeyNumFromEmulation() {
     return data.numberOfKeys;
 }
 
+int isPartitionFull() {
 
+}
 
 uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
+
     initFileIfNotDefined();
-    size_t fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + 16 * sizeof(keyNodeToAdd.keySize) + 16;
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "when adding new node file size is: " << fileSize << std::endl;
+    if(data.numberOfKeys == MAX_KEY_NUM) {
+        return 0;
     }
 
-    //Open file
     int fd = open(partition.c_str(), O_RDWR, 0);
     if(fd < 0) {
         return 1;
     }
-    ftruncate(fd, fileSize);
-    close(fd);
 
-    fd = open(partition.c_str(), O_RDWR, 0);
-    if(fd < 0) {
-        return 1;
+    size_t fileSize = getFileSize(partition.c_str());
+    void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* partitionStart = mappedPartition;
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t usedFileSize = partitionInfo->fileContentSize;
+
+    bool isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
+
+    int retSizeCheck = munmap(mappedPartition, fileSize);
+    assert(retSizeCheck == 0);
+
+    if(isSizeExtNeeded) {
+        fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
+        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+            std::cout << "when adding new node file size is: " << fileSize << std::endl;
+        }
+
+        ftruncate(fd, fileSize);
+        close(fd);
+
+        fd = open(partition.c_str(), O_RDWR, 0);
+        if(fd < 0) {
+            return 1;
+        }
     }
 
     if(fileSize != getFileSize(partition.c_str())) {
@@ -178,8 +199,8 @@ uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
         std::cout << std::endl << "file size is " << fileSize << std::endl;
     }
 
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
-    void* partitionStart = mappedPartition;
+    mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    partitionStart = mappedPartition;
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
@@ -248,7 +269,6 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
         uint64_t offset = currentElementInMap->offset;
         if(offset == 0) {
             id = generateRandomId(mappedPartition);
-            currentElementInMap->id = id;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
@@ -261,8 +281,6 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
 
     elementDataToUpdate->offset = offsetToAdd;
     elementDataToUpdate->id = id;
-
-    assert(currentElementInMap->id == elementDataToUpdate->id);
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
     free(elementDataToUpdate);
@@ -332,13 +350,18 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
     uint64_t offset;
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
+
         if(currentId == id) {
             offset = currentElementInMap->offset;
             currentElementInMap->offset = 0;
+
             KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
-            memset(keyPlaceToRemove, 0x00, sizeof(keyPlaceToRemove->keySize) + sizeof(keyPlaceToRemove->data));
+            size_t sizeToRemove = sizeof(keyPlaceToRemove->keySize) + sizeof(keyPlaceToRemove->data);
+
+            memset(keyPlaceToRemove, 0x00, sizeToRemove);
             PartitionInfo* partitionInfoToChange = (PartitionInfo* )mappedPartition;
             partitionInfoToChange->numberOfKeys -= 1;
+            partitionInfoToChange->fileContentSize -= sizeToRemove;
             memcpy(&data, partitionInfoToChange, sizeof(PartitionInfo));
             // TODO change partition info key num
             return 0;
