@@ -12,7 +12,7 @@
 
 #define VERBOSE 0
 #define MAX_KEY_LEN 16 * 4096
-#define MIN_KEY_LEN 1
+#define MIN_KEY_LEN 2048
 
 std::string Executor::execute() {
     parser->parse();
@@ -34,6 +34,10 @@ std::string Executor::execute() {
         auto keyLen = createKeyStatement->keyLen;
         if(keyLen <= 0) {
             throw std::runtime_error("Create key: Key cannot be negative");
+        }
+
+        if(keyLen < MIN_KEY_LEN) {
+            throw std::runtime_error("Create key: Use value of 2048 or higher");
         }
 
         if(keyLen > MAX_KEY_LEN) {
