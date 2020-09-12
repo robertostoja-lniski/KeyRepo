@@ -89,6 +89,10 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
+    if(result.id == 0) {
+        throw std::runtime_error("KeyIOInterface: Partition full");
+    }
+
     std::ifstream f(filepath);
     if(f.good() && !overwrite) {
         throw std::runtime_error("KeyIOInterface: Overwrite forbidden!");
