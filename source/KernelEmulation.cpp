@@ -51,10 +51,10 @@ int initFileIfNotDefined() {
 
     partitionInfo->mapSize = DEFAULT_MAP_SIZE;
     partitionInfo->numberOfKeys = DEFAULT_NUMBER_OF_KEYS;
-    partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode);
+    partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
 
+    uint64_t fileSize = partitionInfo->fileContentSize;
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
-    size_t fileSize = sizeof(PartitionInfo) + sizeof(KeyNode) * partitionInfo->mapSize;
     //Open file
     std::ofstream os(partition.c_str());
     os << "";
@@ -149,8 +149,65 @@ int getCurrentKeyNumFromEmulation() {
     return data.numberOfKeys;
 }
 
-int isPartitionFull() {
+uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
 
+    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+        std::cout << "BEFORE DEFRAGMENTATION" << std::endl;
+        printPartition(partitionInfo);
+    }
+
+    // create new map
+    MapNode* tmpMap = (MapNode* )malloc(sizeof(MapNode) * partitionInfo->numberOfKeys);
+    if(!tmpMap) {
+        return 0;
+    }
+
+    uint64_t mapSize = partitionInfo->mapSize;
+    MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+    int tmpMapIndex = 0;
+    uint64_t changedOffset = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
+
+    for(int i = 0; i < mapSize; i++) {
+        uint64_t offset = currentElementInMap->offset;
+        uint64_t id = currentElementInMap->id;
+        uint64_t size = currentElementInMap->size;
+
+        if(offset != 0) {
+
+            uint8_t* keyContent = (uint8_t* )malloc(size);
+            if(!keyContent) {
+                free(tmpMap);
+                return 0;
+            }
+
+            memcpy(keyContent, ((uint8_t* )partitionInfo + offset), size);
+            memcpy(((uint8_t* )partitionInfo + changedOffset), keyContent, size);
+
+            free(keyContent);
+
+            tmpMap[tmpMapIndex].id = id;
+            tmpMap[tmpMapIndex].offset = changedOffset;
+            tmpMap[tmpMapIndex].size = size;
+
+            changedOffset += size;
+//            changedOffset += changedOffset % NODE_SIZE;
+            tmpMapIndex++;
+        }
+        currentElementInMap = currentElementInMap + 1;
+    }
+
+    currentElementInMap = (MapNode* )(partitionInfo + 1);
+    memcpy(currentElementInMap, tmpMap, sizeof(MapNode) * partitionInfo->numberOfKeys);
+    memset(currentElementInMap + partitionInfo->numberOfKeys, 0x00, sizeof(MapNode) * (MAX_KEY_NUM - partitionInfo->numberOfKeys));
+
+    free(tmpMap);
+
+    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+        std::cout << "AFTER DEFRAGMENTATION" << std::endl;
+        std::cout << "Changed offset is: " << changedOffset << std::endl;
+        printPartition(partitionInfo);
+    }
+    return changedOffset;
 }
 
 uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
@@ -172,15 +229,17 @@ uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t usedFileSize = partitionInfo->fileContentSize;
 
-    bool isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
+    bool isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd.keySize;
 
     int retSizeCheck = munmap(mappedPartition, fileSize);
     assert(retSizeCheck == 0);
 
     if(isSizeExtNeeded) {
-        fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize + sizeof(keyNodeToAdd.keySize);
+        fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize;
         if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-            std::cout << "when adding new node file size is: " << fileSize << std::endl;
+            std::cout << "when adding new node ext file size is: " << fileSize << std::endl;
+            std::cout << "real file size is " << getFileSize(partition.c_str()) << std::endl;
+            std::cout << "key size is " << keyNodeToAdd.keySize << std::endl;
         }
 
         ftruncate(fd, fileSize);
@@ -245,7 +304,8 @@ void printPartition(const void* mappedPartition) {
         uint64_t offset = currentElementInMap->offset;
         if(offset != 0) {
             id = currentElementInMap->id;
-            std::cout << "For " << i << " node in map there was found id: " << id << " and offset " << offset <<  std::endl;
+            std::cout << "For " << i << " node in map there was found id: " << id << " and offset " << offset
+                << " and size " << currentElementInMap->size <<  std::endl;
         }
         currentElementInMap = currentElementInMap + 1;
     }
@@ -256,6 +316,8 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
+    assert(partitionInfo->numberOfKeys <= MAX_KEY_NUM);
+
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
         std::cout << "offset to add is: " << offsetToAdd << std::endl;
         std::cout << "The difference should be: " << (uint8_t *)(partitionInfo + 1) - (uint8_t *)(partitionInfo) << std::endl;
@@ -265,13 +327,20 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
     uint64_t mapSize = partitionInfo->mapSize;
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t id;
+    uint64_t prevOffset = currentElementInMap->offset;
     for(int i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
+        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+            std::cout << i << " offset: " << offset << std::endl;
+            std::cout << "offset diff is: " << offset - prevOffset << std::endl;
+        }
+
         if(offset == 0) {
             id = generateRandomId(mappedPartition);
             break;
         }
         currentElementInMap = currentElementInMap + 1;
+        prevOffset = offset;
     }
 
     MapNode* elementDataToUpdate = (MapNode* )malloc(sizeof(MapNode));
@@ -279,14 +348,19 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
         return 1;
     }
 
+    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
+        std::cout << "New element is: " << offsetToAdd << " " << id << " " << keyNodeToAdd.keySize << std::endl;
+    }
+
     elementDataToUpdate->offset = offsetToAdd;
     elementDataToUpdate->id = id;
+    elementDataToUpdate->size = keyNodeToAdd.keySize;
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
     free(elementDataToUpdate);
 
 
-    KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offsetToAdd);
+    KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
         std::cout << "map start " << partitionInfo + 1 << std::endl;
         std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
@@ -296,6 +370,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
     }
 
     memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
+
 
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
         std::cout << "Key place to add data after cpy: " << keyPlaceToAdd->data <<std::endl;
@@ -337,7 +412,7 @@ std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
         return "";
     }
 //        std::cout << "offset is " << offset << std::endl;
-    KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
+    KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
     return keyPlaceToAdd->data;
 }
 
@@ -355,9 +430,10 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
             offset = currentElementInMap->offset;
             currentElementInMap->offset = 0;
 
-            KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)(partitionInfo + 1) + offset);
-            size_t sizeToRemove = sizeof(keyPlaceToRemove->keySize) + sizeof(keyPlaceToRemove->data);
-
+            KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
+            uint64_t sizeToRemove = currentElementInMap->size;
+            currentElementInMap->size = 0;
+            currentElementInMap->id = 0;
             memset(keyPlaceToRemove, 0x00, sizeToRemove);
             PartitionInfo* partitionInfoToChange = (PartitionInfo* )mappedPartition;
             partitionInfoToChange->numberOfKeys -= 1;
@@ -422,6 +498,30 @@ int removePrvKeyById(uint64_t id) {
     }
 
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
+    if(removeRet != 0) {
+        int ret = munmap(mappedPartition, fileSize);
+        close(fd);
+        assert(ret == 0);
+    }
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t fileContentSize = partitionInfo->fileContentSize;
+    uint64_t numberOfKeys = partitionInfo->numberOfKeys;
+    uint64_t metadataSize = sizeof(PartitionInfo) + partitionInfo->mapSize * sizeof(MapNode);
+
+    if(numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
+
+        uint64_t changedSize = removeFragmentation(partitionInfo);
+        if(changedSize!= 0) {
+            ftruncate(fd, changedSize);
+        }
+
+        partitionInfo->fileContentSize = changedSize;
+    }
+
+    if(numberOfKeys == 0) {
+        ftruncate(fd, metadataSize);
+    }
 
     int ret = munmap(mappedPartition, fileSize);
     assert(ret == 0);
