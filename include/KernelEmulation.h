@@ -31,8 +31,11 @@
 #include <string.h>
 
 #define MAX_KEY_NUM 128
+#define NODE_SIZE 2048
 #define DEFAULT_MAP_SIZE MAX_KEY_NUM
 #define DEFAULT_NUMBER_OF_KEYS 0
+#define REDUCTION_PARAM 2
+
 enum {
     VERBOSE_NO = 0,
     VERBOSE_LOW = 1,
@@ -53,6 +56,7 @@ struct AddKeyInfo {
 struct MapNode {
     uint64_t id;
     uint64_t offset {0};
+    uint64_t size {0};
 };
 
 struct PartitionInfo {
@@ -67,7 +71,6 @@ struct KeyNode {
 };
 
 struct KeyPartitionNode {
-    uint32_t keySize {0};
     char data[4096] = "UNDEFINED";
 };
 
@@ -98,6 +101,7 @@ void print(std::string str);
 std::string getPathToTmpPrvKeyStorage(std::string key);
 int isPartitionFull();
 int getCurrentKeyNumFromEmulation();
+uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
 int getCurrentKeyNum();
 AddKeyInfo write(RSA* r);
