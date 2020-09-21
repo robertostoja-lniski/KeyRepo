@@ -16,10 +16,10 @@ void Parser::parse() {
 }
 
 void Parser::generateCreateKeyOption() {
-    auto algorithm = syntaxAnalyser->getNextToken().value;
-    auto keySize = syntaxAnalyser->getNextToken().value;
-    auto pubKeyPath = syntaxAnalyser->getNextToken().value;
     auto privateKeyIdFile = syntaxAnalyser->getNextToken().value;
+    auto pubKeyPath = syntaxAnalyser->getNextToken().value;
+    auto keySize = syntaxAnalyser->getNextToken().value;
+    auto algorithm = syntaxAnalyser->getNextToken().value;
     int numericKeySize;
 
     if(keySize.length() > 9) {
@@ -37,7 +37,7 @@ void Parser::generateCreateKeyOption() {
         throw std::runtime_error("Parser: Negative size or id");
     }
 
-    CreateKeyStatement createKeyStatement(algorithm, numericKeySize, pubKeyPath, privateKeyIdFile);
+    CreateKeyStatement createKeyStatement(privateKeyIdFile, pubKeyPath, numericKeySize, algorithm);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
@@ -72,11 +72,11 @@ void Parser::generateDeleteKeyOption() {
     currentParsedStatement = std::make_shared<DeleteKeyStatement>(deleteKeyStatement);
 }
 void Parser::generateSignOption() {
-    auto fileToBeSigned = syntaxAnalyser->getNextToken().value;
     auto privateKeyFilePath = syntaxAnalyser->getNextToken().value;
+    auto fileToBeSigned = syntaxAnalyser->getNextToken().value;
     auto signatureOutput = syntaxAnalyser->getNextToken().value;
 
-    SignStatement signStatement(fileToBeSigned, privateKeyFilePath, signatureOutput);
+    SignStatement signStatement(privateKeyFilePath, fileToBeSigned, signatureOutput);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
@@ -88,20 +88,20 @@ void Parser::generateSignOption() {
     currentParsedStatement = std::make_shared<SignStatement>(signStatement);
 }
 void Parser::generateCheckSignatureOption() {
-    auto fileToBeChecked = syntaxAnalyser->getNextToken().value;
     auto pubKeyPath = syntaxAnalyser->getNextToken().value;
+    auto fileToBeChecked = syntaxAnalyser->getNextToken().value;
     auto signatureInput = syntaxAnalyser->getNextToken().value;
 
-    CheckSignatureStatement checkSignatureStatement(fileToBeChecked, pubKeyPath, signatureInput);
+    CheckSignatureStatement checkSignatureStatement(pubKeyPath, fileToBeChecked, signatureInput);
     currentParsedStatement = std::make_shared<CheckSignatureStatement>(checkSignatureStatement);
 }
 
 void Parser::generateEncryptFileOption() {
+    auto filePathWithPrivateKey = syntaxAnalyser->getNextToken().value;
     auto fileToBeEncrypted = syntaxAnalyser->getNextToken().value;
     auto output = syntaxAnalyser->getNextToken().value;
-    auto filePathWithPrivateKey = syntaxAnalyser->getNextToken().value;
 
-    EncryptFileStatement encryptFileStatement(fileToBeEncrypted, output, filePathWithPrivateKey);
+    EncryptFileStatement encryptFileStatement(filePathWithPrivateKey, fileToBeEncrypted, output);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
@@ -114,11 +114,11 @@ void Parser::generateEncryptFileOption() {
 }
 
 void Parser::generateDecryptFileOption() {
+    auto filePathToPublicKey = syntaxAnalyser->getNextToken().value;
     auto fileToBeDecrypted = syntaxAnalyser->getNextToken().value;
     auto output = syntaxAnalyser->getNextToken().value;
-    auto filePathToPublicKey = syntaxAnalyser->getNextToken().value;
 
-    DecryptFileStatement decryptFileStatement(fileToBeDecrypted, output, filePathToPublicKey);
+    DecryptFileStatement decryptFileStatement(filePathToPublicKey, fileToBeDecrypted, output);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
