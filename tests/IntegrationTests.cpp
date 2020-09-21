@@ -41,10 +41,10 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "SHA",
+            "/tmp/r.ostoja",
+            "/tmp/r.ostoja",
             "2048",
-            "/tmp/r.ostoja",
-            "/tmp/r.ostoja",
+            "SHA",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
     std::vector<std::string> input {
             "program",
             "get-private-key",
-            "413243",
+            "/tmp/private",
             "/tmp/abc",
     };
     TerminalEmulation terminalEmulation(input);
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_2)
     std::vector<std::string> input {
             "program",
             "delete-key",
-            "413243",
+            "/tmp/private",
             "/tmp/pubKeyPath"
     };
     TerminalEmulation terminalEmulation(input);
@@ -103,8 +103,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_3)
     std::vector<std::string> input {
             "program_sign",
             "sign",
-            "/tmp/abc",
-            "312321",
+            "/tmp/private",
+            "/tmp/signature",
             "outpath",
     };
     TerminalEmulation terminalEmulation(input);
@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_4)
     std::vector<std::string> input {
             "program",
             "check-signature",
-            "/home/abc",
             "/tmp/pubKeyPath",
+            "/tmp/signature",
             "signature_path"
     };
     TerminalEmulation terminalEmulation(input);
@@ -145,9 +145,9 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_5)
     std::vector<std::string> input {
             "program",
             "encrypt-file",
-            "/tmp/file-to-encrypt",
-            "output",
-            "413243",
+            "/tmp/private-key",
+            "/tmp/file_to_encrypt",
+            "/tmp/path_to_encrypted_file",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -166,9 +166,10 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     std::vector<std::string> input {
             "program",
             "decrypt-file",
-            "/tmp/file-to-decrypt",
+            "/tmp/public_key",
+            "/tmp/encrypted_file",
+            "/tmp/path_to_decrypted_file",
             "output",
-            "413243",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -180,7 +181,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
-    BOOST_CHECK_EQUAL(statement, serialisedInput);
+    BOOST_CHECK_EQUAL(statement + " output", serialisedInput);
 }
 
 BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
@@ -190,10 +191,10 @@ BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "SHA",
+            "/tmp/r.ostoja_private",
+            "/tmp/r.ostoja_public",
             "2048",
-            "/tmp/r.ostoja",
-            "/tmp/r.ostoja",
+            "SHA",
             "additional_param"
     };
     TerminalEmulation terminalEmulation(input);
@@ -216,7 +217,7 @@ BOOST_AUTO_TEST_CASE(GetPrivateKeyTooManyParams)
     std::vector<std::string> input {
             "program",
             "get-private-key",
-            "413243",
+            "/tmp/private",
             "/tmp/abc",
             "additional_param"
     };
@@ -237,7 +238,7 @@ BOOST_AUTO_TEST_CASE(DeleteKeyTooManyParams)
     std::vector<std::string> input {
             "program",
             "delete-key",
-            "413243",
+            "/tmp/private",
             "/tmp/pubKeyPath",
             "additional_param"
     };
@@ -258,7 +259,7 @@ BOOST_AUTO_TEST_CASE(DeleteKeyTooManyParamsOverwrite)
     std::vector<std::string> input {
             "program",
             "delete-key",
-            "413243",
+            "/tmp/private",
             "/tmp/pubKeyPath",
             "overwrite"
     };
@@ -279,10 +280,9 @@ BOOST_AUTO_TEST_CASE(SignTooManyParams)
     std::vector<std::string> input {
             "program_sign",
             "sign",
-            "/tmp/abc",
-            "312321",
-            "outpath",
-            "additional_param"
+            "/tmp/abc_private",
+            "/tmp/abc_public",
+            "output",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -294,14 +294,14 @@ BOOST_AUTO_TEST_CASE(SignTooManyParams)
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
-    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
 BOOST_AUTO_TEST_CASE(CheckSignatureTooManyParams)
 {
     std::vector<std::string> input {
             "program",
             "check-signature",
-            "/home/abc",
+            "/tmp/private",
             "/tmp/pubKeyPath",
             "signature_path",
             "additional_param"
@@ -323,9 +323,9 @@ BOOST_AUTO_TEST_CASE(EncryptFileTooManyParams)
     std::vector<std::string> input {
             "program",
             "encrypt-file",
+            "/tmp/private-key",
             "/tmp/file-to-encrypt",
-            "output",
-            "413243",
+            "/tmp/path_to_encrypted_file",
             "additional_param"
     };
     TerminalEmulation terminalEmulation(input);
@@ -371,10 +371,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "RSA",
-            "2048",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "2048",
+            "RSA",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -396,10 +396,10 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
     std::vector<std::string> input{
             "program",
             "create-key",
-            "RSA",
-            "1024",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "1024",
+            "RSA",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -432,10 +432,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -452,8 +452,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
         std::vector<std::string> input {
                 "program",
                 "sign",
-                "/tmp/file.txt",
                 "/tmp/private.pem",
+                "/tmp/file.txt",
                 "/tmp/signature.txt",
                 "overwrite"
         };
@@ -482,10 +482,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -530,10 +530,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -579,10 +579,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -628,10 +628,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -648,9 +648,9 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
         std::vector<std::string> input {
                 "program",
                 "encrypt-file",
+                "/tmp/private.pem",
                 "/tmp/file_to_encrypt.txt",
                 "/tmp/encrypted_file.txt",
-                "/tmp/private.pem",
                 "overwrite"
         };
 
@@ -678,10 +678,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -698,9 +698,9 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
         std::vector<std::string> input {
                 "program",
                 "decrypt-file",
+                "/tmp/public.pem",
                 "/tmp/file_to_decrypt.txt",
                 "/tmp/decrypted_file.txt",
-                "/tmp/public.pem",
                 "overwrite"
         };
 
@@ -728,10 +728,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -748,8 +748,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         std::vector<std::string> input {
                 "program",
                 "sign",
-                "/tmp/file.txt",
                 "/tmp/private.pem",
+                "/tmp/file.txt",
                 "/tmp/signature.txt",
                 "overwrite"
         };
@@ -768,8 +768,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         std::vector<std::string> input {
                 "program",
                 "check-signature",
-                "/tmp/file.txt",
                 "/tmp/public.pem",
+                "/tmp/file.txt",
                 "/tmp/signature.txt",
         };
 
@@ -797,10 +797,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             std::vector<std::string> input {
                     "program",
                     "create-key",
-                    "RSA",
-                    "2048",
-                    "/tmp/public.pem",
                     "/tmp/private.pem",
+                    "/tmp/public.pem",
+                    "2048",
+                    "RSA",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -817,8 +817,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             std::vector<std::string> input {
                     "program",
                     "sign",
-                    "/tmp/file.txt",
                     "/tmp/private.pem",
+                    "/tmp/file.txt",
                     "/tmp/signature.txt",
             };
 
@@ -836,8 +836,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             std::vector<std::string> input {
                     "program",
                     "check-signature",
-                    "/tmp/file.txt",
                     "/tmp/public.pem",
+                    "/tmp/file.txt",
                     "/tmp/signature.txt",
             };
 
@@ -864,10 +864,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
             std::vector<std::string> input {
                     "program",
                     "create-key",
-                    "RSA",
-                    "2048",
-                    "/tmp/public.pem",
                     "/tmp/private.pem",
+                    "/tmp/public.pem",
+                    "2048",
+                    "RSA",
                     "overwrite",
             };
             TerminalEmulation terminalEmulation(input);
@@ -894,10 +894,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -915,10 +915,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -945,11 +945,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
-                "overwrite",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -995,10 +995,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1052,10 +1052,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1106,10 +1106,10 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1126,10 +1126,10 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public128.pem",
                 "/tmp/private128.pem",
+                "/tmp/public128.pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1164,10 +1164,10 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1248,10 +1248,10 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) 
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1343,10 +1343,10 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
             std::vector<std::string> input {
                     "program",
                     "create-key",
-                    "RSA",
-                    "2048",
-                    "/tmp/public" + str + ".pem",
                     "/tmp/private" + str + ".pem",
+                    "/tmp/public" + str + ".pem",
+                    "2048",
+                    "RSA",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -1434,10 +1434,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public.pem",
                 "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1519,10 +1519,11 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_2)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "NO-ALGORITHM",
-            "2048",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "2048",
+            "NO-ALGORITHM",
+
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1548,10 +1549,10 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_3)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "RSA",
-            "-2048",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "-2048",
+            "RSA",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1577,10 +1578,10 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_4)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "RSA",
-            "0",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "0",
+            "RSA",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1605,10 +1606,10 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_5)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "RSA",
-            "10000000",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "10000000",
+            "RSA",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1633,10 +1634,10 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_6)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "RSA",
-            "100000000000000000000",
-            "/tmp/public.pem",
             "/tmp/private.pem",
+            "/tmp/public.pem",
+            "100000000000000000000",
+            "RSA",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -1662,10 +1663,10 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "RSA",
-            "2W0W1",
-            "qwertyuio",
             "/tmp/private.pem",
+            "qwertyuio",
+            "2W0W1",
+            "RSA",
             "overwrite"
     };
     TerminalEmulation terminalEmulation(input);
@@ -1698,8 +1699,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
         std::vector<std::string> input{
                 "program",
                 "sign",
-                "/tmp/sign_error_1_file.txt",
                 "/tmp/sign_error_1_private.pem",
+                "/tmp/sign_error_1_file.txt",
                 "/tmp/sign_error_1_signature.txt",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1731,10 +1732,10 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/sign_error_2_public.pem",
                 "/tmp/sign_error_2_private.pem",
+                "/tmp/sign_error_2_public.pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1754,8 +1755,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
         std::vector<std::string> input{
                 "program",
                 "sign",
-                "/tmp/sign_error_2_file.txt",
                 "/tmp/sign_error_2_private.pem",
+                "/tmp/sign_error_2_file.txt",
                 "/tmp/sign_error_2_signature.txt",
                 "overwrite"
         };
@@ -1780,10 +1781,10 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/sign_error_3_public.pem",
                 "/tmp/sign_error_3_private.pem",
+                "/tmp/sign_error_3_public.pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1803,8 +1804,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
         std::vector<std::string> input{
                 "program",
                 "sign",
-                "/tmp/sign_error_3_file.txt",
                 "/tmp/sign_error_3_private.pem",
+                "/tmp/sign_error_3_file.txt",
                 "/tmp/sign_error_3_signature.txt",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1837,10 +1838,10 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/sing_error_4_public.pem",
                 "/tmp/sing_error_4_private.pem",
+                "/tmp/sing_error_4_public.pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -1860,8 +1861,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
         std::vector<std::string> input{
                 "program",
                 "sign",
-                "/tmp/sign_error_4_file.txt",
                 "/tmp/sign_error_4_private.pem",
+                "/tmp/sign_error_4_file.txt",
                 "/tmp/sign_error_4_signature.txt",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1896,10 +1897,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             std::vector<std::string> input{
                     "program",
                     "create-key",
-                    "RSA",
-                    "2048",
-                    "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
+                    "2048",
+                    "RSA",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -1916,8 +1917,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             std::vector<std::string> input{
                     "program",
                     "sign",
-                    "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_signature.txt",
                     "overwrite"
             };
@@ -1937,8 +1938,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             std::vector<std::string> input{
                     "program",
                     "check-signature",
-                    "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_signature.txt",
             };
 
@@ -1974,10 +1975,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_PUB)
             std::vector<std::string> input{
                     "program",
                     "create-key",
-                    "RSA",
-                    "2048",
-                    "/tmp/CHECK_SIGNATURE_WRONG_PUB_public.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_private.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_PUB_public.pem",
+                    "2048",
+                    "RSA",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -1994,8 +1995,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_PUB)
             std::vector<std::string> input{
                     "program",
                     "sign",
-                    "/tmp/CHECK_SIGNATURE_WRONG_PUB_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_private.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_PUB_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_signature.txt",
                     "overwrite"
             };
@@ -2033,8 +2034,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_PUB)
             std::vector<std::string> input{
                     "program",
                     "check-signature",
-                    "/tmp/CHECK_SIGNATURE_WRONG_PUB_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_public.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_PUB_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_signature.txt",
             };
 
@@ -2070,10 +2071,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             std::vector<std::string> input{
                     "program",
                     "create-key",
-                    "RSA",
-                    "2048",
-                    "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_public.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_private.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_public.pem",
+                    "2048",
+                    "RSA",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -2090,8 +2091,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             std::vector<std::string> input{
                     "program",
                     "sign",
-                    "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_private.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_signature.txt",
                     "overwrite"
             };
@@ -2111,8 +2112,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             std::vector<std::string> input{
                     "program",
                     "check-signature",
-                    "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_public.pem",
+                    "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_signature.txt",
             };
 
@@ -2241,10 +2242,10 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/pubkey.pem",
                 "/tmp/prvkey.pem",
+                "/tmp/pubkey.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2288,10 +2289,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
     std::vector<std::string> input {
             "program",
             "create-key",
-            "SHA",
+            "/home/r.ostoja",
+            "/home/r.ostoja",
             "2048",
-            "/home/r.ostoja",
-            "/home/r.ostoja",
+            "SHA",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -2333,9 +2334,9 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST)
     std::vector<std::string> input {
             "program_sign",
             "sign",
+            "outpath",
             "/home/abc",
             "312321",
-            "outpath",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -2404,10 +2405,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2425,10 +2426,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2456,10 +2457,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2477,10 +2478,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2509,10 +2510,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2530,10 +2531,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -2566,10 +2567,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2587,10 +2588,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -2619,12 +2620,11 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
-
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -2640,10 +2640,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -2674,10 +2674,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2695,10 +2695,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/to_overwrite.pem",
                 "/tmp/to_overwrite_prv.pem",
+                "/tmp/to_overwrite.pem",
+                "2048",
+                "RSA",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -2727,10 +2727,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/sign_test.pem",
                 "/tmp/sign_test_prv.pem",
+                "/tmp/sign_test.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2747,8 +2747,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
         std::vector<std::string> input {
                 "program_sign",
                 "sign",
-                "/tmp/to_check",
                 "/tmp/sign_test_prv.pem",
+                "/tmp/to_check",
                 "/tmp/result",
                 "overwrite"
         };
@@ -2775,10 +2775,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/sign_test.pem",
                 "/tmp/sign_test_prv.pem",
+                "/tmp/sign_test.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2795,8 +2795,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
         std::vector<std::string> input {
                 "program_sign",
                 "sign",
-                "/tmp/to_check",
                 "/tmp/sign_test_prv.pem",
+                "/tmp/to_check",
                 "/tmp/result",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2827,10 +2827,10 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/sign_test.pem",
                 "/tmp/sign_test_prv.pem",
+                "/tmp/sign_test.pem",
+                "2048",
+                "RSA",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2847,8 +2847,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
         std::vector<std::string> input {
                 "program_sign",
                 "sign",
-                "/tmp/to_check",
                 "/tmp/sign_test_prv.pem",
+                "/tmp/to_check",
                 "/tmp/result",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2876,10 +2876,10 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
     std::vector<std::string> input{
             "program",
             "create-key",
-            "RSA",
+            "/tmp/same_path.pem",
+            "/tmp/same_path.pem",
             "2048",
-            "/tmp/same_path.pem",
-            "/tmp/same_path.pem",
+            "RSA",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -2907,10 +2907,10 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
     std::vector<std::string> input{
             "program",
             "create-key",
-            "RSA",
+            "/tmp/same_path.pem",
+            "/tmp/same_path.pem",
             "2048",
-            "/tmp/same_path.pem",
-            "/tmp/same_path.pem",
+            "RSA",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -2944,10 +2944,10 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
         std::vector<std::string> input {
                 "program",
                 "create-key",
-                "RSA",
-                "2048",
-                "/tmp/public" + str + ".pem",
                 "/tmp/private" + str + ".pem",
+                "/tmp/public" + str + ".pem",
+                "2048",
+                "RSA",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
