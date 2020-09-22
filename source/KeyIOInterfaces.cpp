@@ -37,6 +37,11 @@ std::string RsaKeyFileIOInterface::readMessageFromFile(std::string filepath) {
     std::string fileContent;
     std::string line;
     std::ifstream fileToRead(filepath);
+
+    if(!fileToRead.good()) {
+        throw std::runtime_error("KeyIOInterface: Failed to read file");
+    }
+
     if (fileToRead.is_open()) {
         while (getline(fileToRead,line)) {
             fileContent += line + "\n";

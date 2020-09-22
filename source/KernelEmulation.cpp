@@ -361,6 +361,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
 
 
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
+
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
         std::cout << "map start " << partitionInfo + 1 << std::endl;
         std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
@@ -369,7 +370,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAd
         std::cout << "Key place to add data before cpy: " << keyPlaceToAdd->data <<std::endl;
     }
 
-    memcpy(keyPlaceToAdd->data, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
+    memcpy(keyPlaceToAdd, keyNodeToAdd.keyContent.c_str(), keyNodeToAdd.keySize);
 
 
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
