@@ -65,6 +65,7 @@ std::string Executor::execute() {
         auto overwrite = signStatement->overwrite;
 
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
+
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
 
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);

@@ -6,6 +6,7 @@
 #define KEYREPO_KEYIOINTERFACES_H
 #include <memory>
 #include <stdio.h>
+#include <boost/filesystem.hpp>
 
 #if __APPLE__
 #include "openssl/rsa.h"
