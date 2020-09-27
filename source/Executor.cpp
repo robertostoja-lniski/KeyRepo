@@ -129,6 +129,9 @@ std::string Executor::execute() {
 
         throw std::runtime_error("Not implemented");
 
+    } else if (auto helpRequestStatement = std::dynamic_pointer_cast<HelpRequestStatement>(statement)) {
+        printHelp();
+        return {"Help printed"};
     }
 
     throw std::runtime_error("Critical error\n");

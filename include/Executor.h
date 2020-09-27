@@ -46,6 +46,20 @@ public:
         OpenSSL_add_all_digests();
     }
 
+    static void printHelp() {
+        std::cout << "key_repo - Tool used for key storage\n";
+        std::cout << "USAGE:\n";
+        std::cout << "\tKEY MANAGEMENT:\n";
+        std::cout << "\t\tkey_repo create-key         path_to_private_key_id  path_to_public_key  key_length key_type [overwrite]\n";
+        std::cout << "\t\tkey_repo get-private-key    path_to_private_key_id  path_to_file_with_key_value             [overwrite]\n";
+        std::cout << "\t\tkey_repo delete-key         path_to_private_key_id  path_to_public_key\n";
+        std::cout << "\tKEY OPERATIONS:\n";
+        std::cout << "\t\tkey_repo sign               path_to_private_key     path_to_file_to_be_signed path_to_signature       [overwrite]\n";
+        std::cout << "\t\tkey_repo check-signature    path_to_public_key      path_to_signed_file       path_to_signature\n";
+        std::cout << "\t\tkey_repo encrypt-file       path_to_private_key     path_to_file              path_to_encrypted_file  [overwrite]\n";
+        std::cout << "\t\tkey_repo decrypt-file       path_to_public_key      path_to_encrypted_file    path_to_decrypted_file  [overwrite]\n";
+    }
+
     std::shared_ptr<RsaKeyFileIOInterface> getCurrentInterface() {
         return interface;
     }

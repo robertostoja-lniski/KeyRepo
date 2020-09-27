@@ -135,4 +135,11 @@ struct DecryptFileStatement : Statement {
         overwrite = true;
     }
 };
+struct HelpRequestStatement : Statement {
+    HelpRequestStatement() = default;
+    std::string toString() override {
+        return {"help"};
+    }
+};
+
 #endif //KEYREPO_STATEMENT_H

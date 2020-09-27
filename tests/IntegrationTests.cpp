@@ -36,6 +36,105 @@ namespace testHelpers {
 
 };
 
+BOOST_AUTO_TEST_CASE(NOT_ENOUGH_ARGS_EXCEPTION)
+{
+    std::vector<std::string> input {
+            "program",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    bool caught {false};
+
+    try {
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_unique<Parser>(syntaxAnalyser);
+        parser->parse();
+    } catch(std::exception &e) {
+        if(e.what() == std::string("Not enough args")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_1)
+{
+    std::vector<std::string> input {
+            "program",
+            "-h"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    BOOST_CHECK_EQUAL(statement, std::string("help"));
+}
+
+BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_2)
+{
+    std::vector<std::string> input {
+            "program",
+            "--help"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    BOOST_CHECK_EQUAL(statement, std::string("help"));
+}
+
+BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_3)
+{
+    std::vector<std::string> input {
+            "program",
+            "--help"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    auto ret = executor->execute();
+    BOOST_CHECK_EQUAL(ret, std::string("Help printed"));
+}
+
+BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_4)
+{
+    std::vector<std::string> input {
+            "program",
+            "--help"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_shared<Executor>(parser);
+
+    auto ret = executor->execute();
+    BOOST_CHECK_EQUAL(ret, std::string("Help printed"));
+}
+
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
 {
     std::vector<std::string> input {
@@ -58,6 +157,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
 }
+
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
 {
     std::vector<std::string> input {
@@ -449,6 +549,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
         executor->execute();
     }
     {
+        system("echo a > /tmp/file.txt");
         std::vector<std::string> input {
                 "program",
                 "sign",
@@ -2577,6 +2678,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             executor->execute();
         }
         {
+            system("echo a > /tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt");
             std::vector<std::string> input{
                     "program",
                     "sign",
@@ -2655,6 +2757,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
             executor->execute();
         }
         {
+            system("echo a > /tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt");
             std::vector<std::string> input{
                     "program",
                     "sign",

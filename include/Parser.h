@@ -21,6 +21,7 @@ private:
     void generateCheckSignatureOption();
     void generateEncryptFileOption();
     void generateDecryptFileOption();
+    void generateHelpOption();
 
     std::map<std::string, std::function<void()>> tokenGenerator {
             {"create-key", [&]() { return generateCreateKeyOption(); }},
@@ -30,6 +31,8 @@ private:
             {"check-signature", [&]() { return generateCheckSignatureOption(); }},
             {"encrypt-file", [&]() { return generateEncryptFileOption(); }},
             {"decrypt-file", [&]() { return generateDecryptFileOption(); }},
+            {"-h", [&]() { return generateHelpOption(); }},
+            {"--help", [&]() { return generateHelpOption(); }},
     };
 public:
     Parser(std::shared_ptr<SyntaxAnalyser> syntaxAnalyser) {
