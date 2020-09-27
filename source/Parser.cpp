@@ -129,3 +129,9 @@ void Parser::generateDecryptFileOption() {
 
     currentParsedStatement = std::make_shared<DecryptFileStatement>(decryptFileStatement);
 }
+
+void Parser::generateHelpOption() {
+
+    HelpRequestStatement helpRequestStatement;
+    currentParsedStatement = std::make_shared<HelpRequestStatement>(helpRequestStatement);
+}
