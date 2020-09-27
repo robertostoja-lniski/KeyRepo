@@ -98,10 +98,7 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
         throw std::runtime_error("KeyIOInterface: Partition full");
     }
 
-    std::ifstream f(filepath);
-    if(f.good() && !overwrite) {
-        throw std::runtime_error("KeyIOInterface: Overwrite forbidden!");
-    }
+    throwIfOverwriteForbidden(filepath, overwrite);
 
     std::ofstream os;
     os.open(filepath);
@@ -111,10 +108,7 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
 }
 void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, bool overwrite) {
 
-    std::ifstream f(filepath);
-    if(f.good() && !overwrite) {
-        throw std::runtime_error("KeyIOInterface: Overwrite forbidden!");
-    }
+    throwIfOverwriteForbidden(filepath, overwrite);
 
     std::ofstream myfile;
     myfile.open (filepath);
@@ -146,4 +140,18 @@ std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyI
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
     return prvKey;
+}
+
+void RsaKeyFileIOInterface::throwIfOverwriteForbidden(std::string filepath, bool overwrite) {
+    std::ifstream f(filepath);
+    if(f.good() && !overwrite) {
+        throw std::runtime_error("KeyIOInterface: Overwrite forbidden!");
+    }
+}
+
+void RsaKeyFileIOInterface::throwIfCannotRemoveFile(std::string filepath) {
+    std::ifstream f(filepath);
+    if(!f.good()) {
+        throw std::runtime_error("KeyIOInterface: File is not good");
+    }
 }
