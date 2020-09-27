@@ -52,6 +52,9 @@ std::string Executor::execute() {
             throw std::runtime_error("Create key: Prv and Pub files have to differ");
         }
 
+        interface->throwIfOverwriteForbidden(prvKeyIdPath, overwrite);
+        interface->throwIfOverwriteForbidden(pubKeyPath, overwrite);
+
         auto r = openSSLHandler->createKey(keyLen);
         interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
         interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
@@ -63,6 +66,8 @@ std::string Executor::execute() {
         auto prvKeyPath = signStatement->filePathToPrvKeyId;
         auto signatureOutput = signStatement->signatureOutput;
         auto overwrite = signStatement->overwrite;
+
+        interface->throwIfOverwriteForbidden(signatureOutput, overwrite);
 
         auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
 
@@ -97,14 +102,20 @@ std::string Executor::execute() {
         auto rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
         auto isSignatureCorrect = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
         if(isSignatureCorrect) {
+            std::cout << "Signature correct" << std::endl;
             return {"Signature correct"};
         }
+
+        std::cout << "Signature not correct" << std::endl;
         return {"Signature not correct"};
 
     } else if (auto deleteKeyStatement = std::dynamic_pointer_cast<DeleteKeyStatement>(statement)) {
 
         auto filePathToPrivateKeyId = deleteKeyStatement->privateKeyIdPath;
         auto filePathToPublicKey = deleteKeyStatement->fileToPublicKey;
+
+        interface->throwIfCannotRemoveFile(filePathToPrivateKeyId);
+        interface->throwIfCannotRemoveFile(filePathToPublicKey);
 
         interface->removePrivateKey(filePathToPrivateKeyId);
         interface->removePublicKey(filePathToPublicKey);
@@ -117,6 +128,7 @@ std::string Executor::execute() {
         auto filePathToStoreKey = getPrivateKeyStatement->filePathToStorePrivateKey;
         auto overwrite = getPrivateKeyStatement->overwrite;
 
+        interface->throwIfOverwriteForbidden(filePathToStoreKey, overwrite);
         auto prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
         interface->writeToFile(filePathToStoreKey, prvKey, overwrite);
         return {"Private key saved"};

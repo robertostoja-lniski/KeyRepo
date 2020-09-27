@@ -108,8 +108,8 @@ int initFileIfNotDefined() {
     printPartition(partitionStart);
     free(partitionInfo);
     int ret = munmap(mappedPartition, fileSize);
-    assert(ret == 0);
     close(fd);
+    assert(ret == 0);
 }
 
 int writeKeyToTemporaryFile(RSA* r) {
@@ -232,9 +232,16 @@ uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
     bool isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd.keySize;
 
     int retSizeCheck = munmap(mappedPartition, fileSize);
+    close(fd);
     assert(retSizeCheck == 0);
 
     if(isSizeExtNeeded) {
+
+        int fd = open(partition.c_str(), O_RDWR, 0);
+        if(fd < 0) {
+            return 1;
+        }
+
         fileSize = getFileSize(partition.c_str()) + keyNodeToAdd.keySize;
         if(VERBOSE_LEVEL >= VERBOSE_LOW) {
             std::cout << "when adding new node ext file size is: " << fileSize << std::endl;
@@ -279,8 +286,8 @@ uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd) {
     printPartition(partitionStart);
 
     int ret = munmap(mappedPartition, fileSize);
-    assert(ret == 0);
     close(fd);
+    assert(ret == 0);
 
     return id;
 }
@@ -315,8 +322,6 @@ void printPartition(const void* mappedPartition) {
 uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd) {
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
-
-    assert(partitionInfo->numberOfKeys <= MAX_KEY_NUM);
 
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
         std::cout << "offset to add is: " << offsetToAdd << std::endl;
@@ -479,8 +484,8 @@ std::string getPrvKeyById(uint64_t id) {
     std::string key = getKeyValByPartitionPointer(mappedPartition, id);
 
     int ret = munmap(mappedPartition, fileSize);
-    assert(ret == 0);
     close(fd);
+    assert(ret == 0);
 
     return key;
 }
@@ -490,12 +495,12 @@ int removePrvKeyById(uint64_t id) {
     //Open file
     int fd = open(partition.c_str(), O_RDWR, 0);
     if(fd < 0) {
-        return 1;
+        return fd;
     }
     void* mappedPartition = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     if(mappedPartition == MAP_FAILED) {
         close(fd);
-        return 1;
+        return -1;
     }
 
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
@@ -503,6 +508,7 @@ int removePrvKeyById(uint64_t id) {
         int ret = munmap(mappedPartition, fileSize);
         close(fd);
         assert(ret == 0);
+        return -1;
     }
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
@@ -525,8 +531,8 @@ int removePrvKeyById(uint64_t id) {
     }
 
     int ret = munmap(mappedPartition, fileSize);
-    assert(ret == 0);
     close(fd);
+    assert(ret == 0);
 
     return removeRet;
 }
