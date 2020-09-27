@@ -927,6 +927,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_KEY)
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
+
 BOOST_AUTO_TEST_CASE(DERYPT_NOT_EXISTING_KEY)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -2143,6 +2144,213 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
             executor->execute();
         } catch(std::exception &e) {
             auto a = e.what();
+            if(e.what() == std::string("KeyIOInterface: File is not good")) {
+                caught = true;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("touch /tmp/public.pem");
+    system("echo 1 > /tmp/private_test_14.pem");
+    for(int i = 0; i < 1; i++)
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/tmp/private_test_14.pem",
+                "/tmp/public.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            auto a = e.what();
+            if(e.what() == std::string("KeyIOInterface: Failed to remove private key")) {
+                caught = true;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(GET_KEY_NOT_EXISTING_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("touch /tmp/public.pem");
+    system("echo 1 > /tmp/private.pem");
+    {
+        std::vector<std::string> input {
+                "program",
+                "get-private-key",
+                "/tmp/private.pem",
+                "/tmp/saved_key",
+                "overwrite"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            auto a = e.what();
+            if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
+                caught = true;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(SIGN_NOT_EXISTING_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("touch /tmp/public.pem");
+    system("echo 1 > /tmp/sign_error_1_private.pem");
+    system("echo 1 > /tmp/sign_error_1_file.txt");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "sign",
+                "/tmp/sign_error_1_private.pem",
+                "/tmp/sign_error_1_file.txt",
+                "/tmp/sign_error_1_signature.txt",
+                "overwrite"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            auto a = e.what();
+            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
+                caught = true;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("touch /tmp/public.pem");
+    system("echo 1 > /tmp/private.pem");
+    system("echo 1 > /tmp/file");
+    system("echo 1 > /tmp/signature.txt");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/file",
+                "output",
+                "/tmp/private.pem",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            auto a = e.what();
+            if(e.what() == std::string("KeyIOInterface: Could not read pubkey from file")) {
+                caught = true;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_ID) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("touch /tmp/public.pem");
+    system("echo 1 > /tmp/private_test_14.pem");
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+        auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "delete-key",
+                "/tmp/private_test_14.pem",
+                "/tmp/public.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            auto a = e.what();
             if(e.what() == std::string("KeyIOInterface: Failed to remove private key")) {
                 caught = true;
             }
@@ -2202,7 +2410,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("KeyIOInterface: Failed to remove public key")) {
+            auto dummy = e.what();
+            if(e.what() == std::string("KeyIOInterface: File is not good")) {
                 caught = true;
             }
         }
@@ -2628,6 +2837,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
                 "/tmp/sign_error_4_private.pem",
                 "/tmp/sign_error_4_file.txt",
                 "/tmp/sign_error_4_signature.txt",
+                "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -2971,8 +3181,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
             }
 
             int ret = munmap(mappedPartition, fileSize);
-            assert(ret == 0);
             close(fd);
+            assert(ret == 0);
 
             std::vector<std::string> input{
                     "program",

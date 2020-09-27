@@ -51,6 +51,9 @@ public:
         return getCurrentKeyNumFromEmulation();
     }
 
+    void throwIfOverwriteForbidden(std::string filepath, bool overwrite);
+    void throwIfCannotRemoveFile(std::string filepath);
+
     std::string getPrivateKey(std::string filepathWithPrvKeyId);
 };
 
