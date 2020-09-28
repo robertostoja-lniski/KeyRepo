@@ -2,7 +2,6 @@
 // Created by robert on 25.08.2020.
 //
 
-#include <sstream>
 #include "../include/KernelEmulation.h"
 
 uint64_t generateRandomId(void* mappedPartition){
@@ -55,10 +54,10 @@ int initFileIfNotDefined() {
 
     uint64_t fileSize = partitionInfo->fileContentSize;
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
-    //Open file
-    std::ofstream os(partition.c_str());
-    os << "";
-    os.close();
+
+    FILE* fp = fopen(partition.c_str(), "w+");
+    fputs("EMPTY PARTITION\n", fp);
+    fclose(fp);
 
     int fd = open(partition.c_str(), O_RDWR, 0);
     if(fd < 0) {
@@ -127,14 +126,26 @@ int writeKeyToTemporaryFile(RSA* r) {
 KeyNode generateKeyNodeFromKeyInFile() {
     KeyNode keyNode;
     std::string line;
-    std::ifstream keyTmpFile(tmpKeyStorage);
-    if (keyTmpFile.is_open()) {
-        while (getline(keyTmpFile,line)) {
-            keyNode.keyContent += line;
-        }
-        keyTmpFile.close();
+
+    FILE *fp;
+    size_t buffSize = 4096;
+    char str[buffSize];
+    memset(str, 0x00, buffSize);
+
+    fp = fopen(tmpKeyStorage.c_str(), "r");
+    if (fp == NULL){
+        return keyNode;
     }
+
+    while (fgets(str, buffSize, fp) != NULL) {
+        line += str;
+        memset(str, 0x00, buffSize);
+    }
+    fclose(fp);
+
     // when serialised there will be no access to bytes as std::string
+
+    keyNode.keyContent = line;
     keyNode.keySize = keyNode.keyContent.size();
     return keyNode;
 }
@@ -456,16 +467,25 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
 uint64_t readIdFromFile(std::string filepath) {
     std::string line;
-    std::ifstream myfile (filepath);
-    if (myfile.is_open()) {
-        getline (myfile,line);
-        myfile.close();
-        uint64_t id;
-        std::istringstream iss(line);
-        iss >> id;
-        return id;
+
+    FILE *fp;
+    size_t buffSize = 4096;
+    char str[buffSize];
+    memset(str, 0x00, buffSize);
+
+    fp = fopen(filepath.c_str(), "r");
+    if (fp == NULL){
+        return 0;
     }
-    return 0;
+
+    while (fgets(str, buffSize, fp) != NULL) {
+        line += str;
+        memset(str, 0x00, buffSize);
+    }
+    fclose(fp);
+    char *eptr;
+
+    return strtoull(&line[0], &eptr, 10);
 }
 
 std::string getPrvKeyById(uint64_t id) {
@@ -548,34 +568,16 @@ void print(std::string str) {
 }
 
 std::string getPathToTmpPrvKeyStorage(std::string key) {
-    std::string header = "-----BEGIN RSA PRIVATE KEY-----";
-    std::string bottom = "-----END RSA PRIVATE KEY-----";
-    int charsInRow = 64;
     std::string filepath = "/tmp/prvKey.pem";
-    std::ofstream os;
-    os.open(filepath);
-    os << header << "\n";
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << header << "\n";
-    }
 
-    for(int i = header.size(); i < key.size() - header.size() - bottom.size();) {
-        std::string nextLine;
-        for(int j = 0; j < charsInRow; j++) {
-            nextLine += key[i];
-            i++;
-        }
-        os << nextLine << "\n";
+    size_t maxKeySize = 4 * 4096 + 1024;
+    char fileContent[maxKeySize];
+    memset(fileContent, 0x00, maxKeySize);
 
-        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-            std::cout << nextLine << "\n";
-        }
-    }
-    os << bottom << "\n";
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << bottom << "\n";
-    }
-    os.close();
+    FILE* fp = fopen(filepath.c_str(), "w+");
+    fprintf(fp, "%s", key.c_str());
+    fclose(fp);
+
     return filepath;
 }
 
