@@ -143,7 +143,6 @@ KeyNode generateKeyNodeFromKeyInFile() {
     }
     fclose(fp);
 
-    // when serialised there will be no access to bytes as std::string
 
     keyNode.keyContent = line;
     keyNode.keySize = keyNode.keyContent.size();
@@ -465,7 +464,7 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
     return -1;
 }
 
-uint64_t readIdFromFile(std::string filepath) {
+uint64_t readIdFromFile(const char* filepath) {
     std::string line;
 
     FILE *fp;
@@ -473,7 +472,7 @@ uint64_t readIdFromFile(std::string filepath) {
     char str[buffSize];
     memset(str, 0x00, buffSize);
 
-    fp = fopen(filepath.c_str(), "r");
+    fp = fopen(filepath, "r");
     if (fp == NULL){
         return 0;
     }
@@ -488,17 +487,17 @@ uint64_t readIdFromFile(std::string filepath) {
     return strtoull(&line[0], &eptr, 10);
 }
 
-std::string getPrvKeyById(uint64_t id) {
+int getPrvKeyById(uint64_t id, char **prvKey) {
     size_t fileSize = getFileSize(partition.c_str());
     //Open file
     int fd = open(partition.c_str(), O_RDWR, 0);
     if(fd < 0) {
-        return "";
+        return -1;
     }
     void* mappedPartition = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
     if(mappedPartition == MAP_FAILED) {
         close(fd);
-        return "";
+        return -1;
     }
 
     std::string key = getKeyValByPartitionPointer(mappedPartition, id);
@@ -507,7 +506,12 @@ std::string getPrvKeyById(uint64_t id) {
     close(fd);
     assert(ret == 0);
 
-    return key;
+    if(key.empty()) {
+        return -1;
+    }
+    // tmp
+    *prvKey = (char* )key.c_str();
+    return 0;
 }
 
 int removePrvKeyById(uint64_t id) {
@@ -557,28 +561,18 @@ int removePrvKeyById(uint64_t id) {
     return removeRet;
 }
 
-void print(std::string str) {
-    int charsInALine = 30;
-    for(int i = 0; i < str.size(); i++) {
-        std::cout << str[i];
-        if(i != 0 && i % charsInALine == 0) {
-            std::cout << std::endl;
-        }
-    }
-}
-
-std::string getPathToTmpPrvKeyStorage(std::string key) {
-    std::string filepath = "/tmp/prvKey.pem";
+int getPathToTmpPrvKeyStorage(char* key) {
+    const char* filepath = "/tmp/prvKey.pem";
 
     size_t maxKeySize = 4 * 4096 + 1024;
     char fileContent[maxKeySize];
     memset(fileContent, 0x00, maxKeySize);
 
-    FILE* fp = fopen(filepath.c_str(), "w+");
-    fprintf(fp, "%s", key.c_str());
+    FILE* fp = fopen(filepath, "w+");
+    fprintf(fp, "%s", key);
     fclose(fp);
 
-    return filepath;
+    return 0;
 }
 
 AddKeyInfo write(RSA* r) {
@@ -591,42 +585,52 @@ AddKeyInfo write(RSA* r) {
 //        print(keyNode.keyContent);
     return {addKeyNodeToPartition(keyNode), data.numberOfKeys};
 }
-std::string read(std::string filepath) {
+
+int readKey(const char* filepath, char** outpath) {
     uint64_t id = readIdFromFile(filepath);
     if(id == 0) {
-        return "";
+        return -1;
     }
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
     }
 
-    std::string prvKey = getPrvKeyById(id);
-    if(prvKey.empty()) {
-        return "";
+    char* prvKey = NULL;
+    int ret = getPrvKeyById(id, &prvKey);
+    if(prvKey == NULL || ret == -1) {
+        return -1;
     }
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel Emulation found a key with value" << std::endl;
     }
-//        print(prvKey);
+
+    *outpath = "/tmp/prvKey.pem";
     return getPathToTmpPrvKeyStorage(prvKey);
 }
 
-std::string get(std::string filepath) {
+int get(const char* filepath, char** output) {
     uint64_t id = readIdFromFile(filepath);
     if(id == 0) {
-        return "";
+        return -1;
     }
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
     }
 
-    return getPrvKeyById(id);
+    char* prvKey = NULL;
+    int getKeyRet = getPrvKeyById(id, &prvKey);
+    if(getKeyRet != 0) {
+        return -1;
+    }
+
+    *output = prvKey;
+    return 0;
 }
 
-int remove(std::string filepath) {
+int remove(const char* filepath) {
     uint64_t id = readIdFromFile(filepath);
     return id == 0 ? -1 : removePrvKeyById(id);
 }

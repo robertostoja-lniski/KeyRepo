@@ -11,10 +11,15 @@ RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
 }
 RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
-    auto prvKeyPath = read(filepath);
-    if(prvKeyPath.empty()) {
+
+    char* cPrvKeyPath = NULL;
+    auto ret = readKey(filepath.c_str(), &cPrvKeyPath);
+
+    if(ret == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
+
+    auto prvKeyPath = std::string(cPrvKeyPath);
 
     auto fp = getFileStructFromPath(prvKeyPath, "r");
     return readPrivateKeyFromFpAndClose(&fp);
@@ -117,7 +122,7 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, 
 }
 
 void RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
-    auto result = remove(privateKeyPath);
+    auto result = remove(privateKeyPath.c_str());
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
@@ -135,11 +140,12 @@ void RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
 }
 
 std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {
-    auto prvKey = get(filepathWithPrvKeyId);
-    if(prvKey.empty()) {
+    char* prvKey = NULL;
+    auto ret = get(filepathWithPrvKeyId.c_str(), &prvKey);
+    if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
-    return prvKey;
+    return std::string(prvKey);
 }
 
 void RsaKeyFileIOInterface::throwIfOverwriteForbidden(std::string filepath, bool overwrite) {
