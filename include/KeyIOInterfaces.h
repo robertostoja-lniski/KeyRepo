@@ -19,7 +19,6 @@
 #include <openssl/evp.h>
 #endif
 
-
 #include <stdio.h>
 #include <iostream>
 #include <sstream>

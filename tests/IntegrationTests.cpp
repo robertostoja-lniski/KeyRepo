@@ -820,6 +820,52 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
     system("mv ~/.keyPartition.old ~/.keyPartition");
 
 }
+//
+//BOOST_AUTO_TEST_CASE(TMP)
+//{
+//
+//    {
+//        std::vector<std::string> input {
+//                "program",
+//                "sign",
+//                "/tmp/private_v1.pem",
+//                "/tmp/file.txt",
+//                "/tmp/signature.txt",
+//                "overwrite"
+//        };
+//
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+//        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//        executor->execute();
+//    }
+//    {
+//        std::vector<std::string> input {
+//                "program",
+//                "check-signature",
+//                "/tmp/public_v1.pem",
+//                "/tmp/file.txt",
+//                "/tmp/signature.txt",
+//        };
+//
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+//        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//        auto msg = executor->execute();
+//
+//        BOOST_CHECK_EQUAL(msg, "Signature correct");
+//    }
+//}
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
 {
@@ -2632,6 +2678,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
 
     {
         system("touch /tmp/sign_error_1_file.txt");
+        system("rm /tmp/sign_error_1_signature.txt");
         bool errorFound = false;
         std::vector<std::string> input{
                 "program",
