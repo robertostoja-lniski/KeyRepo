@@ -128,7 +128,7 @@ int generateKeyNodeFromKeyInFile(KeyNode** keyNode) {
     std::string line;
 
     FILE *fp;
-    size_t buffSize = 4096;
+    size_t buffSize = 4096 * 16;
     char str[buffSize];
     memset(str, 0x00, buffSize);
 
@@ -420,7 +420,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToA
     return id;
 }
 
-std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal) {
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
@@ -438,11 +438,22 @@ std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
         currentElementInMap = currentElementInMap + 1;
     }
     if(!found) {
-        return "";
+        return -1;
     }
 //        std::cout << "offset is " << offset << std::endl;
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
-    return keyPlaceToAdd->data;
+    size_t keySize = strlen(keyPlaceToAdd->data);
+
+    auto size = currentElementInMap->size;
+    *keyVal = (KeyPartitionNode* )malloc(sizeof(KeyPartitionNode));
+    if(*keyVal == NULL) {
+        return -1;
+    }
+    auto partNodeSize = sizeof(KeyPartitionNode);
+
+    memset((*keyVal)->data, 0x00, sizeof(KeyPartitionNode));
+    memcpy((*keyVal)->data, keyPlaceToAdd, size);
+    return 0;
 }
 
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
@@ -513,17 +524,16 @@ int getPrvKeyById(uint64_t id, char **prvKey) {
         return -1;
     }
 
-    std::string key = getKeyValByPartitionPointer(mappedPartition, id);
+    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey);
 
     int ret = munmap(mappedPartition, fileSize);
     close(fd);
     assert(ret == 0);
 
-    if(key.empty()) {
+    if(getKeyRet == -1) {
         return -1;
     }
     // tmp
-    *prvKey = (char* )key.c_str();
     return 0;
 }
 

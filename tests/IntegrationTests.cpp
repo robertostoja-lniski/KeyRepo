@@ -1140,7 +1140,6 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
                 "/tmp/private.pem",
                 "/tmp/to_encrypt",
                 "/tmp/encrypted_file.txt",
-                "overwrite"
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -1158,7 +1157,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
             /* dummy */
         }
 
-        std::string afterPotentialCreate = testHelpers::readFileIntoString("/tmp/same_path.pem");
+        std::string afterPotentialCreate = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
         bool areSame = (afterPotentialCreate == "a");
         BOOST_CHECK_EQUAL(areSame, true);
     }
@@ -1191,7 +1190,7 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
     }
     {
         system("echo a > /tmp/to_decrypt");
-        system("echo a > /tmp/encrypted_file.txt");
+        system("echo a > /tmp/decrypted_file.txt");
 
         std::vector<std::string> input {
                 "program",
@@ -1199,7 +1198,6 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
                 "/tmp/public.pem",
                 "/tmp/to_decrypt",
                 "/tmp/decrypted_file.txt",
-                "overwrite"
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -1217,7 +1215,7 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
             /* dummy */
         }
 
-        std::string afterPotentialCreate = testHelpers::readFileIntoString("/tmp/same_path.pem");
+        std::string afterPotentialCreate = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
         bool areSame = (afterPotentialCreate == "a");
         BOOST_CHECK_EQUAL(areSame, true);
     }
