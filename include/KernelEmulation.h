@@ -47,12 +47,6 @@ enum {
 
 #define VERBOSE_LEVEL VERBOSE_NO
 
-
-struct AddKeyInfo {
-    uint64_t id;
-    uint64_t numberOfKeys;
-};
-
 struct MapNode {
     uint64_t id;
     uint64_t offset {0};
@@ -67,7 +61,7 @@ struct PartitionInfo {
 
 struct KeyNode {
     uint32_t keySize {0};
-    std::string keyContent;
+    char keyContent[4096];
 };
 
 struct KeyPartitionNode {
@@ -87,11 +81,11 @@ static uint64_t generateRandomId();
 
 int initFileIfNotDefined();
 int writeKeyToTemporaryFile(RSA* r);
-KeyNode  generateKeyNodeFromKeyInFile();
+int generateKeyNodeFromKeyInFile(KeyNode**);
 size_t getFileSize(const char* filename);
-uint64_t addKeyNodeToPartition(KeyNode keyNodeToAdd);
+uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd);
 void printPartition(const void* mappedPartition);
-uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode keyNodeToAdd);
+uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd);
 std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
 uint64_t readIdFromFile(const char* filepath);
@@ -105,7 +99,7 @@ int getCurrentKeyNumFromEmulation();
 uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
 int getCurrentKeyNum();
-AddKeyInfo write(RSA* r);
+uint64_t write(RSA* r);
 int readKey(const char* filepath, char** outpath);
 int get(const char* filepath, char** output);
 int remove(const char* filepath);

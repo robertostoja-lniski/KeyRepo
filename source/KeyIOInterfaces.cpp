@@ -95,11 +95,11 @@ void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::stri
 }
 void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     auto result = write(r);
-    if(result.id == 1) {
+    if(result == 0) {
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
-    if(result.id == 0) {
+    if(result == 1) {
         throw std::runtime_error("KeyIOInterface: Partition full");
     }
 
@@ -107,7 +107,7 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
 
     std::ofstream os;
     os.open(filepath);
-    os << result.id;
+    os << result;
     os.close();
 
 }
