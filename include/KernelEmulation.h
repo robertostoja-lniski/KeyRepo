@@ -86,7 +86,7 @@ size_t getFileSize(const char* filename);
 uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd);
 void printPartition(const void* mappedPartition);
 uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd);
-std::string getKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
 uint64_t readIdFromFile(const char* filepath);
 int getPrvKeyById(uint64_t id, const char **prvKey);
