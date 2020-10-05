@@ -759,6 +759,43 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
 
 }
 
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE_HUGE)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+
+    for(int i = 0; i < 1000; i++) {
+        system("echo 3123213213 >> /tmp/file_to_encrypt.txt");
+    }
+    system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+    system("echo 1234567887654321 > /tmp/iv");
+    {
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file_to_encrypt.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File encrypted");
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -948,6 +985,100 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_IV)
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
+BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_IV)
+{
+        system("mv ~/.keyPartition ~/.keyPartition.old");
+        {
+            system("echo "" > /tmp/not_existing_iv");
+            system("echo 312312321 >> /tmp/key");
+            std::vector <std::string> input{
+                    "program",
+                    "encrypt-file",
+                    "/tmp/key",
+                    "/tmp/not_existing_iv",
+                    "/tmp/file.txt",
+                    "/tmp/encrypted_file.txt",
+                    "overwrite"
+            };
+
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+            auto msg = executor->execute();
+            BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
+        }
+
+        system("mv ~/.keyPartition.old ~/.keyPartition");
+        }
+
+BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_KEY)
+        {
+                system("mv ~/.keyPartition ~/.keyPartition.old");
+        {
+            system("echo "" > /tmp/key");
+            system("echo 312312321 >> /tmp/not_existing_iv");
+            std::vector<std::string> input {
+                    "program",
+                    "encrypt-file",
+                    "/tmp/key",
+                    "/tmp/not_existing_iv",
+                    "/tmp/file.txt",
+                    "/tmp/encrypted_file.txt",
+                    "overwrite"
+            };
+
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+            auto msg = executor->execute();
+            BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
+        }
+
+        system("mv ~/.keyPartition.old ~/.keyPartition");
+        }
+
+BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_FILE_IV)
+        {
+                system("mv ~/.keyPartition ~/.keyPartition.old");
+        {
+            system("echo "" > /tmp/not_existing_iv");
+            system("echo 312312321 >> /tmp/key");
+            system("echo "" > /tmp/file.txt");
+            std::vector<std::string> input {
+                    "program",
+                    "encrypt-file",
+                    "/tmp/key",
+                    "/tmp/not_existing_iv",
+                    "/tmp/file.txt",
+                    "/tmp/encrypted_file.txt",
+                    "overwrite"
+            };
+
+            TerminalEmulation terminalEmulation(input);
+            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+            auto argc = emulatedTerminalArgs.argc;
+            auto argv = emulatedTerminalArgs.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_shared<Executor>(parser);
+
+            auto msg = executor->execute();
+            BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
+        }
+
+        system("mv ~/.keyPartition.old ~/.keyPartition");
+}
 
 BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_IV)
 {
@@ -962,45 +1093,6 @@ BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_IV)
                 "/tmp/not_existing_iv",
                 "/tmp/file.txt",
                 "/tmp/decrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        bool caught {false};
-        try {
-            executor->execute();
-        }catch(std::exception &e) {
-            if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
-                caught = true;
-            }
-        }
-
-        BOOST_CHECK_EQUAL(caught, true);
-    }
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
-BOOST_AUTO_TEST_CASE(DERYPT_NOT_EXISTING_KEY)
-{
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    {
-        system("rm /tmp/not_existing_key");
-        std::vector<std::string> input {
-                "program",
-                "decrypt-file",
-                "/tmp/not_existing_key",
-                "/tmp/not_existing_iv",
-                "/tmp/file.txt",
-                "/tmp/encrypted_file.txt",
                 "overwrite"
         };
 
@@ -1257,7 +1349,6 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_CONTENT_CHECK)
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
-
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -1315,6 +1406,130 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT)
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
 {
     std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w8X7MR0fd9";
+    {
+        std::string syscall = "echo " + content + " > /tmp/file.txt";
+        system(syscall.c_str());
+        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+        system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+        system("echo 1234567887654321 > /tmp/iv");
+
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::string contentAfterEncryption = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/encrypted_file.txt",
+                "/tmp/decrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        std::string contentAfterEncryption2 = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
+        std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
+        bool areSame = (contentAfterDecryption == content);
+        BOOST_CHECK_EQUAL(areSame, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    {
+        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+        for(int i = 0; i < 1000; i++) {
+            system("echo 3123213213 >> /tmp/file_to_encrypt.txt");
+        }
+        system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+        system("echo 1234567887654321 > /tmp/iv");
+
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/encrypted_file.txt",
+                "/tmp/decrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File decrypted");
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
+{
+
+    std::string base = "1234567890";
+    std::string content;
+
+    for(int i = 0; i < 1000; i++) {
+        content+=base;
+    }
+
     {
         std::string syscall = "echo " + content + " > /tmp/file.txt";
         system(syscall.c_str());
