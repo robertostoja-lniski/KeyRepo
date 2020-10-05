@@ -30,9 +30,9 @@ std::ostream &operator<<(std::ostream &os, const CheckSignatureStatement &dt) {
 }
 std::ostream &operator<<(std::ostream &os, const EncryptFileStatement &dt) {
     os << "Encrypting file " << dt.filePathToFileToBeEncrypted << " by "
-        << dt.filePathWithPrivateKeyId << " private key with output " + dt.output + "\n";
+        << dt.filePathToFileWithKey << " key, " << dt.filePathToFileWithIv <<  " iv and with output " + dt.output + "\n";
 }
 std::ostream &operator<<(std::ostream &os, const DecryptFileStatement &dt) {
     os << "Decrypting file " << dt.filePathToFileToBeDecrypted << " by "
-       << dt.filePathToFileToPublicKey << " public key with output " + dt.output + "\n";
+       << dt.filePathToFileWithKey << " key, " << dt.filePathToFileWithIv << " iv and with output " + dt.output + "\n";
 }

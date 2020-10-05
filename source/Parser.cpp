@@ -97,11 +97,12 @@ void Parser::generateCheckSignatureOption() {
 }
 
 void Parser::generateEncryptFileOption() {
-    auto filePathWithPrivateKey = syntaxAnalyser->getNextToken().value;
+    auto filePathWithKey = syntaxAnalyser->getNextToken().value;
+    auto filePathWithIv = syntaxAnalyser->getNextToken().value;
     auto fileToBeEncrypted = syntaxAnalyser->getNextToken().value;
     auto output = syntaxAnalyser->getNextToken().value;
 
-    EncryptFileStatement encryptFileStatement(filePathWithPrivateKey, fileToBeEncrypted, output);
+    EncryptFileStatement encryptFileStatement(filePathWithKey, filePathWithIv, fileToBeEncrypted, output);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
@@ -114,11 +115,12 @@ void Parser::generateEncryptFileOption() {
 }
 
 void Parser::generateDecryptFileOption() {
-    auto filePathToPublicKey = syntaxAnalyser->getNextToken().value;
+    auto filePathWithKey = syntaxAnalyser->getNextToken().value;
+    auto filePathWithIv = syntaxAnalyser->getNextToken().value;
     auto fileToBeDecrypted = syntaxAnalyser->getNextToken().value;
     auto output = syntaxAnalyser->getNextToken().value;
 
-    DecryptFileStatement decryptFileStatement(filePathToPublicKey, fileToBeDecrypted, output);
+    DecryptFileStatement decryptFileStatement(filePathWithKey, filePathWithIv, fileToBeDecrypted, output);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;

@@ -56,8 +56,9 @@ public:
         std::cout << "\tKEY OPERATIONS:\n";
         std::cout << "\t\tkey_repo sign               path_to_private_key     path_to_file_to_be_signed path_to_signature       [overwrite]\n";
         std::cout << "\t\tkey_repo check-signature    path_to_public_key      path_to_signed_file       path_to_signature\n";
-        std::cout << "\t\tkey_repo encrypt-file       path_to_private_key     path_to_file              path_to_encrypted_file  [overwrite]\n";
-        std::cout << "\t\tkey_repo decrypt-file       path_to_public_key      path_to_encrypted_file    path_to_decrypted_file  [overwrite]\n";
+        std::cout << "\t\tfor encryption and decryption AES of 256 size is currently used\n";
+        std::cout << "\t\tkey_repo encrypt-file       path_to_key             path_to_iv                path_to_file              path_to_encrypted_file  [overwrite]\n";
+        std::cout << "\t\tkey_repo decrypt-file       path_to_key             path_to_iv                path_to_encrypted_file    path_to_decrypted_file  [overwrite]\n";
     }
 
     std::shared_ptr<RsaKeyFileIOInterface> getCurrentInterface() {

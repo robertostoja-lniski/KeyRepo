@@ -62,7 +62,7 @@ std::string RsaKeyFileIOInterface::readMessageFromFile(std::string filepath) {
 FILE *RsaKeyFileIOInterface::getFileStructFromPath(std::string filepath, std::string modes) {
     FILE *fp = fopen(filepath.c_str(), modes.c_str());
     if(fp == nullptr) {
-        throw std::runtime_error("KeyIOInterface: Cannot open key file");
+        throw std::runtime_error("KeyIOInterface: Cannot open file");
     }
     return fp;
 }
