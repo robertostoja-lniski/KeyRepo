@@ -58,3 +58,83 @@ std::shared_ptr<RSA> OpenSSLHandler::createKey(int keyLen) {
     }
     return r;
 }
+
+void OpenSSLHandler::encrypt(std::shared_ptr<Config> config, FILE *ifp, FILE *ofp) {
+    encrypt_or_decrypt(config, ifp, ofp, 1);
+}
+
+
+void OpenSSLHandler::decrypt(std::shared_ptr<Config> config, FILE *ifp, FILE *ofp) {
+    encrypt_or_decrypt(config, ifp, ofp, 0);
+}
+
+void OpenSSLHandler::encrypt_or_decrypt(std::shared_ptr<Config> config, FILE *ifp, FILE *ofp, int mode) {
+    size_t BUFSIZE = 4096;
+
+    unsigned char input[BUFSIZE];
+    unsigned char output[BUFSIZE + EVP_CIPHER_block_size(EVP_aes_256_cbc())];
+
+    int out_len;
+    EVP_CIPHER_CTX *ctx;
+
+    ctx = EVP_CIPHER_CTX_new();
+    if(ctx == nullptr){
+        throw std::runtime_error("OpenSSLHandler: cannot create cipher ctx");
+    }
+
+    /* Don't set key or IV right away; we want to check lengths */
+    if(!EVP_CipherInit_ex(ctx, EVP_aes_256_cbc(), nullptr, nullptr, nullptr, mode)){
+        EVP_CIPHER_CTX_free(ctx);
+        throw std::runtime_error("OpenSSLHandler: cannot create cipher ctx");
+    }
+
+    OPENSSL_assert(EVP_CIPHER_CTX_key_length(ctx) == AES_256_KEY_SIZE);
+    OPENSSL_assert(EVP_CIPHER_CTX_iv_length(ctx) == AES_BLOCK_SIZE);
+
+    /* Now we can set key and IV */
+    auto dummy = mode;
+    if(!EVP_CipherInit_ex(ctx, nullptr, nullptr, (unsigned char*)config->key, (unsigned char*)config->iv, mode)){
+        EVP_CIPHER_CTX_free(ctx);
+        throw std::runtime_error("OpenSSLHandler: cannot create cipher ctx");
+    }
+
+    int maxIterations = 1000;
+    while(maxIterations--){
+        int bytesRead = fread(input, sizeof(unsigned char), BUFSIZE, ifp);
+        std::string strInput = std::string(reinterpret_cast<const char *>(input));
+
+        if (ferror(ifp)){
+            throw std::runtime_error("OpenSSLHandler: cannot read input file");
+            EVP_CIPHER_CTX_cleanup(ctx);
+        }
+
+        if(!EVP_CipherUpdate(ctx, output, &out_len, input, bytesRead)){
+            throw std::runtime_error("OpenSSLHandler: cannot encrypt/decrypt input file");
+            EVP_CIPHER_CTX_cleanup(ctx);
+        }
+        std::string strOutput = std::string(reinterpret_cast<const char *>(output));
+        fwrite(output, sizeof(unsigned char), out_len, ofp);
+        if (ferror(ofp)) {
+            throw std::runtime_error("OpenSSLHandler: cannot write to output file");
+            EVP_CIPHER_CTX_cleanup(ctx);
+        }
+
+        if(bytesRead <= BUFSIZE) {
+            break;
+        }
+
+    }
+
+    assert(maxIterations > 0);
+    /* Now cipher the final block and write it out to file */
+    if(!EVP_CipherFinal_ex(ctx, output, &out_len)){
+        throw std::runtime_error("OpenSSLHandler: cannot encrypt last block of file");
+        EVP_CIPHER_CTX_cleanup(ctx);
+    }
+    fwrite(output, sizeof(unsigned char), out_len, ofp);
+    if (ferror(ofp)) {
+        throw std::runtime_error("OpenSSLHandler: cannot write last block to output file");
+        EVP_CIPHER_CTX_cleanup(ctx);
+    }
+    EVP_CIPHER_CTX_cleanup(ctx);
+}

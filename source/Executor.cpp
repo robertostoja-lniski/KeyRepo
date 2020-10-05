@@ -135,11 +135,58 @@ std::string Executor::execute() {
 
     } else if (auto encryptFileStatement = std::dynamic_pointer_cast<EncryptFileStatement>(statement)) {
 
-        throw std::runtime_error("Not implemented");
+        auto filePathWithKey = encryptFileStatement->filePathToFileWithKey;
+        auto filePathWithIv = encryptFileStatement->filePathToFileWithIv;
+
+        auto filePathToFileToBeEncrypted = encryptFileStatement->filePathToFileToBeEncrypted;
+        auto output = encryptFileStatement->output;
+        auto overwrite = encryptFileStatement->overwrite;
+
+        interface->throwIfOverwriteForbidden(output, overwrite);
+        auto iFp = interface->getFileStructFromPath(filePathToFileToBeEncrypted, "rb");
+        auto oFp = interface->getFileStructFromPath(output, "wb");
+
+        auto key = interface->readMessageFromFile(filePathWithKey);
+        auto iv = interface->readMessageFromFile(filePathWithIv);
+
+//        if(key.size())
+        auto config = std::make_shared<Config>();
+        config->key = key.c_str();
+        config->iv = iv.c_str();
+
+        openSSLHandler->encrypt(config, iFp, oFp);
+
+        fclose(iFp);
+        fclose(oFp);
+
+        return {"File encrypted"};
 
     } else if (auto decryptFileStatement = std::dynamic_pointer_cast<DecryptFileStatement>(statement)) {
 
-        throw std::runtime_error("Not implemented");
+        auto filePathWithKey = decryptFileStatement->filePathToFileWithKey;
+        auto filePathWithIv = decryptFileStatement->filePathToFileWithIv;
+
+        auto filePathToFileToBeDecrypted = decryptFileStatement->filePathToFileToBeDecrypted;
+        auto output = decryptFileStatement->output;
+        auto overwrite = decryptFileStatement->overwrite;
+
+        interface->throwIfOverwriteForbidden(output, overwrite);
+        auto iFp = interface->getFileStructFromPath(filePathToFileToBeDecrypted, "rb");
+        auto oFp = interface->getFileStructFromPath(output, "wb");
+
+        auto key = interface->readMessageFromFile(filePathWithKey);
+        auto iv = interface->readMessageFromFile(filePathWithIv);
+
+        auto config = std::make_shared<Config>();
+        config->key = key.c_str();
+        config->iv = iv.c_str();
+
+        openSSLHandler->decrypt(config, iFp, oFp);
+
+        fclose(iFp);
+        fclose(oFp);
+
+        return {"File decrypted"};
 
     } else if (auto helpRequestStatement = std::dynamic_pointer_cast<HelpRequestStatement>(statement)) {
         printHelp();
