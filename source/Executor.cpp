@@ -11,7 +11,7 @@
 #include "../include/Executor.h"
 
 #define VERBOSE 0
-#define MAX_KEY_LEN 16 * 4096
+#define MAX_KEY_LEN 32 * 2048
 #define MIN_KEY_LEN 2048
 
 std::string Executor::execute() {
@@ -130,6 +130,7 @@ std::string Executor::execute() {
 
         interface->throwIfOverwriteForbidden(filePathToStoreKey, overwrite);
         auto prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
+        auto keySize = prvKey.size();
         interface->writeToFile(filePathToStoreKey, prvKey, overwrite);
         return {"Private key saved"};
 

@@ -445,13 +445,21 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     size_t keySize = strlen(keyPlaceToAdd->data);
 
     auto size = currentElementInMap->size;
-    *keyVal = (KeyPartitionNode* )malloc(sizeof(KeyPartitionNode));
+
+    size_t allocationSize = 0;
+    if(size > 4096) {
+        allocationSize = size + 1;
+    } else {
+        allocationSize = sizeof(KeyPartitionNode) + 1;
+    }
+
+    *keyVal = (KeyPartitionNode* )malloc(allocationSize);
     if(*keyVal == NULL) {
         return -1;
     }
     auto partNodeSize = sizeof(KeyPartitionNode);
 
-    memset((*keyVal)->data, 0x00, sizeof(KeyPartitionNode));
+    memset((*keyVal)->data, 0x00, allocationSize);
     memcpy((*keyVal)->data, keyPlaceToAdd, size);
     return 0;
 }
