@@ -38,7 +38,7 @@ void RsaKeyFileIOInterface::printFile(std::string filepath) {
     }
     else std::cout << "Unable to open file";
 }
-std::string RsaKeyFileIOInterface::readMessageFromFile(std::string filepath) {
+std::string RsaKeyFileIOInterface::readFromFile(std::string filepath) {
     std::string fileContent;
     std::string line;
     std::ifstream fileToRead(filepath);

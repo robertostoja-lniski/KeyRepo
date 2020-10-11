@@ -69,7 +69,7 @@ std::string Executor::execute() {
 
         interface->throwIfOverwriteForbidden(signatureOutput, overwrite);
 
-        auto messageToSign = interface->readMessageFromFile(fileToBeSigned);
+        auto messageToSign = interface->readFromFile(fileToBeSigned);
 
         RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
 
@@ -89,12 +89,12 @@ std::string Executor::execute() {
         auto filePathToPublicKey = checkSignatureStatement->filePathToPublicKey;
         auto signatureInput = checkSignatureStatement->signatureInput;
 
-        std::string messageToCheck = interface->readMessageFromFile(filePathToFileToBeChecked);
+        std::string messageToCheck = interface->readFromFile(filePathToFileToBeChecked);
         if(VERBOSE) {
             std::cout << messageToCheck << '\n';
         }
 
-        auto messageToCheckHash = interface->readMessageFromFile(signatureInput);
+        auto messageToCheckHash = interface->readFromFile(signatureInput);
         if(VERBOSE) {
             std::cout << messageToCheckHash << " it was encrypted msg\n";
         }
@@ -147,8 +147,8 @@ std::string Executor::execute() {
         auto iFp = interface->getFileStructFromPath(filePathToFileToBeEncrypted, "rb");
         auto oFp = interface->getFileStructFromPath(output, "wb");
 
-        auto key = interface->readMessageFromFile(filePathWithKey);
-        auto iv = interface->readMessageFromFile(filePathWithIv);
+        auto key = interface->readFromFile(filePathWithKey);
+        auto iv = interface->readFromFile(filePathWithIv);
 
 //        if(key.size())
         auto config = std::make_shared<Config>();
@@ -175,8 +175,8 @@ std::string Executor::execute() {
         auto iFp = interface->getFileStructFromPath(filePathToFileToBeDecrypted, "rb");
         auto oFp = interface->getFileStructFromPath(output, "wb");
 
-        auto key = interface->readMessageFromFile(filePathWithKey);
-        auto iv = interface->readMessageFromFile(filePathWithIv);
+        auto key = interface->readFromFile(filePathWithKey);
+        auto iv = interface->readFromFile(filePathWithIv);
 
         auto config = std::make_shared<Config>();
         config->key = key.c_str();
