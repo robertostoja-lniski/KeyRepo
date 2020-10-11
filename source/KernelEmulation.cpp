@@ -229,19 +229,20 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
         std::cout << "Changed offset is: " << changedOffset << std::endl;
         printPartition(partitionInfo);
     }
+
     return changedOffset;
 }
 
-uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd) {
+int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
     initFileIfNotDefined();
     if(data.numberOfKeys == MAX_KEY_NUM) {
-        return 1;
+        return -2;
     }
 
     int fd = open(partition.c_str(), O_RDWR, 0);
     if(fd < 0) {
-        return 0;
+        return -1;
     }
 
     size_t fileSize = getFileSize(partition.c_str());
@@ -261,7 +262,7 @@ uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd) {
 
         int fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            return 1;
+            return -1;
         }
 
         fileSize = getFileSize(partition.c_str()) + keyNodeToAdd->keySize;
@@ -276,12 +277,12 @@ uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd) {
 
         fd = open(partition.c_str(), O_RDWR, 0);
         if(fd < 0) {
-            return 1;
+            return -1;
         }
     }
 
     if(fileSize != getFileSize(partition.c_str())) {
-        return 1;
+        return -1;
     }
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << std::endl << "file size is " << fileSize << std::endl;
@@ -296,10 +297,10 @@ uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd) {
 
     if(mappedPartition == MAP_FAILED) {
         close(fd);
-        return 1;
+        return -1;
     }
     printPartition(partitionStart);
-    uint64_t id = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd);
+    int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << std::endl;
@@ -311,7 +312,7 @@ uint64_t addKeyNodeToPartition(KeyNode* keyNodeToAdd) {
     close(fd);
     assert(ret == 0);
 
-    return id;
+    return addRet;
 }
 
 void printPartition(const void* mappedPartition) {
@@ -341,7 +342,7 @@ void printPartition(const void* mappedPartition) {
 
 }
 
-uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd) {
+int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id) {
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
@@ -353,7 +354,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToA
 
     uint64_t mapSize = partitionInfo->mapSize;
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
-    uint64_t id;
+    uint64_t nextId;
     uint64_t prevOffset = currentElementInMap->offset;
     for(int i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
@@ -363,7 +364,12 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToA
         }
 
         if(offset == 0) {
-            id = generateRandomId(mappedPartition);
+            nextId = generateRandomId(mappedPartition);
+            *id = (uint64_t* )malloc(sizeof(*id));
+            if(!id) {
+                return -2;
+            }
+            **id = nextId;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
@@ -372,7 +378,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToA
 
     MapNode* elementDataToUpdate = (MapNode* )malloc(sizeof(MapNode));
     if(!elementDataToUpdate) {
-        return 1;
+        return -1;
     }
 
     if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
@@ -380,7 +386,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToA
     }
 
     elementDataToUpdate->offset = offsetToAdd;
-    elementDataToUpdate->id = id;
+    elementDataToUpdate->id = nextId;
     elementDataToUpdate->size = keyNodeToAdd->keySize;
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
@@ -417,7 +423,7 @@ uint64_t addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToA
         std::cout << "id of added key is: " << id << std::endl;
     }
 
-    return id;
+    return 0;
 }
 
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal) {
@@ -574,7 +580,7 @@ int removePrvKeyById(uint64_t id) {
     if(numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
 
         uint64_t changedSize = removeFragmentation(partitionInfo);
-        if(changedSize!= 0) {
+        if(changedSize == 0) {
             ftruncate(fd, changedSize);
         }
 
@@ -606,7 +612,7 @@ int getPathToTmpPrvKeyStorage(char* key) {
     return 0;
 }
 
-uint64_t write(RSA* r) {
+int write(RSA* r, uint64_t** id) {
     writeKeyToTemporaryFile(r);
 
     KeyNode* keyNode =  NULL;
@@ -620,8 +626,13 @@ uint64_t write(RSA* r) {
         std::cout << "Kernel will add a key to partition with value" << std::endl;
     }
 //        print(keyNode.keyContent);
-    uint64_t ret = addKeyNodeToPartition(keyNode);
-    return ret;
+
+    int ret = addKeyNodeToPartition(keyNode, id);
+    if(ret == -1 || ret == -2) {
+        return ret;
+    }
+
+    return 0;
 }
 
 int readKey(const char* filepath, char** outpath) {
