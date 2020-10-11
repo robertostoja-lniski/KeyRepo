@@ -40,7 +40,7 @@ public:
     RSA* readPrivateKeyFromFile(std::string filepath);
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
-    std::string readMessageFromFile(std::string filepath);
+    std::string readFromFile(std::string filepath);
     void writeToFile(std::string filepath, std::string data, bool overwrite);
 
     void removePrivateKey(std::string privateKeyPath);
