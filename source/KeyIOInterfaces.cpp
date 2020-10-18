@@ -137,7 +137,14 @@ void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, 
 }
 
 void RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
-    auto result = remove(privateKeyPath.c_str());
+
+    auto keyId = readFromFile(privateKeyPath.c_str());
+
+    uint64_t id;
+    std::istringstream iss(keyId);
+    iss >> id;
+
+    auto result = remove(&id, privateKeyPath.c_str());
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }

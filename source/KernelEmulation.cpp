@@ -502,29 +502,6 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
     return -1;
 }
 
-uint64_t readIdFromFile(const char* filepath) {
-    std::string line;
-
-    FILE *fp;
-    size_t buffSize = 4096;
-    char str[buffSize];
-    memset(str, 0x00, buffSize);
-
-    fp = fopen(filepath, "r");
-    if (fp == NULL){
-        return 0;
-    }
-
-    while (fgets(str, buffSize, fp) != NULL) {
-        line += str;
-        memset(str, 0x00, buffSize);
-    }
-    fclose(fp);
-    char *eptr;
-
-    return strtoull(&line[0], &eptr, 10);
-}
-
 int getPrvKeyById(uint64_t id, char **prvKey) {
     size_t fileSize = getFileSize(partition.c_str());
     //Open file
@@ -676,7 +653,7 @@ int get(const uint64_t* id, char** output) {
 
     char* prvKey = NULL;
     int getKeyRet = getPrvKeyById(*id, &prvKey);
-    if(getKeyRet != 0 || getKeyRet == -1) {
+    if(getKeyRet != 0) {
         return -1;
     }
 
@@ -684,9 +661,8 @@ int get(const uint64_t* id, char** output) {
     return 0;
 }
 
-int remove(const char* filepath) {
-    uint64_t id = readIdFromFile(filepath);
-    return id == 0 ? -1 : removePrvKeyById(id);
+int remove(const uint64_t* id, const char* filepath) {
+    return id == NULL || *id == 0 ? -1 : removePrvKeyById(*id);
 }
 
 
