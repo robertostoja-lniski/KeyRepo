@@ -89,7 +89,6 @@ void printPartition(const void* mappedPartition);
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id);
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
-uint64_t readIdFromFile(const char* filepath);
 int getPrvKeyById(uint64_t id, const char **prvKey);
 int removePrvKeyById(uint64_t id);
 void print(std::string str);
@@ -103,6 +102,6 @@ int getCurrentKeyNum();
 int write(RSA* r, uint64_t** id);
 int readKey(const uint64_t* id, char** outpath);
 int get(const uint64_t* id, char** output);
-int remove(const char* filepath);
+int remove(const uint64_t* id, const char* filepath);
 
 #endif //KEYREPO_KERNELEMULATION_H
