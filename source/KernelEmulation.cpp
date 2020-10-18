@@ -634,10 +634,10 @@ int write(RSA* r, uint64_t** id) {
     return 0;
 }
 
-int readKey(const char* filepath, char** outpath) {
-    uint64_t id = readIdFromFile(filepath);
-    if(id == 0) {
-        return -1;
+int readKey(const uint64_t* id, char** outpath) {
+
+    if(id == NULL || *id == 0) {
+       return -1;
     }
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
@@ -645,7 +645,7 @@ int readKey(const char* filepath, char** outpath) {
     }
 
     char* prvKey = NULL;
-    int ret = getPrvKeyById(id, &prvKey);
+    int ret = getPrvKeyById(*id, &prvKey);
     if(prvKey == NULL || ret == -1) {
         return -1;
     }
