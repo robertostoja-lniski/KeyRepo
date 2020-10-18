@@ -665,9 +665,8 @@ int readKey(const uint64_t* id, char** outpath) {
     return getPathToTmpPrvKeyStorage(prvKey);
 }
 
-int get(const char* filepath, char** output) {
-    uint64_t id = readIdFromFile(filepath);
-    if(id == 0) {
+int get(const uint64_t* id, char** output) {
+    if(id == NULL || *id == 0) {
         return -1;
     }
 
@@ -676,8 +675,8 @@ int get(const char* filepath, char** output) {
     }
 
     char* prvKey = NULL;
-    int getKeyRet = getPrvKeyById(id, &prvKey);
-    if(getKeyRet != 0) {
+    int getKeyRet = getPrvKeyById(*id, &prvKey);
+    if(getKeyRet != 0 || getKeyRet == -1) {
         return -1;
     }
 

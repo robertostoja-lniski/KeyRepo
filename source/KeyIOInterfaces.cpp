@@ -156,7 +156,14 @@ void RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
 
 std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {
     char* prvKey = NULL;
-    auto ret = get(filepathWithPrvKeyId.c_str(), &prvKey);
+
+    auto keyId = readFromFile(filepathWithPrvKeyId.c_str());
+
+    uint64_t id;
+    std::istringstream iss(keyId);
+    iss >> id;
+
+    auto ret = get(&id, &prvKey);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }

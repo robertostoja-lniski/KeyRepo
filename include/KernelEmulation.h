@@ -102,7 +102,7 @@ uint64_t removeFragmentation(PartitionInfo* );
 int getCurrentKeyNum();
 int write(RSA* r, uint64_t** id);
 int readKey(const uint64_t* id, char** outpath);
-int get(const char* filepath, char** output);
+int get(const uint64_t* id, char** output);
 int remove(const char* filepath);
 
 #endif //KEYREPO_KERNELEMULATION_H

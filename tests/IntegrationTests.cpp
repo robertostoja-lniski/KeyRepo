@@ -3094,7 +3094,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_FILE)
         executor->execute();
     } catch(std::exception &e) {
         auto tmp = e.what();
-        if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
             caught = true;
         }
     }
@@ -3125,7 +3125,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_TEST)
         executor->execute();
     } catch(std::exception &e) {
         auto tmp = e.what();
-        if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
             caught = true;
         }
     }
