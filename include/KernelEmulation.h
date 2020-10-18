@@ -74,7 +74,8 @@ const std::string partition = "/Users/robertostoja-lniski/.keyPartition";
 #else
 const std::string partition = "/home/robert/.keyPartition";
 #endif
-const std::string tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
+const static char* tmpKeyStorage = "/tmp/tmpKeyBeforePart.pem";
+const static char* pathToPrivateKey = "/tmp/prvKey.pem";
 
 // TODO there can be two keys with the same ID
 static uint64_t generateRandomId();

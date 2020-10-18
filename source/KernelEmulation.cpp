@@ -113,7 +113,7 @@ int initFileIfNotDefined() {
 }
 
 int writeKeyToTemporaryFile(RSA* r) {
-    FILE *fp = fopen(tmpKeyStorage.c_str(), "wb");
+    FILE *fp = fopen(tmpKeyStorage, "wb");
     if(fp == nullptr) {
         return 1;
     }
@@ -132,7 +132,7 @@ int generateKeyNodeFromKeyInFile(KeyNode** keyNode) {
     char str[buffSize];
     memset(str, 0x00, buffSize);
 
-    fp = fopen(tmpKeyStorage.c_str(), "r");
+    fp = fopen(tmpKeyStorage, "r");
     if (fp == NULL){
         return -1;
     }
@@ -580,7 +580,7 @@ int removePrvKeyById(uint64_t id) {
     if(numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
 
         uint64_t changedSize = removeFragmentation(partitionInfo);
-        if(changedSize == 0) {
+        if(changedSize != 0) {
             ftruncate(fd, changedSize);
         }
 
@@ -599,13 +599,12 @@ int removePrvKeyById(uint64_t id) {
 }
 
 int getPathToTmpPrvKeyStorage(char* key) {
-    const char* filepath = "/tmp/prvKey.pem";
 
     size_t maxKeySize = 4 * 4096 + 1024;
     char fileContent[maxKeySize];
     memset(fileContent, 0x00, maxKeySize);
 
-    FILE* fp = fopen(filepath, "w+");
+    FILE* fp = fopen(pathToPrivateKey, "w+");
     fprintf(fp, "%s", key);
     fclose(fp);
 
@@ -655,7 +654,14 @@ int readKey(const char* filepath, char** outpath) {
         std::cout << "Kernel Emulation found a key with value" << std::endl;
     }
 
-    *outpath = "/tmp/prvKey.pem";
+    *outpath = (char *)malloc(strlen(pathToPrivateKey) + 1);
+    if(*outpath == NULL) {
+        return -1;
+    }
+
+    strncpy(*outpath, pathToPrivateKey, strlen(pathToPrivateKey));
+    memset((char* )(*outpath) + strlen(pathToPrivateKey), 0x00, sizeof(char));
+
     return getPathToTmpPrvKeyStorage(prvKey);
 }
 
