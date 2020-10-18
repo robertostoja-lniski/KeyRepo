@@ -2553,8 +2553,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
         std::vector<std::string> input{
                 "program",
                 "create-key",
-                "/tmp/sing_error_4_private.pem",
-                "/tmp/sing_error_4_public.pem",
+                "/tmp/sign_error_4_private.pem",
+                "/tmp/sign_error_4_public.pem",
                 "2048",
                 "RSA",
                 "overwrite"
@@ -2572,7 +2572,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
     }
     {
         system("touch /tmp/sign_error_4_file.txt");
-        system("echo a >> /tmp/sign_error_4_signature.txt");
+        system("echo a > /tmp/sign_error_4_private.pem");
         bool errorFound = false;
         std::vector<std::string> input{
                 "program",

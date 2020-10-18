@@ -101,7 +101,7 @@ uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
 int getCurrentKeyNum();
 int write(RSA* r, uint64_t** id);
-int readKey(const char* filepath, char** outpath);
+int readKey(const uint64_t* id, char** outpath);
 int get(const char* filepath, char** output);
 int remove(const char* filepath);
 

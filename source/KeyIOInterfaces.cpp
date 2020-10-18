@@ -13,7 +13,14 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
 
     char* cPrvKeyPath = NULL;
-    auto ret = readKey(filepath.c_str(), &cPrvKeyPath);
+
+    auto keyId = readFromFile(filepath.c_str());
+
+    uint64_t id;
+    std::istringstream iss(keyId);
+    iss >> id;
+
+    auto ret = readKey(&id, &cPrvKeyPath);
 
     if(ret == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
