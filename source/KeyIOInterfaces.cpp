@@ -20,6 +20,7 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
     }
 
     auto prvKeyPath = std::string(cPrvKeyPath);
+    free(cPrvKeyPath);
 
     auto fp = getFileStructFromPath(prvKeyPath, "r");
     return readPrivateKeyFromFpAndClose(&fp);
