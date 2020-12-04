@@ -6,14 +6,16 @@
 #define KEYREPO_KEYIOINTERFACES_H
 #include <memory>
 #include <stdio.h>
-#include <boost/filesystem.hpp>
+
 
 #if __APPLE__
 #include "openssl/rsa.h"
 #include "openssl/pem.h"
 #include "openssl/evp.h"
 #include "openssl/ossl_typ.h"
+#include <experimental/filesystem>
 #else
+#include <boost/filesystem.hpp>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
