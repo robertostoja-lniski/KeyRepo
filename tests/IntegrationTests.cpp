@@ -286,6 +286,90 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     BOOST_CHECK_EQUAL(statement + " output", serialisedInput);
 }
 
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GET_MODE)
+{
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+3123"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GET_MODE_TOO_MANY_PARAMS)
+{
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_TOO_MANY_PARAMS)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+3123",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+
 BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -495,6 +579,351 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
     system("mv ~/.keyPartition.old ~/.keyPartition");
 
 }
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_1)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+aw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("Change mod: Unknown flags.")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_2)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "aw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("Change mod: Unknown flags.")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_3)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "grw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("Change mod: Unknown flags.")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_4)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "o+rew"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("Change mod: Unknown flags.")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_NOT_EXISTING_KEY)
+{
+    system("rm /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "grw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_NOT_EXISTING_KEY)
+{
+    system("rm /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_KEY)
+{
+    system("echo 312312321 >> /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "grw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_WRONG_KEY)
+{
+    system("echo 312312321 >> /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+            caught = true;
+        }
+    }
+
+   BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+
+    std::vector<std::string> flags = {
+        "rw",
+        "r",
+        "w",
+        "g+rw",
+        "g+r",
+        "g+w",
+        "g+wr",
+        "o+r",
+        "o+w",
+        "o+rw",
+        "o+wr",
+    };
+
+    bool any_error {false};
+
+    for( auto flag : flags ) {
+
+        {
+            std::vector<std::string> input{
+                    "program",
+                    "chmod",
+                    "/tmp/private.pem",
+                    flag
+            };
+            TerminalEmulation terminalEmulation(input);
+            auto args = terminalEmulation.getArgs();
+            auto argc = args.argc;
+            auto argv = args.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_unique<Executor>(parser);
+
+
+            try {
+                auto msg = executor->execute();
+            } catch (std::exception &e) {
+                if (e.what() == std::string("Change mod: Unknown flags.")) {
+                    any_error = true;
+                }
+            }
+        }
+        {
+            std::vector<std::string> input{
+                    "program",
+                    "gmod",
+                    "/tmp/key",
+            };
+            TerminalEmulation terminalEmulation(input);
+            auto args = terminalEmulation.getArgs();
+            auto argc = args.argc;
+            auto argv = args.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_unique<Executor>(parser);
+
+            std::string msg;
+            try {
+                msg = executor->execute();
+            } catch (std::exception &e) {
+                if (e.what() == std::string("KeyIOInterface: Failed to read file")) {
+                    any_error = true;
+                }
+            }
+            if (msg != flag) {
+                any_error = true;
+            }
+        }
+    }
+   
+    BOOST_CHECK_EQUAL(any_error, false);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
 
 BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
     std::vector<std::string> input{
@@ -948,7 +1377,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_IV)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
     {
-        system("rm /tmp/not_existing_iv");
+        system("rm /tmp/g_iv");
         system("echo 312312321 >> /tmp/key");
         std::vector<std::string> input {
                 "program",
