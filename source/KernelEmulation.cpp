@@ -193,6 +193,10 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
         uint64_t offset = currentElementInMap->offset;
         uint64_t id = currentElementInMap->id;
         uint64_t size = currentElementInMap->size;
+        int mode = currentElementInMap->mode;
+        int uid = currentElementInMap->uid;
+        int gid = currentElementInMap->gid;
+
 
         if(offset != 0) {
 
@@ -210,6 +214,9 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
             tmpMap[tmpMapIndex].id = id;
             tmpMap[tmpMapIndex].offset = changedOffset;
             tmpMap[tmpMapIndex].size = size;
+            tmpMap[tmpMapIndex].mode = mode;
+            tmpMap[tmpMapIndex].uid = uid;
+            tmpMap[tmpMapIndex].gid = gid;
 
             changedOffset += size;
 //            changedOffset += changedOffset % NODE_SIZE;
@@ -388,6 +395,9 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     elementDataToUpdate->offset = offsetToAdd;
     elementDataToUpdate->id = nextId;
     elementDataToUpdate->size = keyNodeToAdd->keySize;
+    elementDataToUpdate->uid = getuid();
+    elementDataToUpdate->gid = getgid();
+    elementDataToUpdate->mode = getDefaultMode();
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
     free(elementDataToUpdate);
@@ -437,6 +447,11 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
+
+            if(!canRead(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
+                return -2;
+            }
+
             offset = currentElementInMap->offset;
             found = true;
             break;
@@ -470,6 +485,59 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     return 0;
 }
 
+int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMode) {
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t mapSize = partitionInfo->mapSize;
+
+    MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+    uint64_t offset;
+    bool found = false;
+    for(int i = 0; i < mapSize; i++) {
+        uint64_t currentId = currentElementInMap->id;
+        if(currentId == id) {
+            found = true;
+            break;
+        }
+        currentElementInMap = currentElementInMap + 1;
+    }
+
+    if(!found) {
+        return -1;
+    }
+
+    *keyMode = (int* )malloc(sizeof(currentElementInMap->mode));
+    if(*keyMode == NULL) {
+        return -1;
+    }
+    **keyMode = currentElementInMap->mode;
+
+    return 0;
+}
+int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode) {
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t mapSize = partitionInfo->mapSize;
+
+    MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+    bool found = false;
+    for(int i = 0; i < mapSize; i++) {
+        uint64_t currentId = currentElementInMap->id;
+        if(currentId == id) {
+            found = true;
+            break;
+        }
+        currentElementInMap = currentElementInMap + 1;
+    }
+
+    if(!found) {
+        return -1;
+    }
+
+    currentElementInMap->mode = keyMode;
+
+    return 0;
+}
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
@@ -481,6 +549,11 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
         uint64_t currentId = currentElementInMap->id;
 
         if(currentId == id) {
+
+            if(!canWrite(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
+                return -2;
+            }
+
             offset = currentElementInMap->offset;
             currentElementInMap->offset = 0;
 
@@ -665,5 +738,94 @@ int remove(const uint64_t* id, const char* filepath) {
     return id == NULL || *id == 0 ? -1 : removePrvKeyById(*id);
 }
 
+int getMode(const uint64_t* id, int** output) {
 
+    if(id == NULL || *id == 0) {
+        return -1;
+    }
+
+    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+        std::cout << "Kernel Emualtion will give modes for key with id: " <<  id << std::endl;
+    }
+
+    char* prvKey = NULL;
+    size_t fileSize = getFileSize(partition.c_str());
+    //Open file
+    int fd = open(partition.c_str(), O_RDWR, 0);
+    if(fd < 0) {
+        return -1;
+    }
+    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == MAP_FAILED) {
+        close(fd);
+        return -1;
+    }
+
+    int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, *id, output);
+
+    int ret = munmap(mappedPartition, fileSize);
+    close(fd);
+    assert(ret == 0);
+
+    if(getKeyRet == -1) {
+        return -1;
+    }
+    // tmp
+    return 0;
+}
+
+int setMode(const uint64_t* id, int* newMode) {
+
+    if(SU_SECURITY == 1 && geteuid() != 0) {
+        return -1;
+    }
+
+    if(id == NULL || *id == 0) {
+        return -1;
+    }
+
+    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+        std::cout << "Kernel Emualtion will give modes for key with id: " <<  id << std::endl;
+    }
+
+    size_t fileSize = getFileSize(partition.c_str());
+    //Open file
+    int fd = open(partition.c_str(), O_RDWR, 0);
+    if(fd < 0) {
+        return -1;
+    }
+    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == MAP_FAILED) {
+        close(fd);
+        return -1;
+    }
+
+    int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
+
+    int ret = munmap(mappedPartition, fileSize);
+    close(fd);
+    assert(ret == 0);
+
+    if(getKeyRet == -1) {
+        return -1;
+    }
+    // tmp
+    return 0;
+}
+
+int canRead(int mode, int uid, int gid) {
+    int userRead = (mode / 100) & READ_MASK;
+    int groupRead = ((mode / 10) % 10) & READ_MASK;
+    int othersRead = (mode % 10) & READ_MASK;
+
+    return userRead && uid == getuid() || groupRead && gid == getgid() || othersRead && uid != getuid();
+}
+
+int canWrite(int mode, int uid, int gid) {
+    int userWrite = (mode / 100) & WRITE_MASK;
+    int groupWrite = ((mode / 10) % 10) & WRITE_MASK;
+    int othersWrite = (mode % 10) & WRITE_MASK;
+
+    return userWrite && uid == getuid() || groupWrite && gid == getgid() || othersWrite && uid != getuid();
+}
 

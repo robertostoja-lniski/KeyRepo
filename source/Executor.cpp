@@ -189,6 +189,28 @@ std::string Executor::execute() {
 
         return {"File decrypted"};
 
+    } else if (auto getModeStatement = std::dynamic_pointer_cast<GetModStatement>(statement)) {
+
+        auto pathToKeyId = getModeStatement->filePathToKeyId;
+        auto modes = interface->getKeyMode(pathToKeyId);
+
+        auto modeHandler = std::make_unique<ModHandler>();
+        return {modeHandler->parseIntModesToString(modes)};
+
+    } else if (auto changeModStatement = std::dynamic_pointer_cast<ChangeModStatement>(statement)) {
+
+        auto pathToKeyId = changeModStatement->filePathToKeyId;
+        auto flags = changeModStatement->flags;
+
+        auto modeHandler = std::make_unique<ModHandler>();
+        auto modeSetter = modeHandler->stringToModeSetter(flags);
+        auto currentModes = interface->getKeyMode(pathToKeyId);
+        auto newModeParam = modeHandler->modeSetterToInt(modeSetter, currentModes);
+        interface->changeKeyMode(pathToKeyId, newModeParam);
+
+
+        return {"Mode is set"};
+
     } else if (auto helpRequestStatement = std::dynamic_pointer_cast<HelpRequestStatement>(statement)) {
         printHelp();
         return {"Help printed"};

@@ -137,3 +137,14 @@ void Parser::generateHelpOption() {
     HelpRequestStatement helpRequestStatement;
     currentParsedStatement = std::make_shared<HelpRequestStatement>(helpRequestStatement);
 }
+
+void Parser::generateGetModOption() {
+    auto filePathToPrivateKey = syntaxAnalyser->getNextToken().value;
+    currentParsedStatement = std::make_shared<GetModStatement>(filePathToPrivateKey);
+}
+
+void Parser::generateChangeModOption() {
+    auto filePathToPrivateKey = syntaxAnalyser->getNextToken().value;
+    auto flags = syntaxAnalyser->getNextToken().value;
+    currentParsedStatement = std::make_shared<ChangeModStatement>(filePathToPrivateKey, flags);
+}

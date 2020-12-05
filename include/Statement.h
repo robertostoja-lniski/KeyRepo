@@ -140,6 +140,32 @@ struct DecryptFileStatement : Statement {
         overwrite = true;
     }
 };
+struct GetModStatement : Statement {
+    std::string filePathToKeyId;
+
+    GetModStatement(std::string filePathToKeyId) :
+            filePathToKeyId(filePathToKeyId) {}
+
+    friend std::ostream& operator<<(std::ostream& os, const GetModStatement& dt);
+    std::string toString() override {
+        return "gmod " + filePathToKeyId;
+    }
+
+};
+struct ChangeModStatement : Statement {
+    std::string filePathToKeyId;
+    std::string flags;
+
+    ChangeModStatement(std::string filePathToKeyId, std::string flags) :
+            filePathToKeyId(filePathToKeyId), flags(flags) {}
+
+    friend std::ostream& operator<<(std::ostream& os, const ChangeModStatement& dt);
+    std::string toString() override {
+        return "chmod " + filePathToKeyId + " " + flags;
+    }
+
+};
+
 struct HelpRequestStatement : Statement {
     HelpRequestStatement() = default;
     std::string toString() override {

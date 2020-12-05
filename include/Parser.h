@@ -21,7 +21,10 @@ private:
     void generateCheckSignatureOption();
     void generateEncryptFileOption();
     void generateDecryptFileOption();
+    void generateGetModOption();
+    void generateChangeModOption();
     void generateHelpOption();
+
 
     std::map<std::string, std::function<void()>> tokenGenerator {
             {"create-key", [&]() { return generateCreateKeyOption(); }},
@@ -31,6 +34,8 @@ private:
             {"check-signature", [&]() { return generateCheckSignatureOption(); }},
             {"encrypt-file", [&]() { return generateEncryptFileOption(); }},
             {"decrypt-file", [&]() { return generateDecryptFileOption(); }},
+            {"gmod", [&]() { return generateGetModOption(); }},
+            {"chmod", [&]() { return generateChangeModOption(); }},
             {"-h", [&]() { return generateHelpOption(); }},
             {"--help", [&]() { return generateHelpOption(); }},
     };

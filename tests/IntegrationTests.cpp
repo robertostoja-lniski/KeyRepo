@@ -36,6 +36,530 @@ namespace testHelpers {
 
 };
 
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_1)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("+rw").value;
+    BOOST_CHECK_EQUAL(flags, 600);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_2)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("+r").value;
+    BOOST_CHECK_EQUAL(flags, 400);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_3)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("+w").value;
+    BOOST_CHECK_EQUAL(flags, 200);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_4)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("g+rw").value;
+    BOOST_CHECK_EQUAL(flags, 60);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_5)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("g+r").value;
+    BOOST_CHECK_EQUAL(flags, 40);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_6)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("g+w").value;
+    BOOST_CHECK_EQUAL(flags, 20);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_7)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("o+r").value;
+    BOOST_CHECK_EQUAL(flags, 4);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_8)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("o+w").value;
+    BOOST_CHECK_EQUAL(flags, 2);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_9)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("o+rw").value;
+    BOOST_CHECK_EQUAL(flags, 6);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_10)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("og+rw").value;
+    BOOST_CHECK_EQUAL(flags, 66);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_11)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("ou+rw").value;
+    BOOST_CHECK_EQUAL(flags, 606);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_12)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("gu+rw").value;
+    BOOST_CHECK_EQUAL(flags, 660);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_13)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("a+rw").value;
+    BOOST_CHECK_EQUAL(flags, 666);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_14)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("a+r").value;
+    BOOST_CHECK_EQUAL(flags, 444);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_15)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("a+w").value;
+    BOOST_CHECK_EQUAL(flags, 222);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_16)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("guo+rw").value;
+    BOOST_CHECK_EQUAL(flags, 666);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_17)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("uog+r").value;
+    BOOST_CHECK_EQUAL(flags, 444);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_18)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("oug+rw").value;
+    BOOST_CHECK_EQUAL(flags, 666);
+}
+
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_19)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("-rw").value;
+    BOOST_CHECK_EQUAL(flags, 600);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_20)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("-r").value;
+    BOOST_CHECK_EQUAL(flags, 400);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_21)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("-w").value;
+    BOOST_CHECK_EQUAL(flags, 200);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_22)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("g-rw").value;
+    BOOST_CHECK_EQUAL(flags, 60);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_23)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto flags = modHandler->stringToModeSetter("g-r").value;
+    BOOST_CHECK_EQUAL(flags, 40);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_24)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto action = modHandler->stringToModeSetter("g+w").action;
+    BOOST_CHECK_EQUAL((int)action, 0);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_25)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto action = modHandler->stringToModeSetter("o-r").action;
+    BOOST_CHECK_EQUAL((int)action, 1);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_26)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto action = modHandler->stringToModeSetter("o-w").action;
+    BOOST_CHECK_EQUAL((int)action, 1);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_27)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto action = modHandler->stringToModeSetter("777").action;
+    BOOST_CHECK_EQUAL((int)action, 2);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_28)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    auto action = modHandler->stringToModeSetter("000").action;
+    BOOST_CHECK_EQUAL((int)action, 2);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_1)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("+").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_2)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("a+").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_3)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("au+").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_4)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("rw").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_5)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("1+1").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_6)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("a+7r").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_7)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("u+a+g").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_8)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("999").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_9)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("a+777y").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_10)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("ugo+rwrwrrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwrwr").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_11)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("aa+rw").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_12)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("utuugugugugugutgut+rw").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_13)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("999").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_14)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("1000").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_15)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("769").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_16)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("-777").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_17)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("-1-1-1").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_18)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("090").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_19)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("auo+-777").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_20)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("-").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_21)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("+777").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_22)
+{
+    auto modHandler = std::make_unique<ModHandler>();
+    int flags;
+
+    bool caught {false};
+    try {
+        flags = modHandler->stringToModeSetter("+auo-666").value;
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+
 BOOST_AUTO_TEST_CASE(NOT_ENOUGH_ARGS_EXCEPTION)
 {
     std::vector<std::string> input {
@@ -286,6 +810,90 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     BOOST_CHECK_EQUAL(statement + " output", serialisedInput);
 }
 
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GET_MODE)
+{
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+3123"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement, serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GET_MODE_TOO_MANY_PARAMS)
+{
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_TOO_MANY_PARAMS)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+3123",
+            "additional_param"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    parser->parse();
+    auto statement = parser->getCurrentParsedStatementStr();
+    auto serialisedInput = testHelpers::toString(input);
+    BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
+}
+
 BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -495,6 +1103,578 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
     system("mv ~/.keyPartition.old ~/.keyPartition");
 
 }
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_1)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+aw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_2)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "aw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_3)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "grw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_4)
+{
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "o+rew"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("ModeHandler: Wrong string flag format")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_NOT_EXISTING_KEY)
+{
+    system("rm /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+rw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_NOT_EXISTING_KEY)
+{
+    system("rm /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_KEY)
+{
+    system("echo 312312321 > /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "chmod",
+            "/tmp/key",
+            "g+rw"
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key modes")) {
+            caught = true;
+        }
+    }
+
+    BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_WRONG_KEY)
+{
+    system("echo 312312321 > /tmp/key");
+    std::vector<std::string> input {
+            "program",
+            "gmod",
+            "/tmp/key",
+    };
+    TerminalEmulation terminalEmulation(input);
+    auto args = terminalEmulation.getArgs();
+    auto argc = args.argc;
+    auto argv = args.argv;
+
+    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto executor = std::make_unique<Executor>(parser);
+
+    bool caught {false};
+
+    try {
+        auto msg = executor->execute();
+    } catch (std::exception &e) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key modes")) {
+            caught = true;
+        }
+    }
+
+   BOOST_CHECK_EQUAL(caught, true);
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GMOD)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    
+    {
+        std::vector<std::string> input{
+                "program",
+                "gmod",
+                "/tmp/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_unique<Executor>(parser);
+        auto msg = executor->execute();
+        BOOST_CHECK_EQUAL(msg, "600");
+
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "chmod",
+                "/tmp/private.pem",
+                "060"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_unique<Executor>(parser);
+        auto msg = executor->execute();
+
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "gmod",
+                "/tmp/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_unique<Executor>(parser);
+        auto msg = executor->execute();
+        BOOST_CHECK_EQUAL(msg, "060");
+
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "chmod",
+                "/tmp/private.pem",
+                "u-w"
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_unique<Executor>(parser);
+        auto msg = executor->execute();
+
+    }
+    {
+        std::vector<std::string> input{
+                "program",
+                "gmod",
+                "/tmp/private.pem",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto args = terminalEmulation.getArgs();
+        auto argc = args.argc;
+        auto argv = args.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_unique<Executor>(parser);
+        auto msg = executor->execute();
+        BOOST_CHECK_EQUAL(msg, "400");
+
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "create-key",
+                "/tmp/private.pem",
+                "/tmp/public.pem",
+                "2048",
+                "RSA",
+                "overwrite",
+        };
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+
+    std::vector<std::string> flags = {
+        "000",
+        "002",
+        "004",
+        "006",
+        "020",
+        "022",
+        "024",
+        "026",
+        "040",
+        "042",
+        "044",
+        "046",
+        "060",
+        "062",
+        "064",
+        "066",
+        "200",
+        "202",
+        "204",
+        "206",
+        "220",
+        "222",
+        "224",
+        "226",
+        "240",
+        "242",
+        "244",
+        "246",
+        "260",
+        "262",
+        "264",
+        "266",
+        "400",
+        "402",
+        "404",
+        "406",
+        "420",
+        "422",
+        "424",
+        "426",
+        "440",
+        "442",
+        "444",
+        "446",
+        "460",
+        "462",
+        "464",
+        "466",
+        "600",
+        "602",
+        "604",
+        "606",
+        "620",
+        "622",
+        "624",
+        "626",
+        "640",
+        "642",
+        "644",
+        "646",
+        "660",
+        "662",
+        "664",
+        "666",
+    };
+
+    bool any_error {false};
+
+    for( auto flag : flags ) {
+
+        {
+            std::vector<std::string> input{
+                    "program",
+                    "chmod",
+                    "/tmp/private.pem",
+                    flag
+            };
+            TerminalEmulation terminalEmulation(input);
+            auto args = terminalEmulation.getArgs();
+            auto argc = args.argc;
+            auto argv = args.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_unique<Executor>(parser);
+
+
+            try {
+                auto msg = executor->execute();
+            } catch (std::exception &e) {
+                if (e.what() == std::string("Change mod: Unknown flags.")) {
+                    any_error = true;
+                }
+            }
+        }
+        {
+            std::vector<std::string> input{
+                    "program",
+                    "gmod",
+                    "/tmp/private.pem",
+            };
+            TerminalEmulation terminalEmulation(input);
+            auto args = terminalEmulation.getArgs();
+            auto argc = args.argc;
+            auto argv = args.argv;
+
+            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto executor = std::make_unique<Executor>(parser);
+
+            std::string msg;
+            try {
+                msg = executor->execute();
+            } catch (std::exception &e) {
+                if (e.what() == std::string("KeyIOInterface: Failed to read file")) {
+                    any_error = true;
+                }
+            }
+            if (msg != flag) {
+                any_error = true;
+            }
+        }
+    }
+   
+    BOOST_CHECK_EQUAL(any_error, false);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
 
 BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
     std::vector<std::string> input{
@@ -948,7 +2128,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_IV)
 {
     system("mv ~/.keyPartition ~/.keyPartition.old");
     {
-        system("rm /tmp/not_existing_iv");
+        system("rm /tmp/g_iv");
         system("echo 312312321 >> /tmp/key");
         std::vector<std::string> input {
                 "program",
@@ -3891,7 +5071,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
     stat(partition.c_str(), &st);
     auto sizeWithFragmentation =  st.st_size;
 
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 6; i++)
     {
         auto str = std::to_string(i);
         std::vector<std::string> input {
@@ -3914,7 +5094,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
 
     stat(partition.c_str(), &st);
     int64_t sizeAfterDefragmention =  st.st_size;
-    int64_t sizeExpected = sizeWithFragmentation - 5 * realKeySize;
+    int64_t sizeExpected = sizeWithFragmentation - 6 * realKeySize;
     auto isSizeWithPaddingBounds = (sizeAfterDefragmention - sizeExpected <= 10)
             && (sizeExpected - sizeAfterDefragmention >= -10);
 
@@ -3955,6 +5135,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
     for(int i = 0; i < 128; i++)
     {
         keysInPartitionAfterAdd--;
+
+        if(keysInPartitionAfterAdd == 62) {
+            auto dummy = 0;
+            auto a = 5;
+        }
 
         auto str = std::to_string(i);
         std::vector<std::string> input {
@@ -4324,7 +5509,7 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
     stat(partition.c_str(), &st);
     auto sizeAfterMultipleLoop =  st.st_size;
 
-    BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 3096);
+    BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 5144);
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
@@ -4834,7 +6019,7 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
     stat(partition.c_str(), &st);
     auto sizeAfterMultipleLoop =  st.st_size;
 
-    BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 3096);
+    BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 5144);
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
