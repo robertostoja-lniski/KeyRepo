@@ -10,7 +10,6 @@ std::ostream& operator<<(std::ostream& os, const CreateKeyStatement& dt)
        << dt.pubKeyPath << " path to public key, " << dt.privateKeyIdFile << " and private key id\n";
     return os;
 }
-
 std::ostream &operator<<(std::ostream &os, const GetPrivateKeyStatement &dt) {
     os << "Get private key with: " << dt.filePathWithPrivateKeyId << " id " << dt.filePathToStorePrivateKey
         << " and filepath to store it.\n";
@@ -35,4 +34,10 @@ std::ostream &operator<<(std::ostream &os, const EncryptFileStatement &dt) {
 std::ostream &operator<<(std::ostream &os, const DecryptFileStatement &dt) {
     os << "Decrypting file " << dt.filePathToFileToBeDecrypted << " by "
        << dt.filePathToFileWithKey << " key, " << dt.filePathToFileWithIv << " iv and with output " + dt.output + "\n";
+}
+std::ostream &operator<<(std::ostream &os, const GetModStatement &dt) {
+    os << "Getting mode for " << dt.filePathToKeyId << "\n";
+}
+std::ostream &operator<<(std::ostream &os, const ChangeModStatement &dt) {
+    os << "Changing mode for " << dt.filePathToKeyId << " to " << dt.flags << "\n";
 }

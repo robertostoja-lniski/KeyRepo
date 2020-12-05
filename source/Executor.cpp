@@ -189,6 +189,22 @@ std::string Executor::execute() {
 
         return {"File decrypted"};
 
+    } else if (auto getModeStatement = std::dynamic_pointer_cast<GetModStatement>(statement)) {
+
+        auto pathToKeyId = getModeStatement->filePathToKeyId;
+
+    } else if (auto changeModStatement = std::dynamic_pointer_cast<ChangeModStatement>(statement)) {
+
+        auto pathToKeyId = changeModStatement->filePathToKeyId;
+        auto flags = changeModStatement->flags;
+
+        auto modHandler = std::make_unique<ModHandler>();
+        auto isFlagOk = modHandler->isFlagInRightFormat(flags);
+        if(!isFlagOk) {
+            throw std::runtime_error("Change mod: Unknown flags.");
+        }
+
+
     } else if (auto helpRequestStatement = std::dynamic_pointer_cast<HelpRequestStatement>(statement)) {
         printHelp();
         return {"Help printed"};

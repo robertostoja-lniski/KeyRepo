@@ -29,6 +29,38 @@
 #include <fstream>
 #include <stdlib.h>
 
+class ModHandler {
+private:
+    std::vector<std::string> possibleFlags = {
+            "r", "w", "rw", "wr"
+    };
+    std::vector<std::string> possiblePrefixes = {
+            " ", "g", "o"
+    };
+    std::vector<std::string> possibleConcatOperators = {
+            "+"
+    };
+
+public:
+    ModHandler() = default;
+    bool isFlagInRightFormat(std::string checkedFlag) {
+
+        for( auto possibleFlag : possibleFlags ) {
+            for( auto possiblePrefix : possiblePrefixes ) {
+                for( auto possibleConcatOperator : possibleConcatOperators ) {
+
+                    auto currentPotentialFlag = possiblePrefix + possibleConcatOperator + possibleFlag;
+                    if(checkedFlag == currentPotentialFlag) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
 class Executor {
 private:
     // methods for crypto handler
