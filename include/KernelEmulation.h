@@ -51,6 +51,9 @@ struct MapNode {
     uint64_t id;
     uint64_t offset {0};
     uint64_t size {0};
+    uint32_t mode {0};
+    int      uid {0};
+    int      gid {0};
 };
 
 struct PartitionInfo {
@@ -79,6 +82,9 @@ const static char* pathToPrivateKey = "/tmp/prvKey.pem";
 
 // TODO there can be two keys with the same ID
 static uint64_t generateRandomId();
+static int getDefaultMode() {
+    return 600;
+}
 
 int initFileIfNotDefined();
 int writeKeyToTemporaryFile(RSA* r);
@@ -103,5 +109,7 @@ int write(RSA* r, uint64_t** id);
 int readKey(const uint64_t* id, char** outpath);
 int get(const uint64_t* id, char** output);
 int remove(const uint64_t* id, const char* filepath);
-
+// MODE HANDLING
+int getMode(const uint64_t* id, int** output);
+int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);
 #endif //KEYREPO_KERNELEMULATION_H

@@ -48,6 +48,9 @@ public:
     void removePrivateKey(std::string privateKeyPath);
     void removePublicKey(std::string publicKeyPath);
 
+    int getKeyMode(std::string privateKeyPath);
+    void changeKeyMode(std::string privateKeyPath, std::string flags);
+
     int getCurrentKeyNum() {
         return getCurrentKeyNumFromEmulation();
     }

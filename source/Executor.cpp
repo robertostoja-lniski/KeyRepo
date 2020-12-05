@@ -192,6 +192,8 @@ std::string Executor::execute() {
     } else if (auto getModeStatement = std::dynamic_pointer_cast<GetModStatement>(statement)) {
 
         auto pathToKeyId = getModeStatement->filePathToKeyId;
+        auto modes = interface->getKeyMode(pathToKeyId);
+        return {std::to_string(modes)};
 
     } else if (auto changeModStatement = std::dynamic_pointer_cast<ChangeModStatement>(statement)) {
 
@@ -199,11 +201,7 @@ std::string Executor::execute() {
         auto flags = changeModStatement->flags;
 
         auto modHandler = std::make_unique<ModHandler>();
-        auto isFlagOk = modHandler->isFlagInRightFormat(flags);
-        if(!isFlagOk) {
-            throw std::runtime_error("Change mod: Unknown flags.");
-        }
-
+        auto modeSetter = modHandler->stringToModeSetter(flags);
 
     } else if (auto helpRequestStatement = std::dynamic_pointer_cast<HelpRequestStatement>(statement)) {
         printHelp();

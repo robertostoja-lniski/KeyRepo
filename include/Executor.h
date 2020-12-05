@@ -29,35 +29,161 @@
 #include <fstream>
 #include <stdlib.h>
 
+struct ModeSetter {
+    int value;
+    int action;
+};
+
 class ModHandler {
-private:
-    std::vector<std::string> possibleFlags = {
-            "r", "w", "rw", "wr"
-    };
-    std::vector<std::string> possiblePrefixes = {
-            " ", "g", "o"
-    };
-    std::vector<std::string> possibleConcatOperators = {
-            "+"
-    };
 
 public:
     ModHandler() = default;
-    bool isFlagInRightFormat(std::string checkedFlag) {
 
-        for( auto possibleFlag : possibleFlags ) {
-            for( auto possiblePrefix : possiblePrefixes ) {
-                for( auto possibleConcatOperator : possibleConcatOperators ) {
+    bool isFlagInRightFormat(int checkedFlag) {
 
-                    auto currentPotentialFlag = possiblePrefix + possibleConcatOperator + possibleFlag;
-                    if(checkedFlag == currentPotentialFlag) {
-                        return true;
-                    }
-                }
-            }
+        if(checkedFlag > 777) {
+            return false;
         }
 
-        return false;
+        int digit = checkedFlag % 10;
+        int decDigit = (checkedFlag / 10) % 10;
+        int hundredDigit = (checkedFlag / 100) % 10;
+
+        return digit <= 7 && decDigit <= 7 && hundredDigit <= 7;
+    }
+
+    std::string intToString(int flags) {
+
+        if(!isFlagInRightFormat(flags)) {
+            throw std::runtime_error("ModeHandler: Wrong int flag format");
+        }
+
+    }
+
+    ModeSetter stringToModeSetter(std::string flags) {
+
+        // basic edge cases
+        if(flags.size() > 7) {
+            throw std::runtime_error("ModeHandler: Wrong string flag format");
+        }
+
+        if(flags == "000") {
+            return {0, 2};
+        }
+
+        int isUser = 0;
+        int isGroup = 0;
+        int isOther = 0;
+        int isRead = 0;
+        int isWrite = 0;
+        int operation = 0;
+
+        auto found_add = flags.find("+");
+        auto found_sub = flags.find("-");
+        if(found_add == found_sub && found_add != std::string::npos) {
+            throw std::runtime_error("ModeHandler: Wrong string flag format");
+        }
+
+        if(found_sub != std::string::npos) {
+            operation = 1;
+        }
+
+        auto found = std::min(found_add, found_sub);
+
+        if(found == flags.size() - 1) {
+            // only + passed as argument
+            throw std::runtime_error("ModeHandler: Wrong string flag format");
+        }
+
+        if (found!=std::string::npos && found != 0) {
+
+            for (int i = 0; i < found; i ++) {
+                if(flags[i] == 'g') {
+                    isGroup++;
+                } else if(flags[i] == 'o'){
+                    isOther++;
+                } else if(flags[i] == 'u') {
+                    isUser++;
+                } else if(flags[i] == 'a') {
+                    isGroup++;
+                    isUser++;
+                    isOther++;
+                } else {
+                    throw std::runtime_error("ModeHandler: Wrong string flag format");
+                }
+
+                if(isGroup > 1 || isOther > 1 || isUser > 1) {
+                    throw std::runtime_error("ModeHandler: Wrong string flag format");
+                }
+            }
+
+            for(int i = found + 1; i < flags.size(); i++) {
+                if(flags[i] == 'r') {
+                    isRead++;
+                } else if(flags[i] == 'w'){
+                    isWrite++;
+                } else {
+                    throw std::runtime_error("ModeHandler: Wrong string flag format");
+                }
+
+                if(isRead > 1 || isWrite > 1) {
+                    throw std::runtime_error("ModeHandler: Wrong string flag format");
+                }
+            }
+
+        } else if (found == 0){
+
+            isUser = 1;
+            for(int i = 1; i < flags.size(); i++) {
+                if(flags[i] == 'r') {
+                    isRead++;
+                } else if(flags[i] == 'w'){
+                    isWrite++;
+                } else {
+                    throw std::runtime_error("ModeHandler: Wrong string flag format");
+                }
+            }
+
+            if(isRead > 1 || isWrite > 1) {
+                throw std::runtime_error("ModeHandler: Wrong string flag format");
+            }
+
+        } else {
+
+            int intFlags;
+            std::istringstream ss(flags);
+            ss >> intFlags;
+            if (intFlags <= 0 || !isFlagInRightFormat(intFlags)) {
+                throw std::runtime_error("ModeHandler: Wrong string flag format");
+            }
+            return {intFlags, 2};
+        }
+
+        int singleResult = 0;
+
+        if(isRead) {
+            singleResult += 4;
+        }
+
+        if(isWrite) {
+            singleResult += 2;
+        }
+
+        int result = 0;
+
+        if(isUser) {
+            result += singleResult * 100;
+        }
+
+        if(isGroup) {
+            result += singleResult * 10;
+        }
+
+        if(isOther) {
+            result += singleResult;
+        }
+
+        return {result, operation};
     }
 };
 

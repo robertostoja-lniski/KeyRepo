@@ -162,9 +162,9 @@ void RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
 }
 
 std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {
-    char* prvKey = NULL;
+    char* prvKey = nullptr;
 
-    auto keyId = readFromFile(filepathWithPrvKeyId.c_str());
+    auto keyId = readFromFile(std::move(filepathWithPrvKeyId));
 
     uint64_t id;
     std::istringstream iss(keyId);
@@ -189,4 +189,25 @@ void RsaKeyFileIOInterface::throwIfCannotRemoveFile(std::string filepath) {
     if(!f.good()) {
         throw std::runtime_error("KeyIOInterface: File is not good");
     }
+}
+
+int RsaKeyFileIOInterface::getKeyMode(std::string filepathWithPrvKeyId) {
+
+    int* modes = nullptr;
+
+    auto keyId = readFromFile(std::move(filepathWithPrvKeyId));
+
+    uint64_t id;
+    std::istringstream iss(keyId);
+    iss >> id;
+
+    auto ret = getMode(&id, &modes);
+    if(ret != 0) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
+    }
+
+    int funcRet = *modes;
+    free(modes);
+    return funcRet;
+
 }
