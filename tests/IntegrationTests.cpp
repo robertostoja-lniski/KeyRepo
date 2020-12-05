@@ -179,31 +179,31 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_24)
 {
     auto modHandler = std::make_unique<ModHandler>();
     auto action = modHandler->stringToModeSetter("g+w").action;
-    BOOST_CHECK_EQUAL(action, 0);
+    BOOST_CHECK_EQUAL((int)action, 0);
 }
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_25)
 {
     auto modHandler = std::make_unique<ModHandler>();
     auto action = modHandler->stringToModeSetter("o-r").action;
-    BOOST_CHECK_EQUAL(action, 1);
+    BOOST_CHECK_EQUAL((int)action, 1);
 }
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_26)
 {
     auto modHandler = std::make_unique<ModHandler>();
     auto action = modHandler->stringToModeSetter("o-w").action;
-    BOOST_CHECK_EQUAL(action, 1);
+    BOOST_CHECK_EQUAL((int)action, 1);
 }
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_27)
 {
     auto modHandler = std::make_unique<ModHandler>();
     auto action = modHandler->stringToModeSetter("777").action;
-    BOOST_CHECK_EQUAL(action, 2);
+    BOOST_CHECK_EQUAL((int)action, 2);
 }
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_28)
 {
     auto modHandler = std::make_unique<ModHandler>();
     auto action = modHandler->stringToModeSetter("000").action;
-    BOOST_CHECK_EQUAL(action, 2);
+    BOOST_CHECK_EQUAL((int)action, 2);
 }
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_1)
 {
@@ -1231,7 +1231,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_NOT_EXISTING_KEY)
             "program",
             "chmod",
             "/tmp/key",
-            "grw"
+            "g+rw"
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -1287,12 +1287,12 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_NOT_EXISTING_KEY)
 
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_KEY)
 {
-    system("echo 312312321 >> /tmp/key");
+    system("echo 312312321 > /tmp/key");
     std::vector<std::string> input {
             "program",
             "chmod",
             "/tmp/key",
-            "grw"
+            "g+rw"
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -1308,7 +1308,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_KEY)
     try {
         auto msg = executor->execute();
     } catch (std::exception &e) {
-        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key modes")) {
             caught = true;
         }
     }
@@ -1318,7 +1318,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_KEY)
 
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_WRONG_KEY)
 {
-    system("echo 312312321 >> /tmp/key");
+    system("echo 312312321 > /tmp/key");
     std::vector<std::string> input {
             "program",
             "gmod",
@@ -1338,7 +1338,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_WRONG_KEY)
     try {
         auto msg = executor->execute();
     } catch (std::exception &e) {
-        if(e.what() == std::string("KeyIOInterface: Failed to read file")) {
+        if(e.what() == std::string("KeyIOInterface: Cannot get private key modes")) {
             caught = true;
         }
     }
@@ -1546,17 +1546,70 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
     }
 
     std::vector<std::string> flags = {
-        "rw",
-        "r",
-        "w",
-        "g+rw",
-        "g+r",
-        "g+w",
-        "g+wr",
-        "o+r",
-        "o+w",
-        "o+rw",
-        "o+wr",
+        "000",
+        "002",
+        "004",
+        "006",
+        "020",
+        "022",
+        "024",
+        "026",
+        "040",
+        "042",
+        "044",
+        "046",
+        "060",
+        "062",
+        "064",
+        "066",
+        "200",
+        "202",
+        "204",
+        "206",
+        "220",
+        "222",
+        "224",
+        "226",
+        "240",
+        "242",
+        "244",
+        "246",
+        "260",
+        "262",
+        "264",
+        "266",
+        "400",
+        "402",
+        "404",
+        "406",
+        "420",
+        "422",
+        "424",
+        "426",
+        "440",
+        "442",
+        "444",
+        "446",
+        "460",
+        "462",
+        "464",
+        "466",
+        "600",
+        "602",
+        "604",
+        "606",
+        "620",
+        "622",
+        "624",
+        "626",
+        "640",
+        "642",
+        "644",
+        "646",
+        "660",
+        "662",
+        "664",
+        "666",
     };
 
     bool any_error {false};

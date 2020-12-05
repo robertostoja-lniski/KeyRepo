@@ -502,7 +502,30 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
 
     return 0;
 }
+int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode) {
 
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t mapSize = partitionInfo->mapSize;
+
+    MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+    bool found = false;
+    for(int i = 0; i < mapSize; i++) {
+        uint64_t currentId = currentElementInMap->id;
+        if(currentId == id) {
+            found = true;
+            break;
+        }
+        currentElementInMap = currentElementInMap + 1;
+    }
+
+    if(!found) {
+        return -1;
+    }
+
+    currentElementInMap->mode = keyMode;
+
+    return 0;
+}
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
@@ -734,5 +757,42 @@ int getMode(const uint64_t* id, int** output) {
     return 0;
 }
 
+int setMode(const uint64_t* id, int* newMode) {
 
+    if(SU_SECURITY == 1 && geteuid() != 0) {
+        return -1;
+    }
+
+    if(id == NULL || *id == 0) {
+        return -1;
+    }
+
+    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
+        std::cout << "Kernel Emualtion will give modes for key with id: " <<  id << std::endl;
+    }
+
+    size_t fileSize = getFileSize(partition.c_str());
+    //Open file
+    int fd = open(partition.c_str(), O_RDWR, 0);
+    if(fd < 0) {
+        return -1;
+    }
+    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == MAP_FAILED) {
+        close(fd);
+        return -1;
+    }
+
+    int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
+
+    int ret = munmap(mappedPartition, fileSize);
+    close(fd);
+    assert(ret == 0);
+
+    if(getKeyRet == -1) {
+        return -1;
+    }
+    // tmp
+    return 0;
+}
 

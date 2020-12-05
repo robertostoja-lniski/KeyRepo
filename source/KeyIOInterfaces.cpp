@@ -211,3 +211,17 @@ int RsaKeyFileIOInterface::getKeyMode(std::string filepathWithPrvKeyId) {
     return funcRet;
 
 }
+
+void RsaKeyFileIOInterface::changeKeyMode(std::string filepathWithPrvKeyId, int newMode) {
+
+    auto keyId = readFromFile(std::move(filepathWithPrvKeyId));
+
+    uint64_t id;
+    std::istringstream iss(keyId);
+    iss >> id;
+
+    auto ret = setMode(&id, &newMode);
+    if(ret != 0) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
+    }
+}

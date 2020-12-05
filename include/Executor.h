@@ -29,9 +29,15 @@
 #include <fstream>
 #include <stdlib.h>
 
+enum class SetAction {
+    ADD = 0,
+    TAKE = 1,
+    OVERWRITE_WITH_VALUE = 2,
+};
+
 struct ModeSetter {
     int value;
-    int action;
+    SetAction action;
 };
 
 class ModHandler {
@@ -68,7 +74,7 @@ public:
         }
 
         if(flags == "000") {
-            return {0, 2};
+            return {0, SetAction::OVERWRITE_WITH_VALUE};
         }
 
         int isUser = 0;
@@ -76,7 +82,7 @@ public:
         int isOther = 0;
         int isRead = 0;
         int isWrite = 0;
-        int operation = 0;
+        SetAction operation = SetAction::ADD;
 
         auto found_add = flags.find("+");
         auto found_sub = flags.find("-");
@@ -85,7 +91,7 @@ public:
         }
 
         if(found_sub != std::string::npos) {
-            operation = 1;
+            operation = SetAction::TAKE;
         }
 
         auto found = std::min(found_add, found_sub);
@@ -156,7 +162,7 @@ public:
             if (intFlags <= 0 || !isFlagInRightFormat(intFlags)) {
                 throw std::runtime_error("ModeHandler: Wrong string flag format");
             }
-            return {intFlags, 2};
+            return {intFlags, SetAction::OVERWRITE_WITH_VALUE};
         }
 
         int singleResult = 0;
@@ -184,6 +190,46 @@ public:
         }
 
         return {result, operation};
+    }
+    int modeSetterToInt(ModeSetter modeSetter, int currentValue) {
+        auto action = (int)modeSetter.action;
+        if(action == (int)SetAction::OVERWRITE_WITH_VALUE) {
+            return modeSetter.value;
+        }
+
+        int otherDigit = currentValue % 10;
+        int groupDigit = (currentValue / 10) % 10;
+        int userDigit = (currentValue / 100) % 10;
+
+        int takeValue = modeSetter.value;
+        int takeOtherDigit = takeValue % 10;
+        int takeGroupDigit = (takeValue / 10) % 10;
+        int takeUserDigit = (takeValue / 100) % 10;
+
+        if(action == (int)SetAction::TAKE) {
+            return std::max(0, otherDigit - takeOtherDigit)  +
+                std::max(0, groupDigit - takeGroupDigit) * 10 +
+                std::max(0, userDigit - takeUserDigit) * 100;
+        }
+
+        if(action == (int)SetAction::ADD) {
+            return std::min(6, otherDigit + takeOtherDigit) +
+                std::min(6,groupDigit + takeGroupDigit) * 10 +
+                std::min(6,userDigit + takeUserDigit) * 100;
+        }
+
+        throw std::runtime_error("ModeHandler: Unknown action");
+    }
+    std::string parseIntModesToString(int modes) {
+        if(modes <= 7) {
+            return "00" + std::to_string(modes);
+        }
+
+        if(modes <= 77) {
+            return "0" + std::to_string(modes);
+        }
+
+        return std::to_string(modes);
     }
 };
 

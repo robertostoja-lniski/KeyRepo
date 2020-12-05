@@ -193,15 +193,23 @@ std::string Executor::execute() {
 
         auto pathToKeyId = getModeStatement->filePathToKeyId;
         auto modes = interface->getKeyMode(pathToKeyId);
-        return {std::to_string(modes)};
+
+        auto modeHandler = std::make_unique<ModHandler>();
+        return {modeHandler->parseIntModesToString(modes)};
 
     } else if (auto changeModStatement = std::dynamic_pointer_cast<ChangeModStatement>(statement)) {
 
         auto pathToKeyId = changeModStatement->filePathToKeyId;
         auto flags = changeModStatement->flags;
 
-        auto modHandler = std::make_unique<ModHandler>();
-        auto modeSetter = modHandler->stringToModeSetter(flags);
+        auto modeHandler = std::make_unique<ModHandler>();
+        auto modeSetter = modeHandler->stringToModeSetter(flags);
+        auto currentModes = interface->getKeyMode(pathToKeyId);
+        auto newModeParam = modeHandler->modeSetterToInt(modeSetter, currentModes);
+        interface->changeKeyMode(pathToKeyId, newModeParam);
+
+
+        return {"Mode is set"};
 
     } else if (auto helpRequestStatement = std::dynamic_pointer_cast<HelpRequestStatement>(statement)) {
         printHelp();

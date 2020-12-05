@@ -46,6 +46,7 @@ enum {
 // VERBOSE_LOW for the most important info
 
 #define VERBOSE_LEVEL VERBOSE_NO
+#define SU_SECURITY 0
 
 struct MapNode {
     uint64_t id;
@@ -112,4 +113,6 @@ int remove(const uint64_t* id, const char* filepath);
 // MODE HANDLING
 int getMode(const uint64_t* id, int** output);
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);
+int setMode(const uint64_t* id, int* newMode);
+int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int mode);
 #endif //KEYREPO_KERNELEMULATION_H
