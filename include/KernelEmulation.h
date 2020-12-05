@@ -115,4 +115,11 @@ int getMode(const uint64_t* id, int** output);
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);
 int setMode(const uint64_t* id, int* newMode);
 int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int mode);
+
+int canRead(int mode, int uid, int gid);
+int canWrite(int mode, int uid, int gid);
+
+#define READ_MASK       4
+#define WRITE_MASK      2
+
 #endif //KEYREPO_KERNELEMULATION_H

@@ -440,6 +440,11 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
+
+            if(!canRead(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
+                return -2;
+            }
+
             offset = currentElementInMap->offset;
             found = true;
             break;
@@ -537,6 +542,11 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
         uint64_t currentId = currentElementInMap->id;
 
         if(currentId == id) {
+
+            if(!canWrite(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
+                return -2;
+            }
+
             offset = currentElementInMap->offset;
             currentElementInMap->offset = 0;
 
@@ -794,5 +804,21 @@ int setMode(const uint64_t* id, int* newMode) {
     }
     // tmp
     return 0;
+}
+
+int canRead(int mode, int uid, int gid) {
+    int userRead = (mode / 100) & READ_MASK;
+    int groupRead = ((mode / 10) % 10) & READ_MASK;
+    int othersRead = (mode % 10) & READ_MASK;
+
+    return userRead && uid == getuid() || groupRead && gid == getgid() || othersRead && uid != getuid();
+}
+
+int canWrite(int mode, int uid, int gid) {
+    int userWrite = (mode / 100) & WRITE_MASK;
+    int groupWrite = ((mode / 10) % 10) & WRITE_MASK;
+    int othersWrite = (mode % 10) & WRITE_MASK;
+
+    return userWrite && uid == getuid() || groupWrite && gid == getgid() || othersWrite && uid != getuid();
 }
 
