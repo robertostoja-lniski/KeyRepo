@@ -193,6 +193,10 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
         uint64_t offset = currentElementInMap->offset;
         uint64_t id = currentElementInMap->id;
         uint64_t size = currentElementInMap->size;
+        int mode = currentElementInMap->mode;
+        int uid = currentElementInMap->uid;
+        int gid = currentElementInMap->gid;
+
 
         if(offset != 0) {
 
@@ -210,6 +214,9 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
             tmpMap[tmpMapIndex].id = id;
             tmpMap[tmpMapIndex].offset = changedOffset;
             tmpMap[tmpMapIndex].size = size;
+            tmpMap[tmpMapIndex].mode = mode;
+            tmpMap[tmpMapIndex].uid = uid;
+            tmpMap[tmpMapIndex].gid = gid;
 
             changedOffset += size;
 //            changedOffset += changedOffset % NODE_SIZE;

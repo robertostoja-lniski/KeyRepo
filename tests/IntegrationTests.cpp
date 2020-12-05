@@ -5136,6 +5136,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
     {
         keysInPartitionAfterAdd--;
 
+        if(keysInPartitionAfterAdd == 62) {
+            auto dummy = 0;
+            auto a = 5;
+        }
+
         auto str = std::to_string(i);
         std::vector<std::string> input {
                 "program",
