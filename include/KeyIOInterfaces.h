@@ -59,6 +59,9 @@ public:
     void throwIfCannotRemoveFile(std::string filepath);
 
     std::string getPrivateKey(std::string filepathWithPrvKeyId);
+
+    int generateKeyNodeFromKeyInFile(KeyNode** keyNode);
+    int writeKeyToTemporaryFile(RSA* r);
 };
 
 #endif

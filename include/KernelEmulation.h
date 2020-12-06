@@ -88,15 +88,13 @@ static int getDefaultMode() {
 }
 
 int initFileIfNotDefined();
-int writeKeyToTemporaryFile(RSA* r);
-int generateKeyNodeFromKeyInFile(KeyNode**);
 size_t getFileSize(const char* filename);
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id);
 void printPartition(const void* mappedPartition);
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id);
-int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal);
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
-int getPrvKeyById(uint64_t id, const char **prvKey);
+int getPrvKeyById(const uint64_t id, const char **prvKey, uint64_t* keyLen);
 int removePrvKeyById(uint64_t id);
 void print(std::string str);
 int storeKey(char* key);
@@ -106,8 +104,8 @@ int getCurrentKeyNumFromEmulation();
 uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
 int getCurrentKeyNum();
-int write(RSA* r, uint64_t** id);
-int readKey(const uint64_t* id, char** outpath);
+int write(const char* key, const size_t keyLen, uint64_t** id);
+int readKey(const uint64_t* id, char** key, uint64_t* keyLen);
 int get(const uint64_t* id, char** output);
 int remove(const uint64_t* id, const char* filepath);
 // MODE HANDLING

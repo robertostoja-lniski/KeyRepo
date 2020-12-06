@@ -12,7 +12,7 @@ RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
 RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 //    printFile(filepath);
 
-    char* cPrvKeyPath = NULL;
+    char* cPrvKey = NULL;
 
     auto keyId = readFromFile(filepath.c_str());
 
@@ -20,16 +20,25 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto ret = readKey(&id, &cPrvKeyPath);
+    uint64_t keyLen;
+    auto ret = readKey(&id, &cPrvKey, &keyLen);
 
     if(ret == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
-    auto prvKeyPath = std::string(cPrvKeyPath);
-    free(cPrvKeyPath);
+    auto prvKey = std::string(cPrvKey);
+    free(cPrvKey);
 
-    auto fp = getFileStructFromPath(prvKeyPath, "r");
+    size_t maxKeySize = 4 * 4096 + 1024;
+    char fileContent[maxKeySize];
+    memset(fileContent, 0x00, maxKeySize);
+
+    FILE* fp = fopen(pathToPrivateKey, "w+");
+    fprintf(fp, "%s", prvKey.c_str());
+    fclose(fp);
+
+    fp = getFileStructFromPath(pathToPrivateKey, "r");
     return readPrivateKeyFromFpAndClose(&fp);
 }
 void RsaKeyFileIOInterface::printFile(std::string filepath) {
@@ -103,7 +112,12 @@ void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::stri
 }
 void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     uint64_t* id = nullptr;
-    auto result = write(r, &id);
+
+    writeKeyToTemporaryFile(r);
+    KeyNode* keyNode;
+    auto node = generateKeyNodeFromKeyInFile(&keyNode);
+    auto result = write(keyNode->keyContent, keyNode->keySize, &id);
+    free(keyNode);
 
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
@@ -224,4 +238,53 @@ void RsaKeyFileIOInterface::changeKeyMode(std::string filepathWithPrvKeyId, int 
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
     }
+}
+
+int RsaKeyFileIOInterface::generateKeyNodeFromKeyInFile(KeyNode** keyNode) {
+    std::string line;
+
+    FILE *fp;
+    size_t buffSize = 4096 * 16;
+    char str[buffSize];
+    memset(str, 0x00, buffSize);
+
+    fp = fopen(tmpKeyStorage, "r");
+    if (fp == NULL){
+        return -1;
+    }
+
+    while (fgets(str, buffSize, fp) != NULL) {
+        line += str;
+        memset(str, 0x00, buffSize);
+    }
+    fclose(fp);
+
+
+    size_t allocationSize = sizeof(KeyNode);
+    if(line.size() > 4096) {
+        allocationSize += line.size() - 4096;
+    }
+
+    KeyNode* keyData = (KeyNode* )malloc(allocationSize);
+    if(keyData == NULL) {
+        return -1;
+    }
+
+    memcpy(keyData->keyContent, line.c_str(), line.size());
+    keyData->keySize = line.size();
+
+    *keyNode = keyData;
+    return 0;
+}
+
+int RsaKeyFileIOInterface::writeKeyToTemporaryFile(RSA* r) {
+    FILE *fp = fopen(tmpKeyStorage, "wb");
+    if(fp == nullptr) {
+        return 1;
+    }
+    int success = PEM_write_RSAPrivateKey(fp, r, nullptr, nullptr, 0, nullptr, nullptr);
+    if(!success) {
+        return 1;
+    }
+    fclose(fp);
 }

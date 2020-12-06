@@ -112,54 +112,6 @@ int initFileIfNotDefined() {
     assert(ret == 0);
 }
 
-int writeKeyToTemporaryFile(RSA* r) {
-    FILE *fp = fopen(tmpKeyStorage, "wb");
-    if(fp == nullptr) {
-        return 1;
-    }
-    int success = PEM_write_RSAPrivateKey(fp, r, nullptr, nullptr, 0, nullptr, nullptr);
-    if(!success) {
-        return 1;
-    }
-    fclose(fp);
-}
-
-int generateKeyNodeFromKeyInFile(KeyNode** keyNode) {
-    std::string line;
-
-    FILE *fp;
-    size_t buffSize = 4096 * 16;
-    char str[buffSize];
-    memset(str, 0x00, buffSize);
-
-    fp = fopen(tmpKeyStorage, "r");
-    if (fp == NULL){
-        return -1;
-    }
-
-    while (fgets(str, buffSize, fp) != NULL) {
-        line += str;
-        memset(str, 0x00, buffSize);
-    }
-    fclose(fp);
-
-
-    size_t allocationSize = sizeof(KeyNode);
-    if(line.size() > 4096) {
-        allocationSize += line.size() - 4096;
-    }
-
-    KeyNode* keyData = (KeyNode* )malloc(allocationSize);
-    if(keyData == NULL) {
-        return -1;
-    }
-
-    memcpy(keyData->keyContent, line.c_str(), line.size());
-    keyData->keySize = line.size();
-
-    *keyNode = keyData;
-    return 0;
-}
 
 size_t getFileSize(const char* filename) {
     struct stat st{};
@@ -436,7 +388,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     return 0;
 }
 
-int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal) {
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen) {
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
@@ -466,6 +418,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     size_t keySize = strlen(keyPlaceToAdd->data);
 
     auto size = currentElementInMap->size;
+    *keyLen = size;
 
     size_t allocationSize = 0;
     if(size > 4096) {
@@ -575,7 +528,7 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
     return -1;
 }
 
-int getPrvKeyById(uint64_t id, char **prvKey) {
+int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
     size_t fileSize = getFileSize(partition.c_str());
     //Open file
     int fd = open(partition.c_str(), O_RDWR, 0);
@@ -588,7 +541,7 @@ int getPrvKeyById(uint64_t id, char **prvKey) {
         return -1;
     }
 
-    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey);
+    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey, keyLen);
 
     int ret = munmap(mappedPartition, fileSize);
     close(fd);
@@ -661,15 +614,20 @@ int getPathToTmpPrvKeyStorage(char* key) {
     return 0;
 }
 
-int write(RSA* r, uint64_t** id) {
-    writeKeyToTemporaryFile(r);
+int write(const char* key, const size_t keyLen, uint64_t** id) {
 
-    KeyNode* keyNode =  NULL;
-    int genRet = generateKeyNodeFromKeyInFile(&keyNode);
-
-    if(genRet != 0) {
-        return 0;
+    size_t allocationSize = sizeof(KeyNode);
+    if(keyLen > 4096) {
+        allocationSize += keyLen - 4096;
     }
+
+    KeyNode* keyNode = (KeyNode* )malloc(allocationSize);
+    if(keyNode == NULL) {
+        return -1;
+    }
+
+    memcpy(keyNode->keyContent, key, keyLen);
+    keyNode->keySize = keyLen;
 
     if(VERBOSE_LEVEL >= VERBOSE_LOW) {
         std::cout << "Kernel will add a key to partition with value" << std::endl;
@@ -684,7 +642,7 @@ int write(RSA* r, uint64_t** id) {
     return 0;
 }
 
-int readKey(const uint64_t* id, char** outpath) {
+int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
 
     if(id == NULL || *id == 0) {
        return -1;
@@ -695,7 +653,7 @@ int readKey(const uint64_t* id, char** outpath) {
     }
 
     char* prvKey = NULL;
-    int ret = getPrvKeyById(*id, &prvKey);
+    int ret = getPrvKeyById(*id, &prvKey, keyLen);
     if(prvKey == NULL || ret == -1) {
         return -1;
     }
@@ -704,15 +662,14 @@ int readKey(const uint64_t* id, char** outpath) {
         std::cout << "Kernel Emulation found a key with value" << std::endl;
     }
 
-    *outpath = (char *)malloc(strlen(pathToPrivateKey) + 1);
-    if(*outpath == NULL) {
+    *key = (char *)malloc(*keyLen);
+    if(*key == NULL) {
         return -1;
     }
 
-    strncpy(*outpath, pathToPrivateKey, strlen(pathToPrivateKey));
-    memset((char* )(*outpath) + strlen(pathToPrivateKey), 0x00, sizeof(char));
-
-    return getPathToTmpPrvKeyStorage(prvKey);
+    memcpy(*key, prvKey, *keyLen);
+    free(prvKey);
+    return 0;
 }
 
 int get(const uint64_t* id, char** output) {
@@ -725,7 +682,8 @@ int get(const uint64_t* id, char** output) {
     }
 
     char* prvKey = NULL;
-    int getKeyRet = getPrvKeyById(*id, &prvKey);
+    uint64_t keyLen;
+    int getKeyRet = getPrvKeyById(*id, &prvKey, &keyLen);
     if(getKeyRet != 0) {
         return -1;
     }
