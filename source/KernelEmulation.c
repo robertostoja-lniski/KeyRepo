@@ -5,19 +5,20 @@
 #include "../include/KernelEmulation.h"
 
 uint64_t generateRandomId(void* mappedPartition){
-    std::random_device dev;
-    std::mt19937 gen(dev());
-    std::uniform_int_distribution<uint64_t> uDist(0, UINT64_MAX);
-    int generateTrials = 10;
 
+    int generateTrials = 10;
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
 
-    int foundSameId = false;
+    int foundSameId = 0;
     uint64_t newId;
     while(generateTrials--) {
 
-        newId = uDist(gen);
+        newId = 0;
+        for (int i=0; i<64; i++) {
+            newId = newId*2 + rand()%2;
+        }
+
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
         uint64_t id;
         for(int i = 0; i < mapSize; i++) {
@@ -26,7 +27,7 @@ uint64_t generateRandomId(void* mappedPartition){
 
             // 0 and 1 for error codes
             if(id == newId || id == 0 || id == 1) {
-                foundSameId = true;
+                foundSameId = 1;
             }
         }
 
@@ -41,9 +42,13 @@ uint64_t generateRandomId(void* mappedPartition){
 }
 
 int initFileIfNotDefined() {
-    if(std::experimental::filesystem::exists(partition)) {
+    FILE *file;
+    if ((file = fopen(partition, "r")))
+    {
+        fclose(file);
         return 1;
     }
+
     PartitionInfo* partitionInfo = (PartitionInfo* )malloc(sizeof(PartitionInfo));
     if(!partitionInfo) {
         return 1;
@@ -56,31 +61,28 @@ int initFileIfNotDefined() {
     uint64_t fileSize = partitionInfo->fileContentSize;
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
-    FILE* fp = fopen(partition.c_str(), "w+");
+    FILE* fp = fopen(partition, "w+");
     fputs("EMPTY PARTITION\n", fp);
     fclose(fp);
 
-    int fd = open(partition.c_str(), O_RDWR, 0);
+    int fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return 1;
     }
     ftruncate(fd, fileSize);
     close(fd);
 
-    fd = open(partition.c_str(), O_RDWR, 0);
+    fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return 1;
     }
 
-    if(fileSize != getFileSize(partition.c_str())) {
+    if(fileSize != getFileSize(partition)) {
         return 1;
     }
 
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_SHARED, fd, 0);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_SHARED, fd, 0);
     memset(mappedPartition, 0x00, fileSize);
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
-    }
 
     void* partitionStart = mappedPartition;
     if(mappedPartition == MAP_FAILED) {
@@ -114,7 +116,7 @@ int initFileIfNotDefined() {
 
 
 size_t getFileSize(const char* filename) {
-    struct stat st{};
+    struct stat st;
     stat(filename, &st);
     return st.st_size;
 }
@@ -124,11 +126,6 @@ int getCurrentKeyNumFromEmulation() {
 }
 
 uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
-
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << "BEFORE DEFRAGMENTATION" << std::endl;
-        printPartition(partitionInfo);
-    }
 
     // create new map
     MapNode* tmpMap = (MapNode* )malloc(sizeof(MapNode) * partitionInfo->numberOfKeys);
@@ -183,12 +180,6 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
 
     free(tmpMap);
 
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << "AFTER DEFRAGMENTATION" << std::endl;
-        std::cout << "Changed offset is: " << changedOffset << std::endl;
-        printPartition(partitionInfo);
-    }
-
     return changedOffset;
 }
 
@@ -199,19 +190,19 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
         return -2;
     }
 
-    int fd = open(partition.c_str(), O_RDWR, 0);
+    int fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
 
-    size_t fileSize = getFileSize(partition.c_str());
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    size_t fileSize = getFileSize(partition);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     void* partitionStart = mappedPartition;
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t usedFileSize = partitionInfo->fileContentSize;
 
-    bool isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd->keySize;
+    int isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd->keySize;
 
     int retSizeCheck = munmap(mappedPartition, fileSize);
     close(fd);
@@ -219,40 +210,27 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
     if(isSizeExtNeeded) {
 
-        int fd = open(partition.c_str(), O_RDWR, 0);
+        int fd = open(partition, O_RDWR, 0);
         if(fd < 0) {
             return -1;
         }
 
-        fileSize = getFileSize(partition.c_str()) + keyNodeToAdd->keySize;
-        if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-            std::cout << "when adding new node ext file size is: " << fileSize << std::endl;
-            std::cout << "real file size is " << getFileSize(partition.c_str()) << std::endl;
-            std::cout << "key size is " << keyNodeToAdd->keySize << std::endl;
-        }
-
+        fileSize = getFileSize(partition) + keyNodeToAdd->keySize;
         ftruncate(fd, fileSize);
         close(fd);
 
-        fd = open(partition.c_str(), O_RDWR, 0);
+        fd = open(partition, O_RDWR, 0);
         if(fd < 0) {
             return -1;
         }
     }
 
-    if(fileSize != getFileSize(partition.c_str())) {
+    if(fileSize != getFileSize(partition)) {
         return -1;
     }
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << std::endl << "file size is " << fileSize << std::endl;
-    }
 
-    mappedPartition = mmap(nullptr, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     partitionStart = mappedPartition;
-
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "last accessible byte is: " << (uint8_t* )mappedPartition + fileSize << std::endl;
-    }
 
     if(mappedPartition == MAP_FAILED) {
         close(fd);
@@ -260,10 +238,6 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
     }
     printPartition(partitionStart);
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
-
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << std::endl;
-    }
 
     printPartition(partitionStart);
 
@@ -275,17 +249,14 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 }
 
 void printPartition(const void* mappedPartition) {
-    if(VERBOSE_LEVEL == VERBOSE_NO) {
-        return;
-    }
+    return;
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t keys = partitionInfo->numberOfKeys;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
     uint64_t mapSize = partitionInfo->mapSize;
 
-    std::cout << "This partition has: " << keys << " keys." << std::endl;
-    std::cout << "First free slot is: " << offsetToAdd + sizeof(PartitionInfo) << std::endl;
-    std::cout << "Map has: " << mapSize << " number of nodes" << std::endl;
+    printf("This partition has: %llu keys.\n", keys);
+    printf("First free slot is: %llu.\n", offsetToAdd + sizeof(PartitionInfo));
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t id;
@@ -293,8 +264,8 @@ void printPartition(const void* mappedPartition) {
         uint64_t offset = currentElementInMap->offset;
         if(offset != 0) {
             id = currentElementInMap->id;
-            std::cout << "For " << i << " node in map there was found id: " << id << " and offset " << offset
-                << " and size " << currentElementInMap->size <<  std::endl;
+//            std::cout << "For " << i << " node in map there was found id: " << id << " and offset " << offset
+//                << " and size " << currentElementInMap->size <<  std::endl;
         }
         currentElementInMap = currentElementInMap + 1;
     }
@@ -305,22 +276,12 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << "offset to add is: " << offsetToAdd << std::endl;
-        std::cout << "The difference should be: " << (uint8_t *)(partitionInfo + 1) - (uint8_t *)(partitionInfo) << std::endl;
-        std::cout << "I think it should be: " << sizeof(PartitionInfo) + sizeof(MapNode) * 128 << std::endl;
-    }
-
     uint64_t mapSize = partitionInfo->mapSize;
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t nextId;
     uint64_t prevOffset = currentElementInMap->offset;
     for(int i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
-        if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-            std::cout << i << " offset: " << offset << std::endl;
-            std::cout << "offset diff is: " << offset - prevOffset << std::endl;
-        }
 
         if(offset == 0) {
             nextId = generateRandomId(mappedPartition);
@@ -340,10 +301,6 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
         return -1;
     }
 
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << "New element is: " << offsetToAdd << " " << id << " " << keyNodeToAdd->keySize << std::endl;
-    }
-
     elementDataToUpdate->offset = offsetToAdd;
     elementDataToUpdate->id = nextId;
     elementDataToUpdate->size = keyNodeToAdd->keySize;
@@ -356,20 +313,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
 
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
-
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << "map start " << partitionInfo + 1 << std::endl;
-        std::cout << "Key place to add (right after map end) is: " << keyPlaceToAdd << std::endl;
-        std::cout << "Key to add size: " << keyNodeToAdd->keySize << std::endl;
-        std::cout << "Key place to add data before cpy: " << keyPlaceToAdd->data <<std::endl;
-    }
-
     memcpy(keyPlaceToAdd, keyNodeToAdd->keyContent, keyNodeToAdd->keySize);
-
-
-    if(VERBOSE_LEVEL >= VERBOSE_HIGH) {
-        std::cout << "Key place to add data after cpy: " << keyPlaceToAdd->data <<std::endl;
-    }
 
     PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
     partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
@@ -381,10 +325,6 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     free(partitionInfoToUpdate);
     free(keyNodeToAdd);
 
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "id of added key is: " << id << std::endl;
-    }
-
     return 0;
 }
 
@@ -395,7 +335,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
-    bool found = false;
+    int found = 0;
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
@@ -405,7 +345,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
             }
 
             offset = currentElementInMap->offset;
-            found = true;
+            found = 1;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
@@ -417,7 +357,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
     size_t keySize = strlen(keyPlaceToAdd->data);
 
-    auto size = currentElementInMap->size;
+    uint64_t size = currentElementInMap->size;
     *keyLen = size;
 
     size_t allocationSize = 0;
@@ -431,7 +371,6 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     if(*keyVal == NULL) {
         return -1;
     }
-    auto partNodeSize = sizeof(KeyPartitionNode);
 
     memset((*keyVal)->data, 0x00, allocationSize);
     memcpy((*keyVal)->data, keyPlaceToAdd, size);
@@ -445,11 +384,11 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
-    bool found = false;
+    int found = 0;
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
-            found = true;
+            found = 1;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
@@ -473,11 +412,11 @@ int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode
     uint64_t mapSize = partitionInfo->mapSize;
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
-    bool found = false;
+    int found = 0;
     for(int i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
-            found = true;
+            found = 1;
             break;
         }
         currentElementInMap = currentElementInMap + 1;
@@ -529,13 +468,13 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 }
 
 int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
-    size_t fileSize = getFileSize(partition.c_str());
+    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition.c_str(), O_RDWR, 0);
+    int fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
     if(mappedPartition == MAP_FAILED) {
         close(fd);
         return -1;
@@ -555,13 +494,13 @@ int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
 }
 
 int removePrvKeyById(uint64_t id) {
-    size_t fileSize = getFileSize(partition.c_str());
+    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition.c_str(), O_RDWR, 0);
+    int fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return fd;
     }
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     if(mappedPartition == MAP_FAILED) {
         close(fd);
         return -1;
@@ -601,7 +540,7 @@ int removePrvKeyById(uint64_t id) {
     return removeRet;
 }
 
-int write(const char* key, const size_t keyLen, uint64_t** id) {
+int writeKey(const char* key, const size_t keyLen, uint64_t** id) {
 
     size_t allocationSize = sizeof(KeyNode);
     if(keyLen > 4096) {
@@ -615,11 +554,6 @@ int write(const char* key, const size_t keyLen, uint64_t** id) {
 
     memcpy(keyNode->keyContent, key, keyLen);
     keyNode->keySize = keyLen;
-
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "Kernel will add a key to partition with value" << std::endl;
-    }
-//        print(keyNode.keyContent);
 
     int ret = addKeyNodeToPartition(keyNode, id);
     if(ret == -1 || ret == -2) {
@@ -635,18 +569,10 @@ int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
        return -1;
     }
 
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
-    }
-
     char* prvKey = NULL;
     int ret = getPrvKeyById(*id, &prvKey, keyLen);
     if(prvKey == NULL || ret == -1) {
         return -1;
-    }
-
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "Kernel Emulation found a key with value" << std::endl;
     }
 
     *key = (char *)malloc(*keyLen);
@@ -665,10 +591,6 @@ int get(const uint64_t* id, char** output) {
         return -1;
     }
 
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "Kernel Emualtion will give key with id: " <<  id << std::endl;
-    }
-
     char* prvKey = NULL;
     uint64_t keyLen;
     int getKeyRet = getPrvKeyById(*id, &prvKey, &keyLen);
@@ -680,7 +602,7 @@ int get(const uint64_t* id, char** output) {
     return 0;
 }
 
-int remove(const uint64_t* id, const char* filepath) {
+int removeKey(const uint64_t* id, const char* filepath) {
     return id == NULL || *id == 0 ? -1 : removePrvKeyById(*id);
 }
 
@@ -690,18 +612,14 @@ int getMode(const uint64_t* id, int** output) {
         return -1;
     }
 
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "Kernel Emualtion will give modes for key with id: " <<  id << std::endl;
-    }
-
     char* prvKey = NULL;
-    size_t fileSize = getFileSize(partition.c_str());
+    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition.c_str(), O_RDWR, 0);
+    int fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
     if(mappedPartition == MAP_FAILED) {
         close(fd);
         return -1;
@@ -730,17 +648,13 @@ int setMode(const uint64_t* id, int* newMode) {
         return -1;
     }
 
-    if(VERBOSE_LEVEL >= VERBOSE_LOW) {
-        std::cout << "Kernel Emualtion will give modes for key with id: " <<  id << std::endl;
-    }
-
-    size_t fileSize = getFileSize(partition.c_str());
+    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition.c_str(), O_RDWR, 0);
+    int fd = open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
-    void* mappedPartition = mmap(nullptr, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     if(mappedPartition == MAP_FAILED) {
         close(fd);
         return -1;

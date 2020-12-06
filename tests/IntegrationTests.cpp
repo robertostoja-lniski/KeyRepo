@@ -5068,7 +5068,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
     }
 
     struct stat st{};
-    stat(partition.c_str(), &st);
+    stat(partition, &st);
     auto sizeWithFragmentation =  st.st_size;
 
     for(int i = 0; i < 6; i++)
@@ -5092,7 +5092,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
         executor->execute();
     }
 
-    stat(partition.c_str(), &st);
+    stat(partition, &st);
     int64_t sizeAfterDefragmention =  st.st_size;
     int64_t sizeExpected = sizeWithFragmentation - 6 * realKeySize;
     auto isSizeWithPaddingBounds = (sizeAfterDefragmention - sizeExpected <= 10)
@@ -5506,7 +5506,7 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
     }
 
     struct stat st{};
-    stat(partition.c_str(), &st);
+    stat(partition, &st);
     auto sizeAfterMultipleLoop =  st.st_size;
 
     BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 5144);
@@ -6016,7 +6016,7 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
     }
 
     struct stat st{};
-    stat(partition.c_str(), &st);
+    stat(partition, &st);
     auto sizeAfterMultipleLoop =  st.st_size;
 
     BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 5144);
