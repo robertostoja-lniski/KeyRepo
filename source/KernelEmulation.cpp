@@ -601,19 +601,6 @@ int removePrvKeyById(uint64_t id) {
     return removeRet;
 }
 
-int getPathToTmpPrvKeyStorage(char* key) {
-
-    size_t maxKeySize = 4 * 4096 + 1024;
-    char fileContent[maxKeySize];
-    memset(fileContent, 0x00, maxKeySize);
-
-    FILE* fp = fopen(pathToPrivateKey, "w+");
-    fprintf(fp, "%s", key);
-    fclose(fp);
-
-    return 0;
-}
-
 int write(const char* key, const size_t keyLen, uint64_t** id) {
 
     size_t allocationSize = sizeof(KeyNode);

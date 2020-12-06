@@ -35,8 +35,9 @@ private:
     RSA* readPublicKeyFromFpAndClose(FILE**);
     void printFile(std::string filepath);
 public:
-    FILE* getFileStructFromPath(std::string, std::string);
     RsaKeyFileIOInterface() = default;
+
+    FILE* getFileStructFromPath(std::string, std::string);
     RSA* readPublicKeyFromFile(std::string filepath);
     RSA* readPrivateKeyFromFile(std::string filepath);
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);

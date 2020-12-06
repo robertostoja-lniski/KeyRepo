@@ -94,16 +94,10 @@ void printPartition(const void* mappedPartition);
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id);
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
-int getPrvKeyById(const uint64_t id, const char **prvKey, uint64_t* keyLen);
 int removePrvKeyById(uint64_t id);
-void print(std::string str);
-int storeKey(char* key);
-int isPartitionFull();
-int getPathToTmpPrvKeyStorage(char* key);
 int getCurrentKeyNumFromEmulation();
 uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
-int getCurrentKeyNum();
 int write(const char* key, const size_t keyLen, uint64_t** id);
 int readKey(const uint64_t* id, char** key, uint64_t* keyLen);
 int get(const uint64_t* id, char** output);
