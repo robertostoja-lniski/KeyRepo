@@ -42,7 +42,7 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
-    return  funcRet;
+    return funcRet;
 }
 void RsaKeyFileIOInterface::printFile(std::string filepath) {
     std::cout << "\nprinting " + filepath + "\n";
@@ -126,7 +126,7 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
         throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
     }
     BIO_free(bio);
-    auto result = write(pem_key, keylen, &id);
+    auto result = writeKey(pem_key, keylen, &id);
 
     if(result == -1) {
         free(id);
@@ -170,7 +170,7 @@ void RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto result = remove(&id, privateKeyPath.c_str());
+    auto result = removeKey(&id, privateKeyPath.c_str());
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
@@ -196,11 +196,15 @@ std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyI
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto ret = get(&id, &prvKey);
+    uint64_t keyLen;
+    auto ret = readKey(&id, &prvKey, &keyLen);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
-    return std::string(prvKey);
+
+    auto keyStr = std::string(prvKey);
+    free(prvKey);
+    return keyStr;
 }
 
 void RsaKeyFileIOInterface::throwIfOverwriteForbidden(std::string filepath, bool overwrite) {
