@@ -8,7 +8,7 @@ RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
     auto fp = getFileStructFromPath(filepath, "r");
     return readPublicKeyFromFpAndClose(&fp);
 }
-RSA* RsaKeyFileIOInterface::readPrivateKey(std::string filepath) {
+RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 
     char* cPrvKey = NULL;
     auto keyId = readFromFile(filepath.c_str());
@@ -107,21 +107,39 @@ void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::stri
 void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
     uint64_t* id = nullptr;
 
-    writeKeyToTemporaryFile(r);
-    KeyNode* keyNode;
-    auto node = generateKeyNodeFromKeyInFile(&keyNode);
-    auto result = write(keyNode->keyContent, keyNode->keySize, &id);
-    free(keyNode);
+    BIO *bio = BIO_new(BIO_s_mem());
+    if(!bio) {
+        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+    }
+
+    if(!PEM_write_bio_RSAPrivateKey(bio, r, NULL, NULL, 0, NULL, NULL)) {
+        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+    }
+
+    auto keylen = BIO_pending(bio);
+    char* pem_key = (char* )calloc(keylen+1, 1);
+    if(!pem_key) {
+        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+    }
+
+    if(BIO_read(bio, pem_key, keylen) <=0 ){
+        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+    }
+    BIO_free(bio);
+    auto result = write(pem_key, keylen, &id);
 
     if(result == -1) {
+        free(id);
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
     if(result == -2) {
+        free(id);
         throw std::runtime_error("KeyIOInterface: Partition full");
     }
 
     if(id == nullptr) {
+        free(id);
         throw std::runtime_error("Unhandled Error!");
     }
 
@@ -232,53 +250,4 @@ void RsaKeyFileIOInterface::changeKeyMode(std::string filepathWithPrvKeyId, int 
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
     }
-}
-
-int RsaKeyFileIOInterface::generateKeyNodeFromKeyInFile(KeyNode** keyNode) {
-    std::string line;
-
-    FILE *fp;
-    size_t buffSize = 4096 * 16;
-    char str[buffSize];
-    memset(str, 0x00, buffSize);
-
-    fp = fopen(tmpKeyStorage, "r");
-    if (fp == NULL){
-        return -1;
-    }
-
-    while (fgets(str, buffSize, fp) != NULL) {
-        line += str;
-        memset(str, 0x00, buffSize);
-    }
-    fclose(fp);
-
-
-    size_t allocationSize = sizeof(KeyNode);
-    if(line.size() > 4096) {
-        allocationSize += line.size() - 4096;
-    }
-
-    KeyNode* keyData = (KeyNode* )malloc(allocationSize);
-    if(keyData == NULL) {
-        return -1;
-    }
-
-    memcpy(keyData->keyContent, line.c_str(), line.size());
-    keyData->keySize = line.size();
-
-    *keyNode = keyData;
-    return 0;
-}
-
-int RsaKeyFileIOInterface::writeKeyToTemporaryFile(RSA* r) {
-    FILE *fp = fopen(tmpKeyStorage, "wb");
-    if(fp == nullptr) {
-        return 1;
-    }
-    int success = PEM_write_RSAPrivateKey(fp, r, nullptr, nullptr, 0, nullptr, nullptr);
-    if(!success) {
-        return 1;
-    }
-    fclose(fp);
 }

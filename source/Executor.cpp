@@ -71,7 +71,7 @@ std::string Executor::execute() {
 
         auto messageToSign = interface->readFromFile(fileToBeSigned);
 
-        RSA* rsaPrv = interface->readPrivateKey(prvKeyPath);
+        RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
 
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
 

@@ -38,7 +38,7 @@ public:
     FILE* getFileStructFromPath(std::string, std::string);
     RsaKeyFileIOInterface() = default;
     RSA* readPublicKeyFromFile(std::string filepath);
-    RSA* readPrivateKey(std::string filepath);
+    RSA* readPrivateKeyFromFile(std::string filepath);
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     std::string readFromFile(std::string filepath);
@@ -59,8 +59,6 @@ public:
 
     std::string getPrivateKey(std::string filepathWithPrvKeyId);
 
-    int generateKeyNodeFromKeyInFile(KeyNode** keyNode);
-    int writeKeyToTemporaryFile(RSA* r);
 };
 
 #endif
