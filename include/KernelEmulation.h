@@ -100,8 +100,7 @@ uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
 int write(const char* key, const size_t keyLen, uint64_t** id);
 int readKey(const uint64_t* id, char** key, uint64_t* keyLen);
-int get(const uint64_t* id, char** output);
-int remove(const uint64_t* id, const char* filepath);
+int removeKey(const uint64_t* id, const char* filepath);
 // MODE HANDLING
 int getMode(const uint64_t* id, int** output);
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);

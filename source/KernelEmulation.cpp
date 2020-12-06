@@ -655,6 +655,7 @@ int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
     }
 
     memcpy(*key, prvKey, *keyLen);
+    memset(*key + *keyLen, 0x00, 1);
     free(prvKey);
     return 0;
 }
