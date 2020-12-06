@@ -42,7 +42,7 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
-    return  funcRet;
+    return funcRet;
 }
 void RsaKeyFileIOInterface::printFile(std::string filepath) {
     std::cout << "\nprinting " + filepath + "\n";

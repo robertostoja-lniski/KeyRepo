@@ -4089,7 +4089,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
         }
         {
             std::string fileToChange = "/tmp/CHECK_SIGNATURE_WRONG_PUB_public.pem";
-            size_t fileSize = getFileSize(fileToChange.c_str());
+            struct stat st;
+            stat(fileToChange.c_str(), &st);
+            size_t fileSize = st.st_size;
+
             int fd = open(fileToChange.c_str(), O_RDWR, 0);
             if(fd < 0) {
                 std::cout << "File cannot be changed" << std::endl;

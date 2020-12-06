@@ -85,7 +85,6 @@ static int getDefaultMode() {
 }
 
 int initFileIfNotDefined();
-size_t getFileSize(const char* filename);
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id);
 void printPartition(const void* mappedPartition);
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id);

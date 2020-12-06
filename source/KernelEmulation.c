@@ -4,6 +4,8 @@
 
 #include "../include/KernelEmulation.h"
 
+size_t getFileSize(const char* filename);
+
 uint64_t generateRandomId(void* mappedPartition){
 
     int generateTrials = 10;

@@ -10,7 +10,10 @@
 #include "Statement.h"
 #include "KeyIOInterfaces.h"
 #include "OpenSSLHandler.h"
-#include "KernelEmulation.h"
+extern "C" {
+    #include "KernelEmulation.h"
+};
+
 #include <stdio.h>
 
 #if __APPLE__
