@@ -32,14 +32,13 @@
 // currently (may 2020) I am working on the most effective solution
 class RsaKeyFileIOInterface {
 private:
-    RSA* readPrivateKeyFromFpAndClose(FILE**);
     RSA* readPublicKeyFromFpAndClose(FILE**);
     void printFile(std::string filepath);
 public:
     FILE* getFileStructFromPath(std::string, std::string);
     RsaKeyFileIOInterface() = default;
     RSA* readPublicKeyFromFile(std::string filepath);
-    RSA* readPrivateKeyFromFile(std::string filepath);
+    RSA* readPrivateKey(std::string filepath);
     void writePublicKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     void writePrivateKeyToFile(std::string filepath, std::string modes, RSA*, bool overwrite);
     std::string readFromFile(std::string filepath);

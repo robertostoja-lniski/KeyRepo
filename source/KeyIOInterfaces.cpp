@@ -5,15 +5,12 @@
 #include "../include/KeyIOInterfaces.h"
 
 RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
-//     printFile(filepath);
     auto fp = getFileStructFromPath(filepath, "r");
     return readPublicKeyFromFpAndClose(&fp);
 }
-RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
-//    printFile(filepath);
+RSA* RsaKeyFileIOInterface::readPrivateKey(std::string filepath) {
 
     char* cPrvKey = NULL;
-
     auto keyId = readFromFile(filepath.c_str());
 
     uint64_t id;
@@ -21,25 +18,31 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
     iss >> id;
 
     uint64_t keyLen;
-    auto ret = readKey(&id, &cPrvKey, &keyLen);
-
-    if(ret == -1) {
+    if(readKey(&id, &cPrvKey, &keyLen) < 0) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
-    auto prvKey = std::string(cPrvKey);
-    free(cPrvKey);
+    BIO* bo = BIO_new( BIO_s_mem() );
+    if(bo == nullptr) {
+        throw std::runtime_error("KeyIOInterface: Failed to read private key");
+    }
+    if(BIO_write( bo, cPrvKey,strlen(cPrvKey)) <=0) {
+        throw std::runtime_error("KeyIOInterface: Failed to read private key");
+    }
 
-    size_t maxKeySize = 4 * 4096 + 1024;
-    char fileContent[maxKeySize];
-    memset(fileContent, 0x00, maxKeySize);
+    EVP_PKEY* pkey = nullptr;
+    if(!PEM_read_bio_PrivateKey( bo, &pkey, nullptr, nullptr )){
+        throw std::runtime_error("KeyIOInterface: Failed to read private key");
+    }
 
-    FILE* fp = fopen(pathToPrivateKey, "w+");
-    fprintf(fp, "%s", prvKey.c_str());
-    fclose(fp);
+    BIO_free(bo);
 
-    fp = getFileStructFromPath(pathToPrivateKey, "r");
-    return readPrivateKeyFromFpAndClose(&fp);
+    auto funcRet = EVP_PKEY_get1_RSA( pkey );
+    if(!funcRet) {
+        throw std::runtime_error("KeyIOInterface: Failed to read private key");
+    }
+
+    return  funcRet;
 }
 void RsaKeyFileIOInterface::printFile(std::string filepath) {
     std::cout << "\nprinting " + filepath + "\n";
@@ -88,15 +91,6 @@ RSA *RsaKeyFileIOInterface::readPublicKeyFromFpAndClose(FILE **fp) {
     fclose(*fp);
     if(!rsa) {
         throw std::runtime_error("KeyIOInterface: Could not read pubkey from file");
-    }
-    return rsa;
-}
-
-RSA *RsaKeyFileIOInterface::readPrivateKeyFromFpAndClose(FILE **fp) {
-    auto rsa = PEM_read_RSAPrivateKey(*fp, nullptr, nullptr, nullptr);
-    fclose(*fp);
-    if(!rsa) {
-        throw std::runtime_error("KeyIOInterface: Could not read private key from file");
     }
     return rsa;
 }
