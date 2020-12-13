@@ -482,28 +482,29 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 }
 
 int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
-    size_t fileSize = getFileSize(partition);
+//    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition, O_RDWR, 0);
+    FILE* fd = fopen(partition, "r");
     if(fd < 0) {
         return -1;
     }
-    void* mappedPartition = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
-    if(mappedPartition == MAP_FAILED) {
-        close(fd);
+
+    size_t fileSize;
+    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    if(!mappedPartition) {
         return -1;
     }
 
+    fclose(fd);
+
     int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey, keyLen);
 
-    int ret = munmap(mappedPartition, fileSize);
-    close(fd);
-    assert(ret == 0);
+    free(mappedPartition);
 
     if(getKeyRet == -1) {
         return -1;
     }
-    // tmp
+
     return 0;
 }
 
