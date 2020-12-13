@@ -526,23 +526,23 @@ int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
 }
 
 int removePrvKeyById(uint64_t id) {
-    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition, O_RDWR, 0);
+    FILE* fd = fopen(partition, "r");
     if(fd < 0) {
-        return fd;
-    }
-    void* mappedPartition = mmap(NULL, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
-    if(mappedPartition == MAP_FAILED) {
-        close(fd);
         return -1;
     }
 
+    size_t fileSize;
+    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    if(mappedPartition == NULL) {
+        return -1;
+    }
+
+    fclose(fd);
+
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
     if(removeRet != 0) {
-        int ret = munmap(mappedPartition, fileSize);
-        close(fd);
-        assert(ret == 0);
+        free(mappedPartition);
         return -1;
     }
 
@@ -555,19 +555,41 @@ int removePrvKeyById(uint64_t id) {
 
         uint64_t changedSize = removeFragmentation(partitionInfo);
         if(changedSize != 0) {
-            ftruncate(fd, changedSize);
+            int fdDef = open(partition, O_RDWR, 0);
+            if(fdDef < 0) {
+                return -1;
+            }
+            ftruncate(fdDef, changedSize);
+            close(fdDef);
         }
 
         partitionInfo->fileContentSize = changedSize;
+        fileSize = changedSize;
     }
 
     if(numberOfKeys == 0) {
-        ftruncate(fd, metadataSize);
+        int fdDef = open(partition, O_RDWR, 0);
+        if(fdDef < 0) {
+            return -1;
+        }
+        ftruncate(fdDef, metadataSize);
+        close(fdDef);
+        fileSize = metadataSize;
     }
 
-    int ret = munmap(mappedPartition, fileSize);
-    close(fd);
-    assert(ret == 0);
+    fd = fopen(partition, "w");
+    if(fd < 0) {
+        return -1;
+    }
+
+    if(set_buffered_file(fd, (char** )&mappedPartition, fileSize) != fileSize) {
+        fclose(fd);
+        free(mappedPartition);
+        return -1;
+    }
+
+    fclose(fd);
+    free(mappedPartition);
 
     return removeRet;
 }
