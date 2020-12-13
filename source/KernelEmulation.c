@@ -5,6 +5,47 @@
 #include "../include/KernelEmulation.h"
 
 size_t getFileSize(const char* filename);
+void* get_buffered_file(FILE* fp, size_t* filesize);
+int set_buffered_file(FILE* fp, char** buf, size_t bufsize);
+
+int set_buffered_file(FILE* fp, char** buf, size_t bufsize) {
+    return fwrite(*buf , sizeof(char) , bufsize, fp);
+}
+void *get_buffered_file(FILE *fp, size_t* size) {
+
+    uint8_t* buf = NULL;
+
+    if(fp == NULL) {
+        return NULL;
+    }
+
+    char* source;
+    long bufsize;
+
+    if (fseek(fp, 0L, SEEK_END) == 0) {
+        bufsize = ftell(fp);
+        if (bufsize == -1) {
+            return NULL;
+        }
+
+        source = (char* )(malloc(sizeof(char) * bufsize));
+        if(source == NULL) {
+            return NULL;
+        }
+
+        if (fseek(fp, 0L, SEEK_SET) != 0) {
+            return NULL;
+        }
+
+        size_t newLen = fread(source, sizeof(char), bufsize, fp);
+        if (ferror(fp) != 0) {
+            return NULL;
+        }
+    }
+
+    *size = bufsize + 1;
+    return (void* )source;
+}
 
 uint64_t generateRandomId(void* mappedPartition){
 
@@ -63,43 +104,17 @@ int initFileIfNotDefined() {
     uint64_t fileSize = partitionInfo->fileContentSize;
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
-    FILE* fp = fopen(partition, "w+");
-    fputs("EMPTY PARTITION\n", fp);
-    fclose(fp);
-
-    int fd = open(partition, O_RDWR, 0);
-    if(fd < 0) {
+    void* partitionStart = malloc(fileSize);
+    if(!partitionStart) {
         return 1;
     }
-    ftruncate(fd, fileSize);
-    close(fd);
+    memset(partitionStart, 0x00, fileSize);
 
-    fd = open(partition, O_RDWR, 0);
-    if(fd < 0) {
-        return 1;
-    }
-
-    if(fileSize != getFileSize(partition)) {
-        return 1;
-    }
-
-    void* mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_SHARED, fd, 0);
-    memset(mappedPartition, 0x00, fileSize);
-
-    void* partitionStart = mappedPartition;
-    if(mappedPartition == MAP_FAILED) {
-        munmap(mappedPartition, fileSize);
-        close(fd);
-        return 1;
-    }
-
-    memcpy(mappedPartition, partitionInfo, sizeof(PartitionInfo));
-    MapNode* mapPosition = (MapNode* )((PartitionInfo* )mappedPartition + 1);
+    memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
+    MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
     for(int i = 0; i < partitionInfo->mapSize; i++) {
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
         if(!mapData) {
-            munmap(mappedPartition, fileSize);
-            close(fd);
             return 1;
         }
         mapData -> id = 0;
@@ -111,9 +126,14 @@ int initFileIfNotDefined() {
 
     printPartition(partitionStart);
     free(partitionInfo);
-    int ret = munmap(mappedPartition, fileSize);
-    close(fd);
-    assert(ret == 0);
+
+    FILE* fp = fopen(partition, "w+");
+    int ret = set_buffered_file(fp, (char** )&partitionStart, fileSize);
+    fclose(fp);
+    if(ret != fileSize) {
+        return 1;
+    }
+    return 0;
 }
 
 
@@ -208,6 +228,7 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
     int retSizeCheck = munmap(mappedPartition, fileSize);
     close(fd);
+
     assert(retSizeCheck == 0);
 
     if(isSizeExtNeeded) {
@@ -227,10 +248,6 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
         }
     }
 
-    if(fileSize != getFileSize(partition)) {
-        return -1;
-    }
-
     mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     partitionStart = mappedPartition;
 
@@ -240,7 +257,6 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
     }
     printPartition(partitionStart);
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
-
     printPartition(partitionStart);
 
     int ret = munmap(mappedPartition, fileSize);
