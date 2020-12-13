@@ -244,20 +244,37 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
         }
     }
 
-    void* mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
-    partitionStart = mappedPartition;
-
-    if(mappedPartition == MAP_FAILED) {
-        close(fd);
+    FILE* fdAdd = fopen(partition, "r");
+    if(fd < 0) {
         return -1;
     }
+
+    size_t fileSizeAdd;
+    void* mappedPartition = get_buffered_file(fdAdd, &fileSizeAdd);
+    if(!mappedPartition) {
+        return -1;
+    }
+
+    fclose(fdAdd);
+
+    partitionStart = mappedPartition;
     printPartition(partitionStart);
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
     printPartition(partitionStart);
 
-    int ret = munmap(mappedPartition, fileSize);
-    close(fd);
-    assert(ret == 0);
+    fdAdd = fopen(partition, "w");
+    if(fdAdd < 0) {
+        return -1;
+    }
+
+    if(set_buffered_file(fdAdd, (char** )&mappedPartition, fileSizeAdd) != fileSizeAdd) {
+        fclose(fdAdd);
+        free(mappedPartition);
+        return -1;
+    }
+
+    fclose(fdAdd);
+    free(mappedPartition);
 
     return addRet;
 }
