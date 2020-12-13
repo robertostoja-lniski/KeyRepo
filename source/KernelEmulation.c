@@ -628,28 +628,26 @@ int getMode(const uint64_t* id, int** output) {
     }
 
     char* prvKey = NULL;
-    size_t fileSize = getFileSize(partition);
     //Open file
-    int fd = open(partition, O_RDWR, 0);
+    FILE* fd = fopen(partition, "r");
     if(fd < 0) {
         return -1;
     }
-    void* mappedPartition = mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+
+    size_t fileSize;
+    void* mappedPartition = get_buffered_file(fd, &fileSize);
     if(mappedPartition == MAP_FAILED) {
-        close(fd);
         return -1;
     }
 
+    fclose(fd);
     int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, *id, output);
 
-    int ret = munmap(mappedPartition, fileSize);
-    close(fd);
-    assert(ret == 0);
+    free(mappedPartition);
 
     if(getKeyRet == -1) {
         return -1;
     }
-    // tmp
     return 0;
 }
 
