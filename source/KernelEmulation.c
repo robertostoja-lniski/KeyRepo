@@ -661,28 +661,41 @@ int setMode(const uint64_t* id, int* newMode) {
         return -1;
     }
 
-    size_t fileSize = getFileSize(partition);
+    size_t fileSize;
     //Open file
-    int fd = open(partition, O_RDWR, 0);
+    FILE* fd = fopen(partition, "r");
     if(fd < 0) {
         return -1;
     }
-    void* mappedPartition = mmap(NULL, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
-    if(mappedPartition == MAP_FAILED) {
-        close(fd);
+
+    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    if(mappedPartition == NULL) {
         return -1;
     }
+
+    fclose(fd);
+
 
     int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
-
-    int ret = munmap(mappedPartition, fileSize);
-    close(fd);
-    assert(ret == 0);
-
     if(getKeyRet == -1) {
+        free(mappedPartition);
         return -1;
     }
-    // tmp
+
+    fd = fopen(partition, "w");
+    if(fd < 0) {
+        free(mappedPartition);
+        return -1;
+    }
+
+    if(set_buffered_file(fd, (char** )&mappedPartition, fileSize) != fileSize) {
+        fclose(fd);
+        free(mappedPartition);
+        return -1;
+    }
+
+    fclose(fd);
+    free(mappedPartition);
     return 0;
 }
 
