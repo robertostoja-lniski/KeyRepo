@@ -212,28 +212,24 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
         return -2;
     }
 
-    int fd = open(partition, O_RDWR, 0);
-    if(fd < 0) {
+    FILE* fdSize = fopen(partition, "r");
+    if(fdSize < 0) {
         return -1;
     }
 
-    size_t fileSize = getFileSize(partition);
-    void* mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
-    void* partitionStart = mappedPartition;
+    size_t fileSize;
+    void* partitionStart = get_buffered_file(fdSize, &fileSize);
+    fclose(fdSize);
 
-    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    PartitionInfo* partitionInfo = (PartitionInfo* )partitionStart;
     uint64_t usedFileSize = partitionInfo->fileContentSize;
+    free(partitionStart);
 
+    int fd;
     int isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd->keySize;
-
-    int retSizeCheck = munmap(mappedPartition, fileSize);
-    close(fd);
-
-    assert(retSizeCheck == 0);
-
     if(isSizeExtNeeded) {
 
-        int fd = open(partition, O_RDWR, 0);
+        fd = open(partition, O_RDWR, 0);
         if(fd < 0) {
             return -1;
         }
@@ -248,7 +244,7 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
         }
     }
 
-    mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* mappedPartition = mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     partitionStart = mappedPartition;
 
     if(mappedPartition == MAP_FAILED) {
