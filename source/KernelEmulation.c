@@ -1,70 +1,212 @@
-//
-// Created by robert on 25.08.2020.
-//
+#include "linux/kernel.h"
+#include "linux/syscalls.h"
+#include "linux/cred.h"
+#include "linux/mman.h"
+#include "linux/types.h"
+#include "linux/fcntl.h"
+#include "linux/stat.h"
+#include "linux/string.h"
+#include "linux/random.h"
+#include <linux/fs.h>
+#include <asm/segment.h>
+#include <asm/uaccess.h>
+#include <linux/buffer_head.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/slab.h>
+#include <linux/stat.h>
 
-#include "../include/KernelEmulation.h"
+static char *load_file(char* filename, int *input_size)
+{
+        struct kstat *stat;
+        struct file *fp;
+        mm_segment_t fs;
+        loff_t pos = 0;
+        char *buf;
 
-size_t getFileSize(const char* filename);
-void* get_buffered_file(FILE* fp, size_t* filesize);
-int set_buffered_file(FILE* fp, char** buf, size_t bufsize);
+        fp = filp_open(filename, O_RDWR, 0644);
+                if (IS_ERR(fp)) {
+                        printk("Open file error!\n");
+                        return ERR_PTR(-ENOENT);
+        }
 
-int set_buffered_file(FILE* fp, char** buf, size_t bufsize) {
-    return fwrite(*buf , sizeof(char) , bufsize, fp);
+        fs = get_fs();
+        set_fs(KERNEL_DS);
+        
+        stat =(struct kstat *) kmalloc(sizeof(struct kstat), GFP_KERNEL);
+        if (!stat)
+                return ERR_PTR(-ENOMEM);
+
+        vfs_stat(filename, stat);
+        *input_size = stat->size;
+
+        buf = kmalloc(*input_size, GFP_KERNEL);
+                if (!buf) {
+                        kfree(stat);
+                        printk("malloc input buf error!\n");
+                        return ERR_PTR(-ENOMEM);
+                }
+        kernel_read(fp, buf, *input_size, &pos);
+
+        filp_close(fp, NULL);
+        set_fs(fs);
+        kfree(stat);
+        return buf;
 }
-void *get_buffered_file(FILE *fp, size_t* size) {
 
-    uint8_t* buf = NULL;
+struct file *file_open(const char *path, int flags, int rights) 
+{
+    struct file *filp = NULL;
+    mm_segment_t oldfs;
+    int err = 0;
 
-    if(fp == NULL) {
+    oldfs = get_fs();
+    set_fs(KERNEL_DS);
+    filp = filp_open(path, flags, rights);
+    set_fs(oldfs);
+    if (IS_ERR(filp)) {
+        err = PTR_ERR(filp);
         return NULL;
     }
-
-    char* source;
-    long bufsize;
-
-    if (fseek(fp, 0L, SEEK_END) == 0) {
-        bufsize = ftell(fp);
-        if (bufsize == -1) {
-            return NULL;
-        }
-
-        source = (char* )(malloc(sizeof(char) * bufsize));
-        if(source == NULL) {
-            return NULL;
-        }
-
-        if (fseek(fp, 0L, SEEK_SET) != 0) {
-            return NULL;
-        }
-
-        size_t newLen = fread(source, sizeof(char), bufsize, fp);
-        if (ferror(fp) != 0) {
-            return NULL;
-        }
-    }
-
-    *size = bufsize + 1;
-    return (void* )source;
+    return filp;
 }
+
+void file_close(struct file *file) 
+{
+    filp_close(file, NULL);
+}
+
+int file_read(struct file *file, unsigned long long offset, unsigned char *data, unsigned int size) 
+{
+    mm_segment_t oldfs;
+    int ret;
+
+    oldfs = get_fs();
+    set_fs(KERNEL_DS);
+
+    ret = vfs_read(file, data, size, &offset);
+
+    set_fs(oldfs);
+    return ret;
+}   
+
+int file_write(struct file *file, unsigned long long offset, unsigned char *data, unsigned int size) 
+{
+    mm_segment_t oldfs;
+    int ret;
+
+    oldfs = get_fs();
+    set_fs(KERNEL_DS);
+
+    ret = vfs_write(file, data, size, &offset);
+
+    set_fs(oldfs);
+    return ret;
+}
+
+
+static kuid_t getuid(void)
+{
+    return current_uid();
+}
+
+static kgid_t getgid(void)
+{
+    return current_gid();
+}
+
+/*
+static kgid_t getegid(void)
+{
+    return current_egid();
+}
+*/
+
+static kuid_t geteuid(void)
+{
+    return current_euid();
+}
+
+
+#ifndef VERBOSE_LEVEL
+#define VERBOSE_LEVEL VERBOSE_NO
+#define SU_SECURITY 0
+#define DEFAULT_MODE 600
+#define DEFAULT_MAP_SIZE 128
+#define REDUCTION_PARAM 2
+#define READ_MASK	4
+#define WRITE_MASK	2
+#endif
+
+struct MapNode {
+    uint64_t id;
+    uint64_t offset;
+    uint64_t size;
+    uint32_t mode;
+    kuid_t   uid;
+    kgid_t   gid;
+};
+typedef struct MapNode MapNode;
+
+struct PartitionInfo {
+    uint64_t numberOfKeys;
+    uint64_t fileContentSize;
+    uint64_t mapSize;
+};
+typedef struct PartitionInfo PartitionInfo;
+
+struct KeyNode {
+    uint32_t keySize;
+    char keyContent[4096];
+};
+typedef struct KeyNode KeyNode;
+
+struct KeyPartitionNode {
+    char data[4096];
+};
+typedef struct KeyPartitionNode KeyPartitionNode;
+
+static PartitionInfo data;
+#if __APPLE__
+const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
+#else
+const static char* partition = ".keyPartition";
+#endif
+
+int canRead(int mode, kuid_t uid, kgid_t gid);
+int canWrite(int mode, kuid_t uid, kgid_t gid);
+size_t getFileSize(const char* filename);
+int initFileIfNotDefined(void);
+int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id);
+int addKeyNodeToPartition(struct KeyNode* keyNodeToAdd, uint64_t** id);
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen);
+int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
+int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);
+int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int mode);
+uint64_t removeFragmentation(PartitionInfo* );
+int removePrvKeyById(uint64_t id);
 
 uint64_t generateRandomId(void* mappedPartition){
 
     int generateTrials = 10;
+    int i = 0;
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
-
     int foundSameId = 0;
     uint64_t newId;
+
     while(generateTrials--) {
 
         newId = 0;
-        for (int i=0; i<64; i++) {
-            newId = newId*2 + rand()%2;
+        for (i = 0; i<64; i++) {
+	    int num;
+	    get_random_bytes(&num, sizeof(num));
+            newId = newId*2 + num%2;
         }
 
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
         uint64_t id;
-        for(int i = 0; i < mapSize; i++) {
+        for(i = 0; i < mapSize; i++) {
             uint64_t offset = currentElementInMap->offset;
             id = currentElementInMap->id;
 
@@ -80,59 +222,78 @@ uint64_t generateRandomId(void* mappedPartition){
     }
 
     return newId;
-    // assertion implies that there is an error with random function
-    assert(generateTrials == 0);
 }
 
 int initFileIfNotDefined() {
-    FILE *file;
-    if ((file = fopen(partition, "r")))
+    struct file *file;
+    if ((file = file_open(partition, O_RDWR, 0)))
     {
-        fclose(file);
+        file_close(file);
         return 1;
     }
 
-    PartitionInfo* partitionInfo = (PartitionInfo* )malloc(sizeof(PartitionInfo));
+    PartitionInfo* partitionInfo = (PartitionInfo* )kmalloc(sizeof(PartitionInfo), GFP_KERNEL);
     if(!partitionInfo) {
         return 1;
     }
 
     partitionInfo->mapSize = DEFAULT_MAP_SIZE;
-    partitionInfo->numberOfKeys = DEFAULT_NUMBER_OF_KEYS;
+    partitionInfo->numberOfKeys = 0;
     partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
 
     uint64_t fileSize = partitionInfo->fileContentSize;
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
-    void* partitionStart = malloc(fileSize);
-    if(!partitionStart) {
+    struct FILE* fp = sys_open(partition, O_RDWR, 0);
+    // fputs("EMPTY PARTITION\n", fp);
+    sys_close(fp);
+
+    int fd = sys_open(partition, O_RDWR, 0);
+    if(fd < 0) {
         return 1;
     }
-    memset(partitionStart, 0x00, fileSize);
+    sys_ftruncate(fd, fileSize);
+    sys_close(fd);
 
-    memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
-    MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
-    for(int i = 0; i < partitionInfo->mapSize; i++) {
-        MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
+    fd = sys_open(partition, O_RDWR, 0);
+    if(fd < 0) {
+        return 1;
+    }
+
+    if(fileSize != getFileSize(partition)) {
+        return 1;
+    }
+
+    void* mappedPartition = sys_mmap(NULL, fileSize, PROT_WRITE, MAP_SHARED, fd, 0);
+    memset(mappedPartition, 0x00, fileSize);
+
+    void* partitionStart = mappedPartition;
+    if(mappedPartition == -1) {
+        sys_munmap(mappedPartition, fileSize);
+        close(fd);
+        return 1;
+    }
+
+    memcpy(mappedPartition, partitionInfo, sizeof(PartitionInfo));
+    MapNode* mapPosition = (MapNode* )((PartitionInfo* )mappedPartition + 1);
+    int i;
+    for( i=0; i < partitionInfo->mapSize; i++) {
+        MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
         if(!mapData) {
+            sys_munmap(mappedPartition, fileSize);
+            sys_close(fd);
             return 1;
         }
         mapData -> id = 0;
         mapData -> offset = 0;
         memcpy(mapPosition, mapData, sizeof(*mapData));
         mapPosition = mapPosition + 1;
-        free(mapData);
+        kfree(mapData);
     }
 
-    printPartition(partitionStart);
-    free(partitionInfo);
-
-    FILE* fp = fopen(partition, "w+");
-    int ret = set_buffered_file(fp, (char** )&partitionStart, fileSize);
-    fclose(fp);
-    if(ret != fileSize) {
-        return 1;
-    }
+    kfree(partitionInfo);
+    int ret = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
     return 0;
 }
 
@@ -143,14 +304,14 @@ size_t getFileSize(const char* filename) {
     return st.st_size;
 }
 
-int getCurrentKeyNumFromEmulation() {
+SYSCALL_DEFINE0(get_current_key_num) {
     return data.numberOfKeys;
 }
 
 uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
 
     // create new map
-    MapNode* tmpMap = (MapNode* )malloc(sizeof(MapNode) * partitionInfo->numberOfKeys);
+    MapNode* tmpMap = (MapNode* )kmalloc(sizeof(MapNode) * partitionInfo->numberOfKeys, GFP_KERNEL);
     if(!tmpMap) {
         return 0;
     }
@@ -160,27 +321,28 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
     int tmpMapIndex = 0;
     uint64_t changedOffset = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
 
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
         uint64_t id = currentElementInMap->id;
         uint64_t size = currentElementInMap->size;
         int mode = currentElementInMap->mode;
-        int uid = currentElementInMap->uid;
-        int gid = currentElementInMap->gid;
+        kuid_t uid = currentElementInMap->uid;
+        kgid_t gid = currentElementInMap->gid;
 
 
         if(offset != 0) {
 
-            uint8_t* keyContent = (uint8_t* )malloc(size);
+            uint8_t* keyContent = (uint8_t* )kmalloc(size, GFP_KERNEL);
             if(!keyContent) {
-                free(tmpMap);
+                kfree(tmpMap);
                 return 0;
             }
 
             memcpy(keyContent, ((uint8_t* )partitionInfo + offset), size);
             memcpy(((uint8_t* )partitionInfo + changedOffset), keyContent, size);
 
-            free(keyContent);
+            kfree(keyContent);
 
             tmpMap[tmpMapIndex].id = id;
             tmpMap[tmpMapIndex].offset = changedOffset;
@@ -198,9 +360,9 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
 
     currentElementInMap = (MapNode* )(partitionInfo + 1);
     memcpy(currentElementInMap, tmpMap, sizeof(MapNode) * partitionInfo->numberOfKeys);
-    memset(currentElementInMap + partitionInfo->numberOfKeys, 0x00, sizeof(MapNode) * (MAX_KEY_NUM - partitionInfo->numberOfKeys));
+    memset(currentElementInMap + partitionInfo->numberOfKeys, 0x00, sizeof(MapNode) * (DEFAULT_MAP_SIZE - partitionInfo->numberOfKeys));
 
-    free(tmpMap);
+    kfree(tmpMap);
 
     return changedOffset;
 }
@@ -208,100 +370,64 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
     initFileIfNotDefined();
-    if(data.numberOfKeys == MAX_KEY_NUM) {
+    if(data.numberOfKeys == DEFAULT_MAP_SIZE) {
         return -2;
     }
 
-    FILE* fdSize = fopen(partition, "r");
-    if(fdSize < 0) {
+    int fd = sys_open(partition, O_RDWR, 0);
+    if(fd < 0) {
         return -1;
     }
 
-    size_t fileSize;
-    void* partitionStart = get_buffered_file(fdSize, &fileSize);
-    fclose(fdSize);
+    size_t fileSize = getFileSize(partition);
+    void* mappedPartition = sys_mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    void* partitionStart = mappedPartition;
 
-    PartitionInfo* partitionInfo = (PartitionInfo* )partitionStart;
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t usedFileSize = partitionInfo->fileContentSize;
-    free(partitionStart);
 
-    int fd;
     int isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd->keySize;
+
+    int retSizeCheck = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
+
     if(isSizeExtNeeded) {
 
-        fd = open(partition, O_RDWR, 0);
+        int fd = sys_open(partition, O_RDWR, 0);
         if(fd < 0) {
             return -1;
         }
 
         fileSize = getFileSize(partition) + keyNodeToAdd->keySize;
-        ftruncate(fd, fileSize);
-        close(fd);
+        sys_ftruncate(fd, fileSize);
+        sys_close(fd);
 
-        fd = open(partition, O_RDWR, 0);
+        fd = sys_open(partition, O_RDWR, 0);
         if(fd < 0) {
             return -1;
         }
     }
 
-    FILE* fdAdd = fopen(partition, "r");
-    if(fd < 0) {
+    if(fileSize != getFileSize(partition)) {
         return -1;
     }
 
-    size_t fileSizeAdd;
-    void* mappedPartition = get_buffered_file(fdAdd, &fileSizeAdd);
-    if(!mappedPartition) {
-        return -1;
-    }
-
-    fclose(fdAdd);
-
+    mappedPartition = sys_mmap(NULL, fileSize, PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
     partitionStart = mappedPartition;
-    printPartition(partitionStart);
+
+    if(mappedPartition == -1) {
+        sys_close(fd);
+        return -1;
+    }
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
-    printPartition(partitionStart);
 
-    fdAdd = fopen(partition, "w");
-    if(fdAdd < 0) {
-        return -1;
-    }
 
-    if(set_buffered_file(fdAdd, (char** )&mappedPartition, fileSizeAdd) != fileSizeAdd) {
-        fclose(fdAdd);
-        free(mappedPartition);
-        return -1;
-    }
-
-    fclose(fdAdd);
-    free(mappedPartition);
+    int ret = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
 
     return addRet;
 }
 
-void printPartition(const void* mappedPartition) {
-    return;
-    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
-    uint64_t keys = partitionInfo->numberOfKeys;
-    uint64_t offsetToAdd = partitionInfo->fileContentSize;
-    uint64_t mapSize = partitionInfo->mapSize;
-
-    printf("This partition has: %llu keys.\n", keys);
-    printf("First free slot is: %llu.\n", offsetToAdd + sizeof(PartitionInfo));
-
-    MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
-    uint64_t id;
-    for(int i = 0; i < mapSize; i++) {
-        uint64_t offset = currentElementInMap->offset;
-        if(offset != 0) {
-            id = currentElementInMap->id;
-//            std::cout << "For " << i << " node in map there was found id: " << id << " and offset " << offset
-//                << " and size " << currentElementInMap->size <<  std::endl;
-        }
-        currentElementInMap = currentElementInMap + 1;
-    }
-
-}
 
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id) {
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
@@ -311,12 +437,13 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t nextId;
     uint64_t prevOffset = currentElementInMap->offset;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
 
         if(offset == 0) {
             nextId = generateRandomId(mappedPartition);
-            *id = (uint64_t* )malloc(sizeof(*id));
+            *id = (uint64_t* )kmalloc(sizeof(*id), GFP_KERNEL);
             if(!id) {
                 return -2;
             }
@@ -327,7 +454,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
         prevOffset = offset;
     }
 
-    MapNode* elementDataToUpdate = (MapNode* )malloc(sizeof(MapNode));
+    MapNode* elementDataToUpdate = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
     if(!elementDataToUpdate) {
         return -1;
     }
@@ -337,24 +464,24 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     elementDataToUpdate->size = keyNodeToAdd->keySize;
     elementDataToUpdate->uid = getuid();
     elementDataToUpdate->gid = getgid();
-    elementDataToUpdate->mode = getDefaultMode();
+    elementDataToUpdate->mode = DEFAULT_MODE;
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
-    free(elementDataToUpdate);
+    kfree(elementDataToUpdate);
 
 
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
     memcpy(keyPlaceToAdd, keyNodeToAdd->keyContent, keyNodeToAdd->keySize);
 
-    PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
+    PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )kmalloc(sizeof(PartitionInfo), GFP_KERNEL);
     partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
     partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
     partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd->keySize;
     memcpy(partitionInfo, partitionInfoToUpdate, sizeof(PartitionInfo));
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
-    free(partitionInfoToUpdate);
-    free(keyNodeToAdd);
+    kfree(partitionInfoToUpdate);
+    kfree(keyNodeToAdd);
 
     return 0;
 }
@@ -367,7 +494,8 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
     int found = 0;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
 
@@ -384,7 +512,6 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     if(!found) {
         return -1;
     }
-//        std::cout << "offset is " << offset << std::endl;
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
     size_t keySize = strlen(keyPlaceToAdd->data);
 
@@ -398,7 +525,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
         allocationSize = sizeof(KeyPartitionNode) + 1;
     }
 
-    *keyVal = (KeyPartitionNode* )malloc(allocationSize);
+    *keyVal = (KeyPartitionNode* )kmalloc(allocationSize, GFP_KERNEL);
     if(*keyVal == NULL) {
         return -1;
     }
@@ -416,7 +543,8 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
     int found = 0;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
             found = 1;
@@ -429,7 +557,7 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
         return -1;
     }
 
-    *keyMode = (int* )malloc(sizeof(currentElementInMap->mode));
+    *keyMode = (int* )kmalloc(sizeof(currentElementInMap->mode), GFP_KERNEL);
     if(*keyMode == NULL) {
         return -1;
     }
@@ -444,7 +572,8 @@ int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     int found = 0;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
             found = 1;
@@ -468,7 +597,8 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
 
         if(currentId == id) {
@@ -494,55 +624,51 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
         }
         currentElementInMap = currentElementInMap + 1;
     }
-//        std::cout << "offset is " << offset << std::endl;
     return -1;
 }
 
 int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
-//    size_t fileSize = getFileSize(partition);
+    size_t fileSize = getFileSize(partition);
     //Open file
-    FILE* fd = fopen(partition, "r");
+    int fd = sys_open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
-
-    size_t fileSize;
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
-    if(!mappedPartition) {
+    void* mappedPartition = sys_mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == -1) {
+        sys_close(fd);
         return -1;
     }
 
-    fclose(fd);
-
     int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey, keyLen);
 
-    free(mappedPartition);
+    int ret = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
 
     if(getKeyRet == -1) {
         return -1;
     }
-
+    // tmp
     return 0;
 }
 
 int removePrvKeyById(uint64_t id) {
+    size_t fileSize = getFileSize(partition);
     //Open file
-    FILE* fd = fopen(partition, "r");
+    int fd = sys_open(partition, O_RDWR, 0);
     if(fd < 0) {
+        return fd;
+    }
+    void* mappedPartition = sys_mmap(NULL, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == -1) {
+        sys_close(fd);
         return -1;
     }
-
-    size_t fileSize;
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
-    if(mappedPartition == NULL) {
-        return -1;
-    }
-
-    fclose(fd);
 
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
     if(removeRet != 0) {
-        free(mappedPartition);
+        int ret = sys_munmap(mappedPartition, fileSize);
+        sys_close(fd);
         return -1;
     }
 
@@ -555,53 +681,30 @@ int removePrvKeyById(uint64_t id) {
 
         uint64_t changedSize = removeFragmentation(partitionInfo);
         if(changedSize != 0) {
-            int fdDef = open(partition, O_RDWR, 0);
-            if(fdDef < 0) {
-                return -1;
-            }
-            ftruncate(fdDef, changedSize);
-            close(fdDef);
+            sys_ftruncate(fd, changedSize);
         }
 
         partitionInfo->fileContentSize = changedSize;
-        fileSize = changedSize;
     }
 
     if(numberOfKeys == 0) {
-        int fdDef = open(partition, O_RDWR, 0);
-        if(fdDef < 0) {
-            return -1;
-        }
-        ftruncate(fdDef, metadataSize);
-        close(fdDef);
-        fileSize = metadataSize;
+        sys_ftruncate(fd, metadataSize);
     }
 
-    fd = fopen(partition, "w");
-    if(fd < 0) {
-        return -1;
-    }
+    int ret = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
 
-    if(set_buffered_file(fd, (char** )&mappedPartition, fileSize) != fileSize) {
-        fclose(fd);
-        free(mappedPartition);
-        return -1;
-    }
-
-    fclose(fd);
-    free(mappedPartition);
-
-    return removeRet;
+    return 0;
 }
 
-int writeKey(const char* key, const size_t keyLen, uint64_t** id) {
+SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, id) {
 
     size_t allocationSize = sizeof(KeyNode);
     if(keyLen > 4096) {
         allocationSize += keyLen - 4096;
     }
 
-    KeyNode* keyNode = (KeyNode* )malloc(allocationSize);
+    KeyNode* keyNode = (KeyNode* )kmalloc(allocationSize, GFP_KERNEL);
     if(keyNode == NULL) {
         return -1;
     }
@@ -617,7 +720,7 @@ int writeKey(const char* key, const size_t keyLen, uint64_t** id) {
     return 0;
 }
 
-int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
+SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
 
     if(id == NULL || *id == 0) {
        return -1;
@@ -629,70 +732,55 @@ int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
         return -1;
     }
 
-    *key = (char *)malloc(*keyLen);
+    *key = (char *)kmalloc(*keyLen, GFP_KERNEL);
     if(*key == NULL) {
         return -1;
     }
 
     memcpy(*key, prvKey, *keyLen);
     memset(*key + *keyLen, 0x00, 1);
-    free(prvKey);
+    kfree(prvKey);
     return 0;
 }
 
-int get(const uint64_t* id, char** output) {
-    if(id == NULL || *id == 0) {
-        return -1;
-    }
-
-    char* prvKey = NULL;
-    uint64_t keyLen;
-    int getKeyRet = getPrvKeyById(*id, &prvKey, &keyLen);
-    if(getKeyRet != 0) {
-        return -1;
-    }
-
-    *output = prvKey;
-    return 0;
-}
-
-int removeKey(const uint64_t* id, const char* filepath) {
+SYSCALL_DEFINE2(remove_key, const uint64_t*, id, const char*, filepath) {
     return id == NULL || *id == 0 ? -1 : removePrvKeyById(*id);
 }
 
-int getMode(const uint64_t* id, int** output) {
+SYSCALL_DEFINE2(get_mode, const uint64_t*, id, int**, output) {
 
     if(id == NULL || *id == 0) {
         return -1;
     }
 
     char* prvKey = NULL;
+    size_t fileSize = getFileSize(partition);
     //Open file
-    FILE* fd = fopen(partition, "r");
+    int fd = sys_open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
-
-    size_t fileSize;
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
-    if(mappedPartition == MAP_FAILED) {
+    void* mappedPartition = sys_mmap(NULL, fileSize, PROT_READ, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == -1) {
+        sys_close(fd);
         return -1;
     }
 
-    fclose(fd);
     int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, *id, output);
 
-    free(mappedPartition);
+    int ret = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
 
     if(getKeyRet == -1) {
         return -1;
     }
+    // tmp
     return 0;
 }
 
-int setMode(const uint64_t* id, int* newMode) {
+SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
 
-    if(SU_SECURITY == 1 && geteuid() != 0) {
+    if(SU_SECURITY == 1 && geteuid().val != 0) {
         return -1;
     }
 
@@ -700,57 +788,43 @@ int setMode(const uint64_t* id, int* newMode) {
         return -1;
     }
 
-    size_t fileSize;
+    size_t fileSize = getFileSize(partition);
     //Open file
-    FILE* fd = fopen(partition, "r");
+    int fd = sys_open(partition, O_RDWR, 0);
     if(fd < 0) {
         return -1;
     }
-
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
-    if(mappedPartition == NULL) {
+    void* mappedPartition = sys_mmap(NULL, fileSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_SHARED, fd, 0);
+    if(mappedPartition == -1) {
+        sys_close(fd);
         return -1;
     }
-
-    fclose(fd);
-
 
     int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
+
+    int ret = sys_munmap(mappedPartition, fileSize);
+    sys_close(fd);
+
     if(getKeyRet == -1) {
-        free(mappedPartition);
         return -1;
     }
-
-    fd = fopen(partition, "w");
-    if(fd < 0) {
-        free(mappedPartition);
-        return -1;
-    }
-
-    if(set_buffered_file(fd, (char** )&mappedPartition, fileSize) != fileSize) {
-        fclose(fd);
-        free(mappedPartition);
-        return -1;
-    }
-
-    fclose(fd);
-    free(mappedPartition);
+    // tmp
     return 0;
 }
 
-int canRead(int mode, int uid, int gid) {
+int canRead(int mode, kuid_t uid, kgid_t gid) {
     int userRead = (mode / 100) & READ_MASK;
     int groupRead = ((mode / 10) % 10) & READ_MASK;
     int othersRead = (mode % 10) & READ_MASK;
 
-    return userRead && uid == getuid() || groupRead && gid == getgid() || othersRead && uid != getuid();
+    return (userRead && (uid.val == getuid().val)) || (groupRead && (gid.val == getgid().val)) || (othersRead && (uid.val != getuid().val));
 }
 
-int canWrite(int mode, int uid, int gid) {
+int canWrite(int mode, kuid_t uid, kgid_t gid) {
     int userWrite = (mode / 100) & WRITE_MASK;
     int groupWrite = ((mode / 10) % 10) & WRITE_MASK;
     int othersWrite = (mode % 10) & WRITE_MASK;
 
-    return userWrite && uid == getuid() || groupWrite && gid == getgid() || othersWrite && uid != getuid();
+    return (userWrite && (uid.val == getuid().val)) || (groupWrite && (gid.val == getgid().val)) || (othersWrite && ((uid.val != getuid().val)));
 }
 
