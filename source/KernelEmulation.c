@@ -77,6 +77,7 @@ size_t set_buffered_file(const char* partition, char** buf, size_t bufsize) {
     filp_close(fp, NULL);
     printk("Next action: kfree on *buf\n");
     kfree(*buf);
+    
     printk("Next action: set fs\n");
     set_fs(fs);
     printk("Exiting: Set buffered file\n");
@@ -109,7 +110,12 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 
         bufsize += extra_size;
 
+#if EMULATION == 1
         source = (char* )(malloc(sizeof(char) * bufsize));
+#else
+        source = (char* )(kmalloc(sizeof(char) * bufsize), GFP_KERNEL);
+#endif
+
         if(source == NULL) {
             fclose(fp);
             return NULL;
@@ -200,6 +206,7 @@ uint64_t generate_random_id(void* mapped_partition){
 
     int foundSameId = 0;
     uint64_t newId;
+    int n;
     while(generateTrials--) {
 
         get_random_bytes(&newId, sizeof(newId));
@@ -300,6 +307,12 @@ int initFileIfNotDefined() {
     printk("After allocation\n");
 #endif
 
+#if EMULATION == 1
+    void* partitionStart = malloc(fileSize);
+#else
+    void* partitionStart = kmalloc(fileSize, GFP_KERNEL);
+#endif
+
     if(!partitionStart) {
         printk("Allocation failed\n");
         return 1;
@@ -322,6 +335,17 @@ int initFileIfNotDefined() {
         // printk("Malloc to be used\n");
         map_node* mapData = (map_node* )kmalloc(sizeof(map_node), GFP_KERNEL);
         // printk("Malloc ok\n");
+#endif
+
+    memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
+    MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
+    int i;
+    for(i = 0; i < partitionInfo->mapSize; i++) {
+
+#if EMULATION == 1
+        MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
+#else
+        MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
 #endif
 
         if(!mapData) {
@@ -1034,6 +1058,7 @@ int remove_private_key_by_id(uint64_t id) {
             printk("trunc temporary ommited\n");
             file_size = metadataSize;
         }
+#endif
 
 #if EMULATION == 1
     }
