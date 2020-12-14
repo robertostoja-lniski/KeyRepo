@@ -25,10 +25,16 @@
 #define SU_SECURITY 0
 #define DEFAULT_MODE 600
 #define DEFAULT_MAP_SIZE 128
+#define DEFAULT_NUMBER_OF_KEYS DEFAULT_MAP_SIZE
+#define MAX_KEY_NUM DEFAULT_MAP_SIZE
 #define REDUCTION_PARAM 2
 #define READ_MASK	4
 #define WRITE_MASK	2
 #endif
+
+static kuid_t getuid(void);
+static kgid_t getgid(void);
+static kuid_t geteuid(void);
 
 struct MapNode {
     uint64_t id;

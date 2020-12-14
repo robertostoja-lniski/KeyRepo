@@ -1,5 +1,5 @@
 
-#define EMULATION 1
+#define EMULATION 0
 
 #if EMULATION == 1
     #include "../include/KernelEmulation.h"
@@ -44,7 +44,7 @@ size_t set_buffered_file(char* partition, char** buf, size_t bufsize) {
     filp_close(fp, NULL);
     set_fs(fs);
     kfree(*buf);
-    return res;
+    return ret;
 #endif
 }
 
@@ -72,7 +72,13 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
         }
 
         bufsize += extra_size;
+
+#if EMULATION == 1
         source = (char* )(malloc(sizeof(char) * bufsize));
+#else
+        source = (char* )(kmalloc(sizeof(char) * bufsize), GFP_KERNEL);
+#endif
+
         if(source == NULL) {
             fclose(fp);
             return NULL;
@@ -114,16 +120,16 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
             return ERR_PTR(-ENOMEM);
 
     vfs_stat(partition, stat);
-    *input_size = stat->size;
+    *size = stat->size;
 
-    buf = kmalloc(*input_size, GFP_KERNEL);
+    buf = kmalloc(*size, GFP_KERNEL);
     if (!buf) {
             kfree(stat);
             printk("malloc input buf error!\n");
             NULL;
     }
 
-    kernel_read(fp, buf, *input_size, &pos);
+    kernel_read(fp, buf, *size, &pos);
 
     filp_close(fp, NULL);
     set_fs(fs);
@@ -141,16 +147,19 @@ uint64_t generateRandomId(void* mappedPartition){
 
     int foundSameId = 0;
     uint64_t newId;
+    int n;
     while(generateTrials--) {
 
         newId = 0;
-        for (int i=0; i<64; i++) {
-            newId = newId*2 + rand()%2;
+	int i;
+        for (i=0; i<64; i++) {
+            get_random_bytes(&n, sizeof(n));
+            newId = newId*2 + n%2;
         }
 
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
         uint64_t id;
-        for(int i = 0; i < mapSize; i++) {
+        for(i = 0; i < mapSize; i++) {
             uint64_t offset = currentElementInMap->offset;
             id = currentElementInMap->id;
 
@@ -170,6 +179,7 @@ uint64_t generateRandomId(void* mappedPartition){
     assert(generateTrials == 0);
 }
 int initFileIfNotDefined() {
+#if EMULATION == 1
     FILE *file;
     if ((file = fopen(partition, "r")))
     {
@@ -182,6 +192,21 @@ int initFileIfNotDefined() {
         return 1;
     }
 
+#else
+    struct file *fp;
+    fp = filp_open(partition, O_RDWR, 0644);
+    if (IS_ERR(fp)) {
+            printk("Open file error!\n");
+            return 1;
+    }
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )kmalloc(sizeof(PartitionInfo), GFP_KERNEL);
+    if(!partitionInfo) {
+        return 1;
+    }
+
+#endif
+
     partitionInfo->mapSize = DEFAULT_MAP_SIZE;
     partitionInfo->numberOfKeys = DEFAULT_NUMBER_OF_KEYS;
     partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
@@ -189,7 +214,12 @@ int initFileIfNotDefined() {
     uint64_t fileSize = partitionInfo->fileContentSize;
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
+#if EMULATION == 1
     void* partitionStart = malloc(fileSize);
+#else
+    void* partitionStart = kmalloc(fileSize, GFP_KERNEL);
+#endif
+
     if(!partitionStart) {
         return 1;
     }
@@ -197,8 +227,15 @@ int initFileIfNotDefined() {
 
     memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
     MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
-    for(int i = 0; i < partitionInfo->mapSize; i++) {
+    int i;
+    for(i = 0; i < partitionInfo->mapSize; i++) {
+
+#if EMULATION == 1
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
+#else
+        MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
+#endif
+
         if(!mapData) {
             return 1;
         }
@@ -206,13 +243,22 @@ int initFileIfNotDefined() {
         mapData -> offset = 0;
         memcpy(mapPosition, mapData, sizeof(*mapData));
         mapPosition = mapPosition + 1;
+#if EMULATION == 1
         free(mapData);
+#else
+        kfree(mapData);
+#endif
     }
 
     printPartition(partitionStart);
+#if EMULATION == 1
     free(partitionInfo);
+#else
+    kfree(partitionInfo);
+#endif
 
-    size_t ret = set_buffered_file(partition, (char** )&partitionStart, fileSize);
+    size_t ret;
+    ret = set_buffered_file(partition, (char** )&partitionStart, fileSize);
     if(ret != fileSize) {
         return 1;
     }
@@ -221,7 +267,13 @@ int initFileIfNotDefined() {
 uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
 
     // create new map
+
+#if EMULATION == 1 
     MapNode* tmpMap = (MapNode* )malloc(sizeof(MapNode) * partitionInfo->numberOfKeys);
+#else
+    MapNode* tmpMap = (MapNode* )kmalloc(sizeof(MapNode) * partitionInfo->numberOfKeys, GFP_KERNEL);
+#endif
+
     if(!tmpMap) {
         return 0;
     }
@@ -231,7 +283,8 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
     int tmpMapIndex = 0;
     uint64_t changedOffset = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
 
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
         uint64_t id = currentElementInMap->id;
         uint64_t size = currentElementInMap->size;
@@ -242,21 +295,31 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
         int gid = currentElementInMap->gid;
 #else
         kuid_t uid = currentElementInMap->uid;
-        int gid = currentElementInMap->gid;
+        kgid_t gid = currentElementInMap->gid;
 #endif
 
         if(offset != 0) {
 
+#if EMULATION == 1
             uint8_t* keyContent = (uint8_t* )malloc(size);
             if(!keyContent) {
                 free(tmpMap);
+#else
+            uint8_t* keyContent = (uint8_t* )kmalloc(size, GFP_KERNEL);
+            if(!keyContent) {
+                kfree(tmpMap);
+#endif
                 return 0;
             }
 
             memcpy(keyContent, ((uint8_t* )partitionInfo + offset), size);
             memcpy(((uint8_t* )partitionInfo + changedOffset), keyContent, size);
 
+#if EMULATION == 1
             free(keyContent);
+#else
+            kfree(keyContent);
+#endif
 
             tmpMap[tmpMapIndex].id = id;
             tmpMap[tmpMapIndex].offset = changedOffset;
@@ -276,7 +339,11 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
     memcpy(currentElementInMap, tmpMap, sizeof(MapNode) * partitionInfo->numberOfKeys);
     memset(currentElementInMap + partitionInfo->numberOfKeys, 0x00, sizeof(MapNode) * (MAX_KEY_NUM - partitionInfo->numberOfKeys));
 
+#if EMULATION == 1
     free(tmpMap);
+#else
+    kfree(tmpMap);
+#endif
 
     return changedOffset;
 }
@@ -292,7 +359,8 @@ void printPartition(const void* mappedPartition) {
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t id;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
         if(offset != 0) {
             id = currentElementInMap->id;
@@ -332,12 +400,19 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t nextId;
     uint64_t prevOffset = currentElementInMap->offset;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
 
         if(offset == 0) {
             nextId = generateRandomId(mappedPartition);
+
+#if EMULATION == 1
             *id = (uint64_t* )malloc(sizeof(*id));
+#else
+            *id = (uint64_t* )kmalloc(sizeof(*id), GFP_KERNEL);
+#endif
+
             if(!id) {
                 return -2;
             }
@@ -348,7 +423,12 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
         prevOffset = offset;
     }
 
+#if EMULATION == 1
     MapNode* elementDataToUpdate = (MapNode* )malloc(sizeof(MapNode));
+#else
+    MapNode* elementDataToUpdate = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
+#endif
+
     if(!elementDataToUpdate) {
         return -1;
     }
@@ -358,24 +438,39 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     elementDataToUpdate->size = keyNodeToAdd->keySize;
     elementDataToUpdate->uid = getuid();
     elementDataToUpdate->gid = getgid();
-    elementDataToUpdate->mode = getDefaultMode();
+    elementDataToUpdate->mode = 777;
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
+
+#if EMULATION == 1
     free(elementDataToUpdate);
+#else 
+    kfree(elementDataToUpdate);
+#endif
 
 
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
     memcpy(keyPlaceToAdd, keyNodeToAdd->keyContent, keyNodeToAdd->keySize);
 
+#if EMULATION == 1
     PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
+#else
+    PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )kmalloc(sizeof(PartitionInfo), GFP_KERNEL);
+#endif
+
     partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
     partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
     partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd->keySize;
     memcpy(partitionInfo, partitionInfoToUpdate, sizeof(PartitionInfo));
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
+#if EMULATION == 1
     free(partitionInfoToUpdate);
     free(keyNodeToAdd);
+#else
+    kfree(partitionInfoToUpdate);
+    kfree(keyNodeToAdd);
+#endif
 
     return 0;
 }
@@ -387,7 +482,8 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
     int found = 0;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
 
@@ -418,7 +514,12 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
         allocationSize = sizeof(KeyPartitionNode) + 1;
     }
 
+#if EMULATION == 1
     *keyVal = (KeyPartitionNode* )malloc(allocationSize);
+#else
+    *keyVal = (KeyPartitionNode* )kmalloc(allocationSize, GFP_KERNEL);
+#endif
+
     if(*keyVal == NULL) {
         return -1;
     }
@@ -435,7 +536,8 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
     int found = 0;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
             found = 1;
@@ -448,7 +550,12 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
         return -1;
     }
 
+#if EMULATION == 1
     *keyMode = (int* )malloc(sizeof(currentElementInMap->mode));
+#else
+    *keyMode = (int* )kmalloc(sizeof(currentElementInMap->mode), GFP_KERNEL);
+#endif
+
     if(*keyMode == NULL) {
         return -1;
     }
@@ -463,7 +570,8 @@ int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     int found = 0;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
             found = 1;
@@ -487,7 +595,8 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t offset;
-    for(int i = 0; i < mapSize; i++) {
+    int i;
+    for(i = 0; i < mapSize; i++) {
         uint64_t currentId = currentElementInMap->id;
 
         if(currentId == id) {
@@ -526,7 +635,11 @@ int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
 
     int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey, keyLen);
 
+#if EMULATION == 1
     free(mappedPartition);
+#else
+    kfree(mappedPartition);
+#endif
 
     if(getKeyRet == -1) {
         return -1;
@@ -544,7 +657,13 @@ int removePrvKeyById(uint64_t id) {
 
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
     if(removeRet != 0) {
-        free(mappedPartition);
+        
+#if EMULATION == 1
+    free(mappedPartition);
+#else
+    kfree(mappedPartition);
+#endif
+
         return -1;
     }
 
@@ -556,30 +675,32 @@ int removePrvKeyById(uint64_t id) {
     if(numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
 
         uint64_t changedSize = removeFragmentation(partitionInfo);
+
+#if EMULATION == 1
         if(changedSize != 0) {
             int fdDef = open(partition, O_RDWR, 0);
             if(fdDef < 0) {
                 return -1;
             }
-#if EMULATION == 1
             ftruncate(fdDef, changedSize);
-#endif
             close(fdDef);
         }
+#endif
 
         partitionInfo->fileContentSize = changedSize;
         fileSize = changedSize;
     }
 
     if(numberOfKeys == 0) {
+#if EMULATION == 1
+
         int fdDef = open(partition, O_RDWR, 0);
         if(fdDef < 0) {
             return -1;
         }
-#if EMULATION == 1
         ftruncate(fdDef, metadataSize);
-#endif
         close(fdDef);
+#endif
         fileSize = metadataSize;
     }
 
@@ -604,7 +725,7 @@ SYSCALL_DEFINE0(get_current_key_num) {
 int writeKey(const char* key, const size_t keyLen, uint64_t** id) {
 #else
 SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, id) {
-    printk("Entering write key\n")
+    printk("Entering write key\n");
 #endif
 
     size_t allocationSize = sizeof(KeyNode);
@@ -612,7 +733,14 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
         allocationSize += keyLen - 4096;
     }
 
-    KeyNode* keyNode = (KeyNode* )malloc(allocationSize);
+    KeyNode* keyNode;
+
+#if EMULATION == 1
+    keyNode = (KeyNode* )malloc(allocationSize);
+#else
+    keyNode = (KeyNode* )kmalloc(allocationSize, GFP_KERNEL);
+#endif
+
     if(keyNode == NULL) {
         return -1;
     }
@@ -648,14 +776,25 @@ SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
         return -1;
     }
 
+#if EMULATION == 1
     *key = (char *)malloc(*keyLen);
+#else
+    *key = (char *)kmalloc(*keyLen, GFP_KERNEL);
+#endif
+
     if(*key == NULL) {
         return -1;
     }
 
     memcpy(*key, prvKey, *keyLen);
     memset(*key + *keyLen, 0x00, 1);
+
+#if EMULATION == 1
     free(prvKey);
+#else 
+    kfree(prvKey);
+#endif
+
     return 0;
 }
 
@@ -684,13 +823,17 @@ SYSCALL_DEFINE2(get_mode, const uint64_t*, id, int**, output) {
 
     size_t fileSize;
     void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if(mappedPartition == MAP_FAILED) {
+    if(mappedPartition == NULL) {
         return -1;
     }
 
     int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, *id, output);
 
+#if EMULATION == 1
     free(mappedPartition);
+#else
+    kfree(mappedPartition);
+#endif
 
     if(getKeyRet == -1) {
         return -1;
@@ -704,7 +847,7 @@ int setMode(const uint64_t* id, int* newMode) {
 SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
 #endif
 
-    if(SU_SECURITY == 1 && geteuid() != 0) {
+    if(SU_SECURITY == 1 && geteuid().val != 0) {
         return -1;
     }
 
@@ -720,7 +863,12 @@ SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
 
     int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
     if(getKeyRet == -1) {
-        free(mappedPartition);
+
+#if EMULATION == 1
+    free(mappedPartition);
+#else
+    kfree(mappedPartition);
+#endif
         return -1;
     }
 
