@@ -5,13 +5,18 @@
 #include "../include/KernelEmulation.h"
 
 size_t getFileSize(const char* filename);
-void* get_buffered_file(FILE* fp, size_t* filesize);
+void* get_buffered_file(char* filepath, size_t* filesize, size_t extra_size);
 int set_buffered_file(FILE* fp, char** buf, size_t bufsize);
 
 int set_buffered_file(FILE* fp, char** buf, size_t bufsize) {
     return fwrite(*buf , sizeof(char) , bufsize, fp);
 }
-void *get_buffered_file(FILE *fp, size_t* size) {
+void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
+
+    FILE* fp = fopen(filepath, "r");
+    if(fp < 0) {
+        return NULL;
+    }
 
     uint8_t* buf = NULL;
 
@@ -25,25 +30,31 @@ void *get_buffered_file(FILE *fp, size_t* size) {
     if (fseek(fp, 0L, SEEK_END) == 0) {
         bufsize = ftell(fp);
         if (bufsize == -1) {
+            fclose(fp);
             return NULL;
         }
 
+        bufsize += extra_size;
         source = (char* )(malloc(sizeof(char) * bufsize));
         if(source == NULL) {
+            fclose(fp);
             return NULL;
         }
 
         if (fseek(fp, 0L, SEEK_SET) != 0) {
+            fclose(fp);
             return NULL;
         }
 
         size_t newLen = fread(source, sizeof(char), bufsize, fp);
         if (ferror(fp) != 0) {
+            fclose(fp);
             return NULL;
         }
     }
 
-    *size = bufsize + 1;
+    *size = bufsize;
+    fclose(fp);
     return (void* )source;
 }
 
@@ -212,57 +223,15 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
         return -2;
     }
 
-    FILE* fdSize = fopen(partition, "r");
-    if(fdSize < 0) {
-        return -1;
-    }
-
-    size_t fileSize;
-    void* partitionStart = get_buffered_file(fdSize, &fileSize);
-    fclose(fdSize);
-
-    PartitionInfo* partitionInfo = (PartitionInfo* )partitionStart;
-    uint64_t usedFileSize = partitionInfo->fileContentSize;
-    free(partitionStart);
-
-    int fd;
-    int isSizeExtNeeded = fileSize < usedFileSize + keyNodeToAdd->keySize;
-    if(isSizeExtNeeded) {
-
-        fd = open(partition, O_RDWR, 0);
-        if(fd < 0) {
-            return -1;
-        }
-
-        fileSize = getFileSize(partition) + keyNodeToAdd->keySize;
-        ftruncate(fd, fileSize);
-        close(fd);
-
-        fd = open(partition, O_RDWR, 0);
-        if(fd < 0) {
-            return -1;
-        }
-    }
-
-    FILE* fdAdd = fopen(partition, "r");
-    if(fd < 0) {
-        return -1;
-    }
-
     size_t fileSizeAdd;
-    void* mappedPartition = get_buffered_file(fdAdd, &fileSizeAdd);
+    void* mappedPartition = get_buffered_file(partition, &fileSizeAdd, keyNodeToAdd->keySize);
     if(!mappedPartition) {
         return -1;
     }
 
-    fclose(fdAdd);
-
-    partitionStart = mappedPartition;
-    printPartition(partitionStart);
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
-    printPartition(partitionStart);
 
-    fdAdd = fopen(partition, "w");
+    FILE* fdAdd = fopen(partition, "w");
     if(fdAdd < 0) {
         return -1;
     }
@@ -499,20 +468,12 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 }
 
 int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
-//    size_t fileSize = getFileSize(partition);
-    //Open file
-    FILE* fd = fopen(partition, "r");
-    if(fd < 0) {
-        return -1;
-    }
 
     size_t fileSize;
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
     if(!mappedPartition) {
         return -1;
     }
-
-    fclose(fd);
 
     int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey, keyLen);
 
@@ -526,19 +487,12 @@ int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
 }
 
 int removePrvKeyById(uint64_t id) {
-    //Open file
-    FILE* fd = fopen(partition, "r");
-    if(fd < 0) {
-        return -1;
-    }
 
     size_t fileSize;
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
     if(mappedPartition == NULL) {
         return -1;
     }
-
-    fclose(fd);
 
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
     if(removeRet != 0) {
@@ -577,7 +531,7 @@ int removePrvKeyById(uint64_t id) {
         fileSize = metadataSize;
     }
 
-    fd = fopen(partition, "w");
+    FILE* fd = fopen(partition, "w");
     if(fd < 0) {
         return -1;
     }
@@ -640,22 +594,6 @@ int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
     return 0;
 }
 
-int get(const uint64_t* id, char** output) {
-    if(id == NULL || *id == 0) {
-        return -1;
-    }
-
-    char* prvKey = NULL;
-    uint64_t keyLen;
-    int getKeyRet = getPrvKeyById(*id, &prvKey, &keyLen);
-    if(getKeyRet != 0) {
-        return -1;
-    }
-
-    *output = prvKey;
-    return 0;
-}
-
 int removeKey(const uint64_t* id, const char* filepath) {
     return id == NULL || *id == 0 ? -1 : removePrvKeyById(*id);
 }
@@ -667,19 +605,13 @@ int getMode(const uint64_t* id, int** output) {
     }
 
     char* prvKey = NULL;
-    //Open file
-    FILE* fd = fopen(partition, "r");
-    if(fd < 0) {
-        return -1;
-    }
 
     size_t fileSize;
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
     if(mappedPartition == MAP_FAILED) {
         return -1;
     }
 
-    fclose(fd);
     int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, *id, output);
 
     free(mappedPartition);
@@ -701,19 +633,10 @@ int setMode(const uint64_t* id, int* newMode) {
     }
 
     size_t fileSize;
-    //Open file
-    FILE* fd = fopen(partition, "r");
-    if(fd < 0) {
-        return -1;
-    }
-
-    void* mappedPartition = get_buffered_file(fd, &fileSize);
+    void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
     if(mappedPartition == NULL) {
         return -1;
     }
-
-    fclose(fd);
-
 
     int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
     if(getKeyRet == -1) {
@@ -721,7 +644,7 @@ int setMode(const uint64_t* id, int* newMode) {
         return -1;
     }
 
-    fd = fopen(partition, "w");
+    FILE* fd = fopen(partition, "w");
     if(fd < 0) {
         free(mappedPartition);
         return -1;
