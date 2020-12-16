@@ -31,27 +31,28 @@ size_t set_buffered_file(char* partition, char** buf, size_t bufsize) {
     mm_segment_t fs;
     loff_t pos = 0;
 
-    printk("File open\n");
-    fp = filp_open(partition, O_RDWR, 0644);
-    if (IS_ERR(fp)) {
-            printk("Cannot open file\n");
-            return -1;
-    }
-
     printk("Next action: get fs\n");
     fs = get_fs();
     printk("Next action: set fs\n");
     set_fs(KERNEL_DS);
 
+    printk("File open\n");
+    fp = filp_open(partition, O_RDWR, 0644);
+    if (IS_ERR(fp)) {
+        printk("Cannot open file\n");
+        return -1;
+    }
+
     printk("Next action: kernel read\n");
-    size_t ret = kernel_read(fp, buf, bufsize, &pos);
+    printk("Buf size is: %zu bufsize\n", bufsize);
+    size_t ret = kernel_write(fp, *buf, bufsize, &pos);
 
     printk("Next action: file close\n");
     filp_close(fp, NULL);
-    printk("Next action: set fs\n");
-    set_fs(fs);
     printk("Next action: kfree on *buf\n");
     kfree(*buf);
+    printk("Next action: set fs\n");
+    set_fs(fs);
     printk("Exiting: Set buffered file\n");
     return ret;
 #endif
@@ -112,17 +113,17 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
     loff_t pos = 0;
     char *buf;
 
+    printk("Next action: getting fs\n");
+    fs = get_fs();
+    printk("Next action: setting fs\n");
+    set_fs(KERNEL_DS);
+
     printk("Opening partion\n");
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
         printk("Open file error!\n");
         return NULL;
     }
-
-    printk("Next action: getting fs\n");
-    fs = get_fs();
-    printk("Next action: setting fs\n");
-    set_fs(KERNEL_DS);
 
     printk("Next action: stat kmalloc\n");
     stat =(struct kstat *) kmalloc(sizeof(struct kstat), GFP_KERNEL);
@@ -144,15 +145,16 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
     }
 
     printk("Next action: kernel read\n");
-    kernel_read(fp, buf, *size, &pos);
+    size_t ret = (size_t)kernel_read(fp, buf, *size, &pos);
+    printk("Bytes read %zu : bytes wanted to be read : %zu\n", ret, *size);
 
     printk("Next action: filp_close\n");
     filp_close(fp, NULL);
-    printk("Next action: set_fs\n");
-    set_fs(fs);
     printk("Next action: kfree\n");
     kfree(stat);
-    printk("Entering get buffer file\n");
+    printk("Next action: set_fs\n");
+    set_fs(fs);
+    printk("Exiting get buffer file\n");
     return buf;
 #endif
 }
@@ -216,8 +218,15 @@ int initFileIfNotDefined() {
 
 #else
 
-    printk("Entering init file if not defined %c\n", partition);
+    printk("Entering init file if not defined %s\n", partition);
     struct file *fp;
+
+    mm_segment_t fs;
+    printk("Next action: getting fs\n");
+    fs = get_fs();
+    printk("Next action: setting fs\n");
+    set_fs(KERNEL_DS);
+
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
         printk("Open file error! - maybe does not exist\n");
@@ -231,6 +240,8 @@ int initFileIfNotDefined() {
     printk("Open file success\n");
     filp_close(fp, NULL);
     printk("File closed\n");
+    printk("Next action: set_fs\n");
+    set_fs(fs);
 
     printk("Partition info to be allocated\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )kmalloc(sizeof(PartitionInfo), GFP_KERNEL);
@@ -282,9 +293,9 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
 #else
-        printk("Malloc to be used\n");
+        // printk("Malloc to be used\n");
         MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
-        printk("Malloc ok\n");
+        // printk("Malloc ok\n");
 #endif
 
         if(!mapData) {
@@ -293,13 +304,12 @@ int initFileIfNotDefined() {
         mapData -> id = 0;
         mapData -> offset = 0;
         memcpy(mapPosition, mapData, sizeof(*mapData));
-        printk("Memcpy ok\n");
+        // printk("Memcpy ok\n");
         mapPosition = mapPosition + 1;
 #if EMULATION == 1
         free(mapData);
 #else
         kfree(mapData);
-        printk("Free ok\n");
 #endif
     }
 
@@ -307,6 +317,7 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
     free(partitionInfo);
 #else
+    printk("Map initialised!\n");
     kfree(partitionInfo);
     printk("Free ok\n");
 #endif
@@ -314,7 +325,7 @@ int initFileIfNotDefined() {
     size_t ret;
     printk("Set buffered file\n");
     ret = set_buffered_file(partition, (char** )&partitionStart, fileSize);
-    printk("After set\n");
+    printk("After set ret value is %zu\n", ret);
     if(ret != fileSize) {
         printk("Set failed\n");
         return 1;
