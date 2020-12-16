@@ -115,8 +115,8 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
     printk("Opening partion\n");
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
-            printk("Open file error!\n");
-            return NULL;
+        printk("Open file error!\n");
+        return NULL;
     }
 
     printk("Next action: getting fs\n");
@@ -216,12 +216,17 @@ int initFileIfNotDefined() {
 
 #else
 
-    printk("Entering init file if not defined\n");
+    printk("Entering init file if not defined %c\n", partition);
     struct file *fp;
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
-            printk("Open file error!\n");
+        printk("Open file error! - maybe does not exist\n");
+        fp = filp_open(partition, O_CREAT, 0644);
+
+        if(IS_ERR(fp)) {
+            printk("Open file unhandled error. Exiting\n");
             return 1;
+        }
     }
     printk("Open file success\n");
     filp_close(fp, NULL);
@@ -431,7 +436,11 @@ void printPartition(const void* mappedPartition) {
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
     printk("Entering add key node to partition\n");
-    initFileIfNotDefined();
+    if(initFileIfNotDefined() !=0) {
+        return -2;
+    }
+    printk("Partition initialised\n");
+
     if(data.numberOfKeys == MAX_KEY_NUM) {
         return -2;
     }
@@ -813,7 +822,9 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
 
 #if EMULATION == 1
     keyNode = (KeyNode* )malloc(allocationSize);
-#else
+#endif
+
+#if EMULATION == 0
     printk("Kernel space memory to be allocated\n");
     keyNode = (KeyNode* )kmalloc(allocationSize, GFP_KERNEL);
     printk("Kernel space memory maybe allocated\n");
@@ -825,7 +836,7 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
     }
 
     printk("Kernel space memory successfully allocated, %zu of bytes to be copied to keyNode\n", keyLen);
-    memcpy(keyNode->keyContent, key, keyLen);
+    copy_from_user(keyNode->keyContent, key, keyLen);
     printk("Memcpy successful");
     keyNode->keySize = keyLen;
 
@@ -867,7 +878,7 @@ SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
         return -1;
     }
 
-    memcpy(*key, prvKey, *keyLen);
+    copy_to_user(*key, prvKey, *keyLen);
     memset(*key + *keyLen, 0x00, 1);
 
 #if EMULATION == 1
