@@ -110,12 +110,7 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 
         bufsize += extra_size;
 
-#if EMULATION == 1
         source = (char* )(malloc(sizeof(char) * bufsize));
-#else
-        source = (char* )(kmalloc(sizeof(char) * bufsize), GFP_KERNEL);
-#endif
-
         if(source == NULL) {
             fclose(fp);
             return NULL;
@@ -200,6 +195,8 @@ uint64_t generate_random_id(void* mapped_partition){
 
     printk("Entering generate random id\n");
 
+    printk("Entering generate random id\n");
+
     int generateTrials = 10;
     partition_info* partion_metadata = (partition_info* )mapped_partition;
     uint64_t map_size = partion_metadata->map_size;
@@ -267,6 +264,9 @@ int initFileIfNotDefined() {
         set_fs(fs);
         return;
     }
+    printk("Open file success\n");
+    filp_close(fp, NULL);
+    printk("File closed\n");
 
     printk("Open file error! - maybe does not exist\n");
     fp = filp_open(partition, O_CREAT, 0644);
@@ -310,7 +310,9 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
     void* partitionStart = malloc(fileSize);
 #else
+    printk("New partition file to be allocated\n");
     void* partitionStart = kmalloc(fileSize, GFP_KERNEL);
+    printk("After allocation\n");
 #endif
 
     if(!partitionStart) {
@@ -337,7 +339,12 @@ int initFileIfNotDefined() {
         // printk("Malloc ok\n");
 #endif
 
+    printk("Memset ok\n");
+
     memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
+
+    printk("Memcpy ok\n");
+
     MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
     int i;
     for(i = 0; i < partitionInfo->mapSize; i++) {
@@ -345,7 +352,9 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
 #else
+        printk("Malloc to be used\n");
         MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
+        printk("Malloc ok\n");
 #endif
 
         if(!mapData) {
@@ -361,6 +370,7 @@ int initFileIfNotDefined() {
         free(mapData);
 #else
         kfree(mapData);
+        printk("Free ok\n");
 #endif
     }
 
