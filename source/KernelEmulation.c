@@ -26,24 +26,33 @@ size_t set_buffered_file(char* partition, char** buf, size_t bufsize) {
 
     return ret;
 #else
+    printk("Entering: Set buffered file\n");
     struct file *fp;
     mm_segment_t fs;
     loff_t pos = 0;
 
+    printk("File open\n");
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
             printk("Cannot open file\n");
             return -1;
     }
 
+    printk("Next action: get fs\n");
     fs = get_fs();
+    printk("Next action: set fs\n");
     set_fs(KERNEL_DS);
 
+    printk("Next action: kernel read\n");
     size_t ret = kernel_read(fp, buf, bufsize, &pos);
 
+    printk("Next action: file close\n");
     filp_close(fp, NULL);
+    printk("Next action: set fs\n");
     set_fs(fs);
+    printk("Next action: kfree on *buf\n");
     kfree(*buf);
+    printk("Exiting: Set buffered file\n");
     return ret;
 #endif
 }
@@ -73,12 +82,7 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
 
         bufsize += extra_size;
 
-#if EMULATION == 1
         source = (char* )(malloc(sizeof(char) * bufsize));
-#else
-        source = (char* )(kmalloc(sizeof(char) * bufsize), GFP_KERNEL);
-#endif
-
         if(source == NULL) {
             fclose(fp);
             return NULL;
@@ -100,46 +104,63 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
     fclose(fp);
     return (void* )source;
 #else
+    printk("Entering get buffer file\n");
+
     struct kstat *stat;
     struct file *fp;
     mm_segment_t fs;
     loff_t pos = 0;
     char *buf;
 
+    printk("Opening partion\n");
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
             printk("Open file error!\n");
             return NULL;
     }
 
+    printk("Next action: getting fs\n");
     fs = get_fs();
+    printk("Next action: setting fs\n");
     set_fs(KERNEL_DS);
 
+    printk("Next action: stat kmalloc\n");
     stat =(struct kstat *) kmalloc(sizeof(struct kstat), GFP_KERNEL);
-    if (!stat)
-            return ERR_PTR(-ENOMEM);
+    if (!stat) {
+        printk("Kmalloc failed\n");
+        return ERR_PTR(-ENOMEM);
+    }
 
+    printk("Next action: vfs_stat\n");
     vfs_stat(partition, stat);
     *size = stat->size;
 
+    printk("Next action: buffer\n");
     buf = kmalloc(*size, GFP_KERNEL);
     if (!buf) {
-            kfree(stat);
-            printk("malloc input buf error!\n");
-            NULL;
+        kfree(stat);
+        printk("malloc input buf error!\n");
+        NULL;
     }
 
+    printk("Next action: kernel read\n");
     kernel_read(fp, buf, *size, &pos);
 
+    printk("Next action: filp_close\n");
     filp_close(fp, NULL);
+    printk("Next action: set_fs\n");
     set_fs(fs);
+    printk("Next action: kfree\n");
     kfree(stat);
+    printk("Entering get buffer file\n");
     return buf;
 #endif
 }
 
 // private
 uint64_t generateRandomId(void* mappedPartition){
+
+    printk("Entering generate random id\n");
 
     int generateTrials = 10;
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
@@ -153,6 +174,7 @@ uint64_t generateRandomId(void* mappedPartition){
         newId = 0;
 	int i;
         for (i=0; i<64; i++) {
+            printk("Next action: get_random_bytes\n");
             get_random_bytes(&n, sizeof(n));
             newId = newId*2 + n%2;
         }
@@ -172,11 +194,11 @@ uint64_t generateRandomId(void* mappedPartition){
         if(!foundSameId) {
             break;
         }
+
+        printk("NEXT TRIAL!\n");
     }
 
     return newId;
-    // assertion implies that there is an error with random function
-    assert(generateTrials == 0);
 }
 int initFileIfNotDefined() {
 #if EMULATION == 1
@@ -193,15 +215,22 @@ int initFileIfNotDefined() {
     }
 
 #else
+
+    printk("Entering init file if not defined\n");
     struct file *fp;
     fp = filp_open(partition, O_RDWR, 0644);
     if (IS_ERR(fp)) {
             printk("Open file error!\n");
             return 1;
     }
+    printk("Open file success\n");
+    filp_close(fp, NULL);
+    printk("File closed\n");
 
+    printk("Partition info to be allocated\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )kmalloc(sizeof(PartitionInfo), GFP_KERNEL);
     if(!partitionInfo) {
+        printk("Allocation failed, exiting\n");
         return 1;
     }
 
@@ -212,20 +241,35 @@ int initFileIfNotDefined() {
     partitionInfo->fileContentSize = DEFAULT_MAP_SIZE * sizeof(MapNode) + sizeof(PartitionInfo);
 
     uint64_t fileSize = partitionInfo->fileContentSize;
+
+#if EMULATION == 1
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
+#else
+    printk("Memory to be copied to data field\n");
+    memcpy(&data, partitionInfo, sizeof(PartitionInfo));
+    printk("Copy to data successful\n");
+#endif
 
 #if EMULATION == 1
     void* partitionStart = malloc(fileSize);
 #else
+    printk("New partition file to be allocated\n");
     void* partitionStart = kmalloc(fileSize, GFP_KERNEL);
+    printk("After allocation\n");
 #endif
 
     if(!partitionStart) {
+        printk("Allocation failed\n");
         return 1;
     }
     memset(partitionStart, 0x00, fileSize);
 
+    printk("Memset ok\n");
+
     memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
+
+    printk("Memcpy ok\n");
+
     MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
     int i;
     for(i = 0; i < partitionInfo->mapSize; i++) {
@@ -233,7 +277,9 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
 #else
+        printk("Malloc to be used\n");
         MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
+        printk("Malloc ok\n");
 #endif
 
         if(!mapData) {
@@ -242,11 +288,13 @@ int initFileIfNotDefined() {
         mapData -> id = 0;
         mapData -> offset = 0;
         memcpy(mapPosition, mapData, sizeof(*mapData));
+        printk("Memcpy ok\n");
         mapPosition = mapPosition + 1;
 #if EMULATION == 1
         free(mapData);
 #else
         kfree(mapData);
+        printk("Free ok\n");
 #endif
     }
 
@@ -255,13 +303,22 @@ int initFileIfNotDefined() {
     free(partitionInfo);
 #else
     kfree(partitionInfo);
+    printk("Free ok\n");
 #endif
 
     size_t ret;
+    printk("Set buffered file\n");
     ret = set_buffered_file(partition, (char** )&partitionStart, fileSize);
+    printk("After set\n");
     if(ret != fileSize) {
+        printk("Set failed\n");
         return 1;
     }
+
+#if EMULATION == 1
+    printk("Exiting init file if not defined\n");
+#endif
+
     return 0;
 }
 uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
@@ -373,26 +430,36 @@ void printPartition(const void* mappedPartition) {
 }
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
+    printk("Entering add key node to partition\n");
     initFileIfNotDefined();
     if(data.numberOfKeys == MAX_KEY_NUM) {
         return -2;
     }
 
     size_t fileSizeAdd;
+    printk("Loading file to buffer\n");
     void* mappedPartition = get_buffered_file(partition, &fileSizeAdd, keyNodeToAdd->keySize);
+    printk("File loaded to buffer\n");
     if(!mappedPartition) {
         return -1;
     }
 
+    printk("Adding key to partition\n");
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
+    printk("Key to partition added\n");
 
+    printk("Saving buffer\n");
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSizeAdd) != fileSizeAdd) {
+        printk("Error in saving to buffer\n");
         return -1;
     }
 
+    printk("Exiting add key node to partition\n");
     return addRet;
 }
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id) {
+
+    printk("Entering add key node to partition\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
@@ -401,11 +468,15 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     uint64_t nextId;
     uint64_t prevOffset = currentElementInMap->offset;
     int i;
+
+    printk("Moving to first map node succeeded\n");
     for(i = 0; i < mapSize; i++) {
         uint64_t offset = currentElementInMap->offset;
 
         if(offset == 0) {
+            printk("Offset is zero\n");
             nextId = generateRandomId(mappedPartition);
+            printk("Next id is %llu\n", nextId);
 
 #if EMULATION == 1
             *id = (uint64_t* )malloc(sizeof(*id));
@@ -436,7 +507,9 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     elementDataToUpdate->offset = offsetToAdd;
     elementDataToUpdate->id = nextId;
     elementDataToUpdate->size = keyNodeToAdd->keySize;
+    printk("Next action: get uid\n");
     elementDataToUpdate->uid = getuid();
+    printk("Next action: get gid\n");
     elementDataToUpdate->gid = getgid();
     elementDataToUpdate->mode = 777;
 
@@ -472,6 +545,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     kfree(keyNodeToAdd);
 #endif
 
+    printk("Exiting add key Node\n");
     return 0;
 }
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen) {
@@ -729,8 +803,10 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
 #endif
 
     size_t allocationSize = sizeof(KeyNode);
+    printk("AllocationSize (size of key node is) %zu\n", allocationSize);
     if(keyLen > 4096) {
         allocationSize += keyLen - 4096;
+        printk("AllocationSize extended to %zu\n", allocationSize);
     }
 
     KeyNode* keyNode;
@@ -738,14 +814,19 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
 #if EMULATION == 1
     keyNode = (KeyNode* )malloc(allocationSize);
 #else
+    printk("Kernel space memory to be allocated\n");
     keyNode = (KeyNode* )kmalloc(allocationSize, GFP_KERNEL);
+    printk("Kernel space memory maybe allocated\n");
 #endif
 
     if(keyNode == NULL) {
+        printk("Kernel space memory allocation failed\n");
         return -1;
     }
 
+    printk("Kernel space memory successfully allocated, %zu of bytes to be copied to keyNode\n", keyLen);
     memcpy(keyNode->keyContent, key, keyLen);
+    printk("Memcpy successful");
     keyNode->keySize = keyLen;
 
     int ret = addKeyNodeToPartition(keyNode, id);
