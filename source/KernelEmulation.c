@@ -352,9 +352,9 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
         MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
 #else
-        printk("Malloc to be used\n");
+        // printk("Malloc to be used\n");
         MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
-        printk("Malloc ok\n");
+        // printk("Malloc ok\n");
 #endif
 
         if(!mapData) {
@@ -370,7 +370,6 @@ int initFileIfNotDefined() {
         free(mapData);
 #else
         kfree(mapData);
-        printk("Free ok\n");
 #endif
     }
 
