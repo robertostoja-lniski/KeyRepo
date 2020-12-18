@@ -35,7 +35,6 @@ size_t set_buffered_file(const char* partition, char** buf, size_t bufsize);
 
 #endif
 
-
 size_t set_buffered_file(const char* partition, char** buf, size_t bufsize) {
 #if EMULATION == 1
     FILE* fd = fopen(partition, "w");
@@ -203,7 +202,6 @@ uint64_t generate_random_id(void* mapped_partition){
 
     int foundSameId = 0;
     uint64_t newId;
-    int n;
     while(generateTrials--) {
 
         get_random_bytes(&newId, sizeof(newId));
@@ -652,7 +650,7 @@ int add_key_by_partition_pointer(void* mapped_partition, char* __user key, uint6
 #if EMULATION == 1
     new_content->mode = 600;
 #else
-    new_content->mode = 777;
+    new_content->mode = 600;
 #endif
 
     printk("Element to update has values of:\n");
