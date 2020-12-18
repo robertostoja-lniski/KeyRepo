@@ -1,5 +1,5 @@
 
-#define EMULATION 0
+#define EMULATION 1
 
 #if EMULATION == 1
     #include "../include/KernelEmulation.h"
@@ -10,6 +10,32 @@
 // partition file IO
 void* get_buffered_file(char* filepath, size_t* filesize, size_t extra_size);
 size_t set_buffered_file(char* partition, char** buf, size_t bufsize);
+
+// dummy compilation fix
+#if EMULATION == 1
+    void printk(const char* dummy, ...) {
+        return;
+    }
+
+    void get_random_bytes(int* n, size_t size) {
+        assert(size == 8);
+        uint64_t r = 0;
+        for (int i=0; i<64; i++) {
+            r = r*2 + rand()%2;
+        }
+        *n = r;
+    }
+
+    void copy_to_user(void* dest, const void* src, size_t size) {
+        memcpy(dest, src, size);
+    }
+
+    void copy_from_user(void* dest, const void* src, size_t size) {
+        memcpy(dest, src, size);
+    }
+
+#endif
+
 
 size_t set_buffered_file(char* partition, char** buf, size_t bufsize) {
 #if EMULATION == 1
@@ -170,15 +196,12 @@ uint64_t generateRandomId(void* mappedPartition){
 
     int foundSameId = 0;
     uint64_t newId;
-    int n;
     while(generateTrials--) {
 
         newId = 0;
-	int i;
+	    int i;
         for (i=0; i<64; i++) {
-            printk("Next action: get_random_bytes\n");
-            get_random_bytes(&n, sizeof(n));
-            newId = newId*2 + n%2;
+            get_random_bytes(&newId, sizeof(newId));
         }
 
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
@@ -208,7 +231,7 @@ int initFileIfNotDefined() {
     if ((file = fopen(partition, "r")))
     {
         fclose(file);
-        return 1;
+        return 0;
     }
 
     PartitionInfo* partitionInfo = (PartitionInfo* )malloc(sizeof(PartitionInfo));
@@ -531,7 +554,12 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     elementDataToUpdate->uid = getuid();
     printk("Next action: get gid\n");
     elementDataToUpdate->gid = getgid();
+
+#if EMULATION == 1
+    elementDataToUpdate->mode = 600;
+#else
     elementDataToUpdate->mode = 777;
+#endif
 
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
 
@@ -847,7 +875,9 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
     }
 
     printk("Kernel space memory successfully allocated, %zu of bytes to be copied to keyNode\n", keyLen);
-    copy_from_user(keyNode->keyContent, key, keyLen);
+
+    memcpy(keyNode->keyContent, key, keyLen);
+
     printk("Memcpy successful");
     keyNode->keySize = keyLen;
 
@@ -889,7 +919,7 @@ SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
         return -1;
     }
 
-    copy_to_user(*key, prvKey, *keyLen);
+    memcpy(*key, prvKey, *keyLen);
     memset(*key + *keyLen, 0x00, 1);
 
 #if EMULATION == 1
@@ -946,13 +976,15 @@ SYSCALL_DEFINE2(get_mode, const uint64_t*, id, int**, output) {
 
 #if EMULATION == 1
 int setMode(const uint64_t* id, int* newMode) {
-#else
-SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
-#endif
-
-    if(SU_SECURITY == 1 && geteuid().val != 0) {
+    if(SU_SECURITY == 1 && geteuid() != 0) {
         return -1;
     }
+#else
+SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
+     if(SU_SECURITY == 1 && geteuid().val != 0) {
+        return -1;
+    }
+#endif
 
     if(id == NULL || *id == 0) {
         return -1;
