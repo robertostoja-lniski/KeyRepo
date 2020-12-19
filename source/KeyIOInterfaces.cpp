@@ -105,7 +105,7 @@ void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::stri
     }
 }
 void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
-    uint64_t* id = nullptr;
+    uint64_t id;
 
     BIO *bio = BIO_new(BIO_s_mem());
     if(!bio) {
@@ -129,28 +129,20 @@ void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::str
     auto result = writeKey(pem_key, keylen, &id);
 
     if(result == -1) {
-        free(id);
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
     if(result == -2) {
-        free(id);
         throw std::runtime_error("KeyIOInterface: Partition full");
-    }
-
-    if(id == nullptr) {
-        free(id);
-        throw std::runtime_error("Unhandled Error!");
     }
 
     throwIfOverwriteForbidden(filepath, overwrite);
 
     std::ofstream os;
     os.open(filepath);
-    os << *id;
+    os << id;
     os.close();
 
-    free(id);
 }
 void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, bool overwrite) {
 
@@ -197,11 +189,20 @@ std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyI
     iss >> id;
 
     uint64_t keyLen;
-    auto ret = readKey(&id, &prvKey, &keyLen);
+    auto getSizeRet = getKeySize(&id, &keyLen);
+    if(getSizeRet !=0 ) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
+    }
+
+    uint64_t keyLenLegacy;
+    auto ret = readKey(&id, &prvKey, &keyLenLegacy);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
+    if(keyLen != keyLenLegacy) {
+        throw std::runtime_error("Unhandled error: new API NOT STABLE");
+    }
     auto keyStr = std::string(prvKey);
     free(prvKey);
     return keyStr;
