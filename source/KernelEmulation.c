@@ -160,7 +160,9 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 
     printk("Next action: vfs_stat\n");
     vfs_stat(partition, stat);
-    *size = stat->size;
+    *size = stat->size + extra_size;
+
+    printk("File size is %zu\n", *size);
 
     printk("File size is %zu\n", *size);
 
@@ -524,6 +526,8 @@ int add_key_to_partition(char* __user key, uint64_t __user *id) {
 #endif
 
     printk("Entering add key node to partition\n");
+    printk("Key val is %s\n", keyNodeToAdd->keyContent);
+    printk("Key len is %zu\n", keyNodeToAdd->keySize);
     if(initFileIfNotDefined() != 0) {
         return -2;
     }
@@ -666,6 +670,12 @@ int add_key_by_partition_pointer(void* mapped_partition, char* __user key, uint6
     printk("size: %zu\n", current_elem_in_map->size);
 
 
+    printk("Copied element to update has values of:\n");
+    printk("offset %zu:\n", currentElementInMap->offset);
+    printk("id: %zu\n", currentElementInMap->id);
+    printk("size: %zu\n", currentElementInMap->size);
+
+
 #if EMULATION == 1
     free(new_content);
 #else 
@@ -674,6 +684,12 @@ int add_key_by_partition_pointer(void* mapped_partition, char* __user key, uint6
 
 
     uint8_t *key_address = (uint8_t *)partion_metadata + offsetToAdd;
+
+    printk("Copied key in partiton is \n");
+    printk("0 %c\n", keyPlaceToAdd->data[0]);
+    printk("1 %c\n", keyPlaceToAdd->data[1]);
+    printk("2 %c\n", keyPlaceToAdd->data[2]);
+    printk("8 %c\n", keyPlaceToAdd->data[8]);
 
 #if EMULATION == 1
     memcpy(key_address, key, key_len);
@@ -750,6 +766,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
         current_elem_in_map = current_elem_in_map + 1;
     }
     if(!found) {
+        printk("Not found\n");
         return -1;
     }
     printk("Found\n");
@@ -759,6 +776,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
         printk("Allocation size: %zu is shortened to key len of %zu\n", allocation_size, key_len);
         allocation_size = key_len;
     }
+
 
 #if EMULATION == 1
     memcpy(keyVal, (uint8_t *)partion_metadata + offset, allocation_size);
@@ -1066,7 +1084,6 @@ int remove_private_key_by_id(uint64_t id) {
             file_size = metadataSize;
         }
 #endif
-
 #if EMULATION == 1
     }
 #endif
@@ -1129,6 +1146,8 @@ SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, key_len, uint
 #if EMULATION == 0
     printk("Exiting write key\n");
 #endif
+
+    kfree(keyNode);
 
     return 0;
 }

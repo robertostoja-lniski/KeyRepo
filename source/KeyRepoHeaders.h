@@ -27,11 +27,8 @@
 #define DEFAULT_MAP_SIZE 128
 #define DEFAULT_NUMBER_OF_KEYS DEFAULT_MAP_SIZE
 #define MAX_KEY_NUM DEFAULT_MAP_SIZE
-<<<<<<< HEAD
 #define KEY_PARTITION_NODE_INITIAL_SIZE 4096 + 128
 #define MAX_PARTITION_SIZE MAX_KEY_NUM * 4096
-=======
->>>>>>> Compilation fixes
 #define REDUCTION_PARAM 2
 #define READ_MASK	4
 #define WRITE_MASK	2
@@ -41,35 +38,23 @@ static kuid_t getuid(void);
 static kgid_t getgid(void);
 static kuid_t geteuid(void);
 
-struct MapNode {
+struct map_node {
     uint64_t id;
     uint64_t offset;
     uint64_t size;
     uint32_t mode;
-    kuid_t   uid;
-    kgid_t   gid;
+    int      uid;
+    int      gid;
 };
-typedef struct MapNode MapNode;
+typedef struct map_node map_node;
 
-struct PartitionInfo {
-    uint64_t numberOfKeys;
-    uint64_t fileContentSize;
-    uint64_t mapSize;
+struct partition_info {
+    uint64_t number_of_keys;
+    uint64_t file_content_size;
+    uint64_t free_slot;
+    uint64_t map_size;
 };
-typedef struct PartitionInfo PartitionInfo;
-
-struct KeyNode {
-    uint32_t keySize;
-    char keyContent[4096];
-};
-typedef struct KeyNode KeyNode;
-
-struct KeyPartitionNode {
-    char data[4096];
-};
-typedef struct KeyPartitionNode KeyPartitionNode;
-
-static PartitionInfo data;
+typedef struct partition_info partition_info;
 const static char* partition = ".keyPartition";
 
 int canRead(int mode, kuid_t uid, kgid_t gid);
