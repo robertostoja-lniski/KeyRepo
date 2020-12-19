@@ -1,4 +1,3 @@
-
 #define EMULATION 1
 
 #if EMULATION == 1
@@ -63,7 +62,7 @@ size_t set_buffered_file(char* partition, char** buf, size_t bufsize) {
     set_fs(KERNEL_DS);
 
     printk("File open\n");
-    fp = filp_open(partition, O_RDWR, 0644);
+    fp = filp_open(partition, O_RDWR | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
         printk("Cannot open file\n");
         return -1;
@@ -163,8 +162,12 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
     vfs_stat(partition, stat);
     *size = stat->size;
 
+    printk("File size is %zu\n", *size);
+
     printk("Next action: buffer\n");
-    buf = kmalloc(*size, GFP_KERNEL);
+    printk("*size is %zu\n", *size);
+    printk("extra is %zu\n", extra_size);
+    buf = kmalloc(*size + extra_size, GFP_KERNEL);
     if (!buf) {
         kfree(stat);
         printk("malloc input buf error!\n");
@@ -172,8 +175,8 @@ void *get_buffered_file(char* filepath, size_t* size, size_t extra_size) {
     }
 
     printk("Next action: kernel read\n");
-    size_t ret = (size_t)kernel_read(fp, buf, *size, &pos);
-    printk("Bytes read %zu : bytes wanted to be read : %zu\n", ret, *size);
+    size_t ret = (size_t)kernel_read(fp, buf, *size + extra_size, &pos);
+    printk("Bytes read %zu : bytes wanted to be read : %zu\n", ret, *size + extra_size);
 
     printk("Next action: filp_close\n");
     filp_close(fp, NULL);
@@ -207,10 +210,10 @@ uint64_t generateRandomId(void* mappedPartition){
         int i;
         for(i = 0; i < mapSize; i++) {
             id = currentElementInMap->id;
-            printk("Tested id is: %zu\n", id);
             // 0 and 1 for error codes
             if(id == newId || id == 1) {
                 foundSameId = 1;
+                printk("Matched tested id is: %zu\n", id);
                 break;
             }
 
@@ -252,15 +255,21 @@ int initFileIfNotDefined() {
     set_fs(KERNEL_DS);
 
     fp = filp_open(partition, O_RDWR, 0644);
-    if (IS_ERR(fp)) {
-        printk("Open file error! - maybe does not exist\n");
-        fp = filp_open(partition, O_CREAT, 0644);
-
-        if(IS_ERR(fp)) {
-            printk("Open file unhandled error. Exiting\n");
-            return 1;
-        }
+    if (!IS_ERR(fp)) {
+        filp_close(fp, NULL);
+        set_fs(fs);
+        return;
     }
+
+    printk("Open file error! - maybe does not exist\n");
+    fp = filp_open(partition, O_CREAT, 0644);
+
+    if(IS_ERR(fp)) {
+        printk("Open file for create unhandled error. Exiting\n");
+        set_fs(fs);
+        return 1;
+    }
+
     printk("Open file success\n");
     filp_close(fp, NULL);
     printk("File closed\n");
@@ -360,10 +369,10 @@ int initFileIfNotDefined() {
     return 0;
 }
 uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
+    printk("Entering: remove fragmentation\n");
 
     // create new map
-
-#if EMULATION == 1 
+#if EMULATION == 1
     MapNode* tmpMap = (MapNode* )malloc(sizeof(MapNode) * partitionInfo->numberOfKeys);
 #else
     MapNode* tmpMap = (MapNode* )kmalloc(sizeof(MapNode) * partitionInfo->numberOfKeys, GFP_KERNEL);
@@ -392,8 +401,11 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
         kuid_t uid = currentElementInMap->uid;
         kgid_t gid = currentElementInMap->gid;
 #endif
+        if(id == 0 && offset != 0) {
+            offset = 0;
+        }
 
-        if(offset != 0) {
+        if(id != 0) {
 
 #if EMULATION == 1
             uint8_t* keyContent = (uint8_t* )malloc(size);
@@ -407,8 +419,11 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
                 return 0;
             }
 
+            printk("Next action: memcpy (from kernel to kernel)\n");
             memcpy(keyContent, ((uint8_t* )partitionInfo + offset), size);
+            printk("Next action: memcpy (from kernel to kernel)\n");
             memcpy(((uint8_t* )partitionInfo + changedOffset), keyContent, size);
+            printk("Memcpy x2 done!\n");
 
 #if EMULATION == 1
             free(keyContent);
@@ -424,15 +439,17 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
             tmpMap[tmpMapIndex].gid = gid;
 
             changedOffset += size;
-//            changedOffset += changedOffset % NODE_SIZE;
             tmpMapIndex++;
         }
         currentElementInMap = currentElementInMap + 1;
     }
 
     currentElementInMap = (MapNode* )(partitionInfo + 1);
+    printk("Next action: memcpy (from kernel to kernel)\n");
     memcpy(currentElementInMap, tmpMap, sizeof(MapNode) * partitionInfo->numberOfKeys);
+    printk("Next action: Memset - zeros in rest of bytes\n");
     memset(currentElementInMap + partitionInfo->numberOfKeys, 0x00, sizeof(MapNode) * (MAX_KEY_NUM - partitionInfo->numberOfKeys));
+    printk("Memset and memcpy done!\n");
 
 #if EMULATION == 1
     free(tmpMap);
@@ -440,6 +457,7 @@ uint64_t removeFragmentation(PartitionInfo* partitionInfo) {
     kfree(tmpMap);
 #endif
 
+    printk("Exiting: remove fragmentation\n");
     return changedOffset;
 }
 void printPartition(const void* mappedPartition) {
@@ -466,7 +484,12 @@ void printPartition(const void* mappedPartition) {
     }
 
 }
-int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
+
+#if EMULATION == 1
+int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t *id) {
+#else
+int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t __user *id) {
+#endif
 
     printk("Entering add key node to partition\n");
     if(initFileIfNotDefined() != 0) {
@@ -483,7 +506,7 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
     printk("Loading file to buffer\n");
     void* mappedPartition = get_buffered_file(partition, &fileSizeAdd, keyNodeToAdd->keySize);
     printk("File loaded to buffer\n");
-    if(!mappedPartition) {
+    if(!mappedPartition || fileSizeAdd == 0) {
         return -1;
     }
 
@@ -491,7 +514,8 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
     printk("Key to partition added\n");
 
-    printk("Saving buffer\n");
+    printk("Saving buffer with size %zu\n", fileSizeAdd);
+    printk("And extra size: %zu\n", keyNodeToAdd->keySize);
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSizeAdd) != fileSizeAdd) {
         printk("Error in saving to buffer\n");
         return -1;
@@ -500,57 +524,55 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
     printk("Exiting add key node to partition\n");
     return addRet;
 }
-int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id) {
+#if EMULATION == 1
+int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t *id) {
+#else
+int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t __user *id) {
+#endif
 
     printk("Entering add key node to partition\n");
+    printk("Key value is: %s\n", keyNodeToAdd->keyContent);
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
     uint64_t mapSize = partitionInfo->mapSize;
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t nextId;
-    uint64_t prevOffset = currentElementInMap->offset;
     int i;
 
     printk("Moving to first map node succeeded\n");
     for(i = 0; i < mapSize; i++) {
-        uint64_t offset = currentElementInMap->offset;
+        uint64_t currentId = currentElementInMap->id;
 
-        if(offset == 0) {
-            printk("Offset is zero\n");
+        if (currentId == 0) {
+            printk("Id is\n");
             nextId = generateRandomId(mappedPartition);
-            printk("Next id is %llu\n", nextId);
 
-#if EMULATION == 1
-            *id = (uint64_t* )malloc(sizeof(*id));
-            if(!*id) {
-                printk("Kmalloc to user id failed\n");
-                return -2;
+            // optimised storage of keys shorter than 4096
+            if (keyNodeToAdd->keySize <= currentElementInMap->size) {
+
+                // if not first key in this slot
+                if (currentElementInMap->offset != 0) {
+                    offsetToAdd = currentElementInMap->offset;
+                }
             }
-#else
-
-            printk("Ommiting kernel -> user allocation\n", nextId);
-            // *id = (uint64_t* )kmalloc(sizeof(*id), GFP_USER);
-            // printk("User allocation done\n");
-#endif
-
-            
-            
 #if EMULATION == 1
-            **id = nextId;
+            // memcpy is to make emulation as close to final coden, which uses copy_to_user
+            memcpy(id, &nextId, sizeof(nextId));
 #else
-            printk("Assigning id\n");
-            copy_to_user(*id, &nextId, sizeof(nextId));
+            printk("Assigning NEW CHANGE id\n");
+            copy_to_user(id, &nextId, sizeof(nextId));
+            printk("Copied and exiting map iteration.\n");
 #endif
             break;
         }
         currentElementInMap = currentElementInMap + 1;
-        prevOffset = offset;
     }
 
 #if EMULATION == 1
     MapNode* elementDataToUpdate = (MapNode* )malloc(sizeof(MapNode));
 #else
+    printk("Allocation of map node to be updated\n");
     MapNode* elementDataToUpdate = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
 #endif
 
@@ -572,7 +594,18 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     elementDataToUpdate->mode = 777;
 #endif
 
+    printk("Element to update has values of:\n");
+    printk("offset %zu:\n", elementDataToUpdate->offset);
+    printk("id: %zu\n", elementDataToUpdate->id);
+    printk("size: %zu\n", elementDataToUpdate->size);
+
     memcpy(currentElementInMap, elementDataToUpdate, sizeof(MapNode));
+
+    printk("Copied element to update has values of:\n");
+    printk("offset %zu:\n", currentElementInMap->offset);
+    printk("id: %zu\n", currentElementInMap->id);
+    printk("size: %zu\n", currentElementInMap->size);
+
 
 #if EMULATION == 1
     free(elementDataToUpdate);
@@ -583,6 +616,12 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
     memcpy(keyPlaceToAdd, keyNodeToAdd->keyContent, keyNodeToAdd->keySize);
+
+    printk("Copied key in partiton is \n");
+    printk("0 %c\n", keyPlaceToAdd->data[0]);
+    printk("1 %c\n", keyPlaceToAdd->data[1]);
+    printk("2 %c\n", keyPlaceToAdd->data[2]);
+    printk("8 %c\n", keyPlaceToAdd->data[8]);
 
 #if EMULATION == 1
     PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
@@ -607,8 +646,9 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     printk("Exiting add key Node\n");
     return 0;
 }
-int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen) {
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal, uint64_t keyLen) {
 
+    printk("Entering: get key val by pp\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
 
@@ -620,9 +660,14 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
 
+            printk("Read rights to be checked");
             if(!canRead(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
                 return -2;
             }
+
+            printk("ID FOUND: %zu\n", currentId);
+            printk("SIZE FOUND: %zu\n", currentElementInMap->size);
+            printk("OFFSET FOUND: %zu\n", currentElementInMap->offset);
 
             offset = currentElementInMap->offset;
             found = 1;
@@ -633,32 +678,57 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     if(!found) {
         return -1;
     }
+    printk("Found\n");
 //        std::cout << "offset is " << offset << std::endl;
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
-    size_t keySize = strlen(keyPlaceToAdd->data);
+    printk("Key value from place to add is %s\n", keyPlaceToAdd->data);
+    char tmp[10];
+    tmp[9] = NULL;
+
+    memcpy(tmp, keyPlaceToAdd->data, 9);
+    printk("TMP CHECK ! ! ! %s\n", tmp);
 
     uint64_t size = currentElementInMap->size;
-    *keyLen = size;
+    printk("Legacy assignment removed - size is %zu\n", size);
 
     size_t allocationSize = 0;
     if(size > 4096) {
-        allocationSize = size + 1;
+        allocationSize = size;
     } else {
-        allocationSize = sizeof(KeyPartitionNode) + 1;
+        printk("Assigning to allocation size %zu + 1\n", sizeof(KeyPartitionNode));
+        allocationSize = sizeof(KeyPartitionNode);
+    }
+
+    if(keyLen < allocationSize) {
+        printk("Allocation size: %zu is shortened to key len of %zu\n", allocationSize, keyLen);
+        allocationSize = keyLen;
     }
 
 #if EMULATION == 1
-    *keyVal = (KeyPartitionNode* )malloc(allocationSize);
+    memcpy(keyVal, keyPlaceToAdd->data, allocationSize);
+    memset(keyVal + allocationSize, 0x00, sizeof(*keyVal));
 #else
-    *keyVal = (KeyPartitionNode* )kmalloc(allocationSize, GFP_KERNEL);
+    mm_segment_t fs;
+    printk("Next action: get fs\n");
+    fs = get_fs();
+    printk("Next action: set fs\n");
+    set_fs(KERNEL_DS);
+    
+    printk("cpy to usr\n");
+    copy_to_user(keyVal, keyPlaceToAdd->data, allocationSize);
+    char dummy = NULL;
+    copy_to_user(keyVal + allocationSize, &dummy, sizeof(dummy));
+    printk("Copied key is %s\n", keyPlaceToAdd->data);
+
+    set_fs(fs);
 #endif
 
-    memset((*keyVal)->data, 0x00, allocationSize);
-    memcpy((*keyVal)->data, keyPlaceToAdd, size);
+    printk("Exiting: CHANGED get key val by pp");
     return 0;
 }
 int getKeySizeByPartitionPointer(void* mappedPartition, uint64_t id, uint64_t* keyLen) {
 
+    printk("Entering: get key size by pp\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
 
@@ -670,11 +740,11 @@ int getKeySizeByPartitionPointer(void* mappedPartition, uint64_t id, uint64_t* k
         uint64_t currentId = currentElementInMap->id;
         if(currentId == id) {
 
+            printk("Read rights to be checked\n");
             if(!canRead(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
                 return -2;
             }
 
-            offset = currentElementInMap->offset;
             found = 1;
             break;
         }
@@ -689,11 +759,15 @@ int getKeySizeByPartitionPointer(void* mappedPartition, uint64_t id, uint64_t* k
 #if EMULATION == 1
     memcpy(keyLen, &size, sizeof(*keyLen));
 #else
+    printk("Copying to user keyLen\n");
     copy_to_user(keyLen, &size, sizeof(*keyLen));
+    printk("Exiting: get key size by pp\n");
 #endif
     return 0;
 }
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMode) {
+
+    printk("Entering: get key mode by pp\n");
 
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
@@ -726,10 +800,12 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
     }
     **keyMode = currentElementInMap->mode;
 
+    printk("Exiting: get key mode by pp\n");
     return 0;
 }
 int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode) {
 
+    printk("Entering: set key mode by pp\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
 
@@ -750,11 +826,12 @@ int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int keyMode
     }
 
     currentElementInMap->mode = keyMode;
-
+    printk("Exiting: set key mode by pp\n");
     return 0;
 }
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
+    printk("Entering: key val by pp\n");
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t mapSize = partitionInfo->mapSize;
 
@@ -766,13 +843,12 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 
         if(currentId == id) {
 
+            printk("Checking write rights\n");
             if(!canWrite(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
                 return -2;
             }
 
             offset = currentElementInMap->offset;
-            currentElementInMap->offset = 0;
-
             KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
             uint64_t sizeToRemove = currentElementInMap->size;
             currentElementInMap->size = 0;
@@ -781,24 +857,35 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
             PartitionInfo* partitionInfoToChange = (PartitionInfo* )mappedPartition;
             partitionInfoToChange->numberOfKeys -= 1;
             partitionInfoToChange->fileContentSize -= sizeToRemove;
+            printk("memcpy to data (from kernel space to kernel space)\n");
             memcpy(&data, partitionInfoToChange, sizeof(PartitionInfo));
-            // TODO change partition info key num
+            printk("memcpy done");
+            printk("Exiting: key val by pp (with failure)\n");
             return 0;
         }
         currentElementInMap = currentElementInMap + 1;
     }
-//        std::cout << "offset is " << offset << std::endl;
+    printk("Exiting: key val by pp (with failure)\n");
     return -1;
 }
-int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
 
+#if EMULATION == 1
+int getPrvKeyById(const uint64_t id, char* prvKey, uint64_t keyLen) {
+#else
+int getPrvKeyById(const uint64_t id, char __user *prvKey, uint64_t keyLen) {
+#endif
+
+    printk("Entering: get prv key by id\n");
     size_t fileSize;
+    printk("Next action: get buffered file\n");
     void *mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if (!mappedPartition) {
+    if (!mappedPartition || fileSize == 0) {
         return -1;
     }
 
-    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode **) prvKey, keyLen);
+    printk("Next action: get key val by pp\n");
+    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, prvKey, keyLen);
+    // printk("Key from partition is %s\n", *prvKey);
 
 #if EMULATION == 1
     free(mappedPartition);
@@ -810,16 +897,20 @@ int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
         return -1;
     }
 
+    printk("Exiting: get prv key by id\n");
     return 0;
 }
 int getPrvKeySizeById(const uint64_t id, uint64_t* size) {
 
+    printk("Entering: get prv key size by id\n");
     size_t fileSize;
+    printk("Next action: get buffered file\n");
     void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if(!mappedPartition) {
+    if(!mappedPartition || fileSize == 0) {
         return -1;
     }
 
+    printk("Next action: get key size by pp\n");
     int getKeySizeRet = getKeySizeByPartitionPointer(mappedPartition, id, size);
 
 #if EMULATION == 1
@@ -832,16 +923,20 @@ int getPrvKeySizeById(const uint64_t id, uint64_t* size) {
         return -1;
     }
 
+    printk("Exiting: get prv key size by id\n");
     return 0;
 }
 int removePrvKeyById(uint64_t id) {
 
+    printk("Entering: remove prv key by id\n");
     size_t fileSize;
+    printk("Next action: get buffered file\n");
     void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if(mappedPartition == NULL) {
+    if(mappedPartition == NULL || fileSize == 0) {
         return -1;
     }
 
+    printk("Next action: remove key val by pp\n");
     int removeRet = removeKeyValByPartitionPointer(mappedPartition, id);
     if(removeRet != 0) {
         
@@ -861,6 +956,7 @@ int removePrvKeyById(uint64_t id) {
 
     if(numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
 
+        printk("IMPORTANT: remove fragmentation to be triggered\n");
         uint64_t changedSize = removeFragmentation(partitionInfo);
 
 #if EMULATION == 1
@@ -873,12 +969,13 @@ int removePrvKeyById(uint64_t id) {
             close(fdDef);
         }
 #endif
-
+        printk("trunc temporary ommited\n");
         partitionInfo->fileContentSize = changedSize;
         fileSize = changedSize;
     }
 
     if(numberOfKeys == 0) {
+        printk("Number of keys = 0\n");
 #if EMULATION == 1
 
         int fdDef = open(partition, O_RDWR, 0);
@@ -888,13 +985,16 @@ int removePrvKeyById(uint64_t id) {
         ftruncate(fdDef, metadataSize);
         close(fdDef);
 #endif
+        printk("trunc temporary ommited\n");
         fileSize = metadataSize;
     }
 
+    printk("Next action: set bufferd file\n");
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSize) != fileSize) {
         return -1;
     }
 
+    printk("Entering: remove prv key by id\n");
     return removeRet;
 }
 
@@ -909,9 +1009,9 @@ SYSCALL_DEFINE0(get_current_key_num) {
 }
 
 #if EMULATION == 1
-int writeKey(const char* key, const size_t keyLen, uint64_t** id) {
+int writeKey(const char* key, const size_t keyLen, uint64_t* id) {
 #else
-SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, id) {
+SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, keyLen, uint64_t __user *, id) {
     printk("Entering write key\n");
 #endif
 
@@ -941,9 +1041,23 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
 
     printk("Kernel space memory successfully allocated, %zu of bytes to be copied to keyNode\n", keyLen);
 
+#if EMULATION == 1
     memcpy(keyNode->keyContent, key, keyLen);
+#else
+    mm_segment_t fs;
+    printk("Next action: get fs\n");
+    fs = get_fs();
+    printk("Next action: set fs\n");
+    set_fs(KERNEL_DS);
 
-    printk("Memcpy successful");
+    copy_from_user(keyNode->keyContent, key, keyLen);
+    printk("Memcpy successful\n");
+
+    set_fs(fs);
+#endif
+
+    printk("Copied key is %s\n", keyNode->keyContent);
+
     keyNode->keySize = keyLen;
 
     int ret = addKeyNodeToPartition(keyNode, id);
@@ -959,63 +1073,60 @@ SYSCALL_DEFINE3(write_key, const char*, key, const size_t, keyLen, uint64_t**, i
 }
 
 #if EMULATION == 1
-int readKey(const uint64_t* id, char** key, uint64_t* keyLen) {
+int readKey(const uint64_t id, char* key, uint64_t keyLen) {
 #else
-SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
+SYSCALL_DEFINE3(read_key, const uint64_t, id, char __user *, key, uint64_t, keyLen) {
 #endif
 
-    if(id == NULL || *id == 0) {
+    printk("\n\nEntering: readKey recompiled\n");
+    if(id == 0 || keyLen == 0) {
        return -1;
     }
 
-    char* prvKey = NULL;
-    int ret = getPrvKeyById(*id, &prvKey, keyLen);
-    if(prvKey == NULL || ret == -1) {
+    printk("Next action: get prv key by id\n");
+    int ret = getPrvKeyById(id, key, keyLen);
+    if(ret == -1) {
         return -1;
     }
+    memset(key + keyLen, 0x00, 1);
 
-    memcpy(*key, prvKey, *keyLen);
-    memset(*key + *keyLen, 0x00, 1);
-
-#if EMULATION == 1
-    free(prvKey);
-#else 
-    kfree(prvKey);
-#endif
-
+    printk("Exiting: readKey\n");
     return 0;
 }
 
 #if EMULATION == 1
-int removeKey(const uint64_t* id, const char* filepath) {
+int removeKey(const uint64_t id, const char* filepath) {
 #else
-SYSCALL_DEFINE2(remove_key, const uint64_t*, id, const char*, filepath) {
+SYSCALL_DEFINE1(remove_key, const uint64_t __user *, id) {
 #endif
 
-    return id == NULL || *id == 0 ? -1 : removePrvKeyById(*id);
+    printk("Entering and soon exiting remove key\n");
+    return id == 0 ? -1 : removePrvKeyById(id);
 }
 
 
 // for kernel kuid_t instead of uid
 #if EMULATION == 1
-int getMode(const uint64_t* id, int** output) {
+int getMode(const uint64_t id, int** output) {
 #else
-SYSCALL_DEFINE2(get_mode, const uint64_t*, id, int**, output) {
+SYSCALL_DEFINE2(get_mode, const uint64_t __user*, id, int __user **, output) {
 #endif
 
-    if(id == NULL || *id == 0) {
+    printk("Entering: get mode\n");
+    if(id == 0) {
         return -1;
     }
-
-    char* prvKey = NULL;
 
     size_t fileSize;
+
+    printk("Next action: get buffered file\n");
     void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if(mappedPartition == NULL) {
+    if(mappedPartition == NULL || fileSize == 0) {
         return -1;
     }
 
-    int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, *id, output);
+    printk("Next action: get key mode by pp\n");
+    int getKeyRet = getKeyModeByPartitionPointer(mappedPartition, id, output);
 
 #if EMULATION == 1
     free(mappedPartition);
@@ -1026,32 +1137,37 @@ SYSCALL_DEFINE2(get_mode, const uint64_t*, id, int**, output) {
     if(getKeyRet == -1) {
         return -1;
     }
+
+    printk("Exiting: get mode\n");
     return 0;
 }
 
 #if EMULATION == 1
-int setMode(const uint64_t* id, int* newMode) {
+int setMode(const uint64_t id, int* newMode) {
     if(SU_SECURITY == 1 && geteuid() != 0) {
         return -1;
     }
 #else
-SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
+SYSCALL_DEFINE2(set_mode, const uint64_t __user*, id, int*, newMode) {
      if(SU_SECURITY == 1 && geteuid().val != 0) {
         return -1;
     }
 #endif
 
-    if(id == NULL || *id == 0) {
+    printk("Entering: set mode\n");
+    if(id == 0) {
         return -1;
     }
 
     size_t fileSize;
+    printk("Next action: get buffered file\n");
     void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if(mappedPartition == NULL) {
+    if(mappedPartition == NULL || fileSize == 0) {
         return -1;
     }
 
-    int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, *id, *newMode);
+    printk("Next action: set key mode by pp\n");
+    int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, id, *newMode);
     if(getKeyRet == -1) {
 
 #if EMULATION == 1
@@ -1062,15 +1178,18 @@ SYSCALL_DEFINE2(set_mode, const uint64_t*, id, int*, newMode) {
         return -1;
     }
 
+    printk("Next action: set buffered file\n");
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSize) != fileSize) {
         return -1;
     }
 
+    printk("Exiting: set mode\n");
     return 0;
 }
 
 #if EMULATION == 1
 int canRead(int mode, int uid, int gid) {
+
     int userRead = (mode / 100) & READ_MASK;
     int groupRead = ((mode / 10) % 10) & READ_MASK;
     int othersRead = (mode % 10) & READ_MASK;
@@ -1112,6 +1231,7 @@ int canRead(int mode, kuid_t uid, kgid_t gid) {
     int userRead = (mode / 100) & READ_MASK;
     int groupRead = ((mode / 10) % 10) & READ_MASK;
     int othersRead = (mode % 10) & READ_MASK;
+    printk("Entering: can read\n");
 
     return (userRead && (uid.val == getuid().val)) || (groupRead && (gid.val == getgid().val)) || (othersRead && (uid.val != getuid().val));
 }
@@ -1121,24 +1241,29 @@ int canWrite(int mode, kuid_t uid, kgid_t gid) {
     int groupWrite = ((mode / 10) % 10) & WRITE_MASK;
     int othersWrite = (mode % 10) & WRITE_MASK;
 
+    printk("Entering: can write\n");
     return (userWrite && (uid.val == getuid().val)) || (groupWrite && (gid.val == getgid().val)) || (othersWrite && ((uid.val != getuid().val)));
 }
 
 #endif
 
 #if EMULATION == 1
-int getKeySize(const uint64_t* id, uint64_t* size) {
+int getKeySize(const uint64_t id, uint64_t* size) {
 #else
-    SYSCALL_DEFINE2(get_key_size, const uint64_t*, id, uint64_t*, size) {
+    SYSCALL_DEFINE2(get_key_size, const uint64_t __user*, id, uint64_t*, size) {
 #endif
-    if(id == NULL || *id == 0) {
+
+    printk("Entering: get key size\n");
+    if(id == 0) {
         return -1;
     }
 
-    int ret = getPrvKeySizeById(*id, size);
+    printk("Next action: get prv key size by id\n");
+    int ret = getPrvKeySizeById(id, size);
     if(ret == -1) {
         return -1;
     }
 
+    printk("Exiting: get key size\n");
     return 0;
 }
