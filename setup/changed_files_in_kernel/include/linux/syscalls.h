@@ -1430,4 +1430,5 @@ long read_key(const uint64_t* id, char** key, uint64_t* keyLen);
 long remove_key(const uint64_t* id, const char* filepath);
 long get_mode(const uint64_t* id, int** output);
 long set_mode(const uint64_t* id, int* newMode);
+long get_key_size(const uint64_t* id, uint64_t* size);
 #endif

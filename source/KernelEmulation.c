@@ -523,7 +523,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
 #if EMULATION == 1
             *id = (uint64_t* )malloc(sizeof(*id));
-            if(!id) {
+            if(!*id) {
                 printk("Kmalloc to user id failed\n");
                 return -2;
             }
@@ -653,12 +653,44 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     *keyVal = (KeyPartitionNode* )kmalloc(allocationSize, GFP_KERNEL);
 #endif
 
-    if(*keyVal == NULL) {
+    memset((*keyVal)->data, 0x00, allocationSize);
+    memcpy((*keyVal)->data, keyPlaceToAdd, size);
+    return 0;
+}
+int getKeySizeByPartitionPointer(void* mappedPartition, uint64_t id, uint64_t* keyLen) {
+
+    PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
+    uint64_t mapSize = partitionInfo->mapSize;
+
+    MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
+    uint64_t offset;
+    int found = 0;
+    int i;
+    for(i = 0; i < mapSize; i++) {
+        uint64_t currentId = currentElementInMap->id;
+        if(currentId == id) {
+
+            if(!canRead(currentElementInMap->mode, currentElementInMap->uid, currentElementInMap->gid)) {
+                return -2;
+            }
+
+            offset = currentElementInMap->offset;
+            found = 1;
+            break;
+        }
+        currentElementInMap = currentElementInMap + 1;
+    }
+    if(!found) {
         return -1;
     }
 
-    memset((*keyVal)->data, 0x00, allocationSize);
-    memcpy((*keyVal)->data, keyPlaceToAdd, size);
+    uint64_t size = currentElementInMap->size;
+    *keyLen = size;
+#if EMULATION == 1
+    memcpy(keyLen, &size, sizeof(*keyLen));
+#else
+    copy_to_user(keyLen, &size, sizeof(*keyLen));
+#endif
     return 0;
 }
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMode) {
@@ -761,12 +793,12 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
 int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
 
     size_t fileSize;
-    void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
-    if(!mappedPartition) {
+    void *mappedPartition = get_buffered_file(partition, &fileSize, 0);
+    if (!mappedPartition) {
         return -1;
     }
 
-    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode** )prvKey, keyLen);
+    int getKeyRet = getKeyValByPartitionPointer(mappedPartition, id, (KeyPartitionNode **) prvKey, keyLen);
 
 #if EMULATION == 1
     free(mappedPartition);
@@ -774,7 +806,29 @@ int getPrvKeyById(const uint64_t id, char **prvKey, uint64_t* keyLen) {
     kfree(mappedPartition);
 #endif
 
-    if(getKeyRet == -1) {
+    if (getKeyRet == -1) {
+        return -1;
+    }
+
+    return 0;
+}
+int getPrvKeySizeById(const uint64_t id, uint64_t* size) {
+
+    size_t fileSize;
+    void* mappedPartition = get_buffered_file(partition, &fileSize, 0);
+    if(!mappedPartition) {
+        return -1;
+    }
+
+    int getKeySizeRet = getKeySizeByPartitionPointer(mappedPartition, id, size);
+
+#if EMULATION == 1
+    free(mappedPartition);
+#else
+    kfree(mappedPartition);
+#endif
+
+    if(getKeySizeRet == -1) {
         return -1;
     }
 
@@ -917,16 +971,6 @@ SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
     char* prvKey = NULL;
     int ret = getPrvKeyById(*id, &prvKey, keyLen);
     if(prvKey == NULL || ret == -1) {
-        return -1;
-    }
-
-#if EMULATION == 1
-    *key = (char *)malloc(*keyLen);
-#else
-    *key = (char *)kmalloc(*keyLen, GFP_KERNEL);
-#endif
-
-    if(*key == NULL) {
         return -1;
     }
 
@@ -1082,3 +1126,19 @@ int canWrite(int mode, kuid_t uid, kgid_t gid) {
 
 #endif
 
+#if EMULATION == 1
+int getKeySize(const uint64_t* id, uint64_t* size) {
+#else
+    SYSCALL_DEFINE2(get_key_size, const uint64_t*, id, uint64_t*, size) {
+#endif
+    if(id == NULL || *id == 0) {
+        return -1;
+    }
+
+    int ret = getPrvKeySizeById(*id, size);
+    if(ret == -1) {
+        return -1;
+    }
+
+    return 0;
+}

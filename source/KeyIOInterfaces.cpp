@@ -10,7 +10,6 @@ RSA* RsaKeyFileIOInterface::readPublicKeyFromFile(std::string filepath) {
 }
 RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
 
-    char* cPrvKey = NULL;
     auto keyId = readFromFile(filepath.c_str());
 
     uint64_t id;
@@ -18,15 +17,27 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
     iss >> id;
 
     uint64_t keyLen;
-    if(readKey(&id, &cPrvKey, &keyLen) < 0) {
-        throw std::runtime_error("KeyIOInterface: Failed to read private key");
+    auto getSizeRet = getKeySize(&id, &keyLen);
+    if(getSizeRet !=0 ) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
+    }
+
+    uint64_t keyLenLegacy;
+
+    char* prvKey = (char* )malloc(keyLen + 1);
+    if(!prvKey) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
+    }
+
+    if(readKey(&id, &prvKey, &keyLen) < 0) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
     BIO* bo = BIO_new( BIO_s_mem() );
     if(bo == nullptr) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
-    if(BIO_write( bo, cPrvKey,strlen(cPrvKey)) <=0) {
+    if(BIO_write( bo, prvKey,strlen(prvKey)) <=0) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
@@ -188,7 +199,6 @@ void RsaKeyFileIOInterface::removePublicKey(std::string publicKeyPath) {
 }
 
 std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {
-    char* prvKey = nullptr;
 
     auto keyId = readFromFile(std::move(filepathWithPrvKeyId));
 
@@ -197,11 +207,26 @@ std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyI
     iss >> id;
 
     uint64_t keyLen;
-    auto ret = readKey(&id, &prvKey, &keyLen);
+    auto getSizeRet = getKeySize(&id, &keyLen);
+    if(getSizeRet !=0 ) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
+    }
+
+    uint64_t keyLenLegacy;
+
+    char* prvKey = (char* )malloc(keyLen + 1);
+    if(!prvKey) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
+    }
+
+    auto ret = readKey(&id, &prvKey, &keyLenLegacy);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
+    if(keyLen != keyLenLegacy) {
+        throw std::runtime_error("Unhandled error: new API NOT STABLE");
+    }
     auto keyStr = std::string(prvKey);
     free(prvKey);
     return keyStr;

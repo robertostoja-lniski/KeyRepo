@@ -3217,7 +3217,7 @@ BOOST_AUTO_TEST_CASE(SIGN_NOT_EXISTING_PARTITION) {
             executor->execute();
         } catch(std::exception &e) {
             auto a = e.what();
-            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
                 caught = true;
             }
         }
@@ -3576,7 +3576,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
                 caught = true;
             }
         }
@@ -3716,7 +3716,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
         try {
             executor->execute();
         } catch(std::exception &e) {
-            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
                 caught = true;
             }
         }
@@ -3776,7 +3776,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
             executor->execute();
         } catch(std::exception &e) {
             auto tmp = e.what();
-            if(e.what() == std::string("KeyIOInterface: Failed to read private key")) {
+            if(e.what() == std::string("KeyIOInterface: Cannot get private key")) {
                 caught = true;
             }
         }
