@@ -197,11 +197,20 @@ std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyI
     iss >> id;
 
     uint64_t keyLen;
-    auto ret = readKey(&id, &prvKey, &keyLen);
+    auto getSizeRet = getKeySize(&id, &keyLen);
+    if(getSizeRet !=0 ) {
+        throw std::runtime_error("KeyIOInterface: Cannot get private key");
+    }
+
+    uint64_t keyLenLegacy;
+    auto ret = readKey(&id, &prvKey, &keyLenLegacy);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
+    if(keyLen != keyLenLegacy) {
+        throw std::runtime_error("Unhandled error: new API NOT STABLE");
+    }
     auto keyStr = std::string(prvKey);
     free(prvKey);
     return keyStr;
