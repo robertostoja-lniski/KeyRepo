@@ -653,10 +653,6 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartition
     *keyVal = (KeyPartitionNode* )kmalloc(allocationSize, GFP_KERNEL);
 #endif
 
-    if(*keyVal == NULL) {
-        return -1;
-    }
-
     memset((*keyVal)->data, 0x00, allocationSize);
     memcpy((*keyVal)->data, keyPlaceToAdd, size);
     return 0;
@@ -975,16 +971,6 @@ SYSCALL_DEFINE3(read_key, const uint64_t*, id, char**, key, uint64_t*, keyLen) {
     char* prvKey = NULL;
     int ret = getPrvKeyById(*id, &prvKey, keyLen);
     if(prvKey == NULL || ret == -1) {
-        return -1;
-    }
-
-#if EMULATION == 1
-    *key = (char *)malloc(*keyLen);
-#else
-    *key = (char *)kmalloc(*keyLen, GFP_KERNEL);
-#endif
-
-    if(*key == NULL) {
         return -1;
     }
 
