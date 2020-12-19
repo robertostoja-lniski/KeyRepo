@@ -17,12 +17,13 @@ int main(int argc, char *argv[])
 {
     long activity;
     size_t len = 5;
-    uint64_t id;
+    uint64_t* id;
     activity = test_syscall("key.txt", len, &id);
 
     if(activity < 0)
     {
-        perror("Sorry, Jasper. Your system call appears to have failed.");
+    	    printf("RETURN: %ld\n", activity);
+	    perror("Sorry, Jasper. Your system call appears to have failed.");
     }
 
     else

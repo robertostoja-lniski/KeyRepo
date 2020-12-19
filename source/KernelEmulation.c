@@ -69,9 +69,10 @@ size_t set_buffered_file(char* partition, char** buf, size_t bufsize) {
         return -1;
     }
 
-    printk("Next action: kernel read\n");
+    printk("Next action: kernel write\n");
     printk("Buf size is: %zu bufsize\n", bufsize);
     size_t ret = kernel_write(fp, *buf, bufsize, &pos);
+    printk("Bytes written %zu : bytes wanted to be read : %zu\n", ret, bufsize);
 
     printk("Next action: file close\n");
     filp_close(fp, NULL);
@@ -198,25 +199,25 @@ uint64_t generateRandomId(void* mappedPartition){
     uint64_t newId;
     while(generateTrials--) {
 
-        newId = 0;
-	    int i;
-        for (i=0; i<64; i++) {
-            get_random_bytes(&newId, sizeof(newId));
-        }
+        get_random_bytes(&newId, sizeof(newId));
+        printk("New id is %zu\n", newId);
 
         MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
         uint64_t id;
+        int i;
         for(i = 0; i < mapSize; i++) {
-            uint64_t offset = currentElementInMap->offset;
             id = currentElementInMap->id;
-
+            printk("Tested id is: %zu\n", id);
             // 0 and 1 for error codes
-            if(id == newId || id == 0 || id == 1) {
+            if(id == newId || id == 1) {
                 foundSameId = 1;
+                break;
             }
+
+            currentElementInMap++;
         }
 
-        if(!foundSameId) {
+        if(foundSameId == 0) {
             break;
         }
 
@@ -284,9 +285,9 @@ int initFileIfNotDefined() {
 #if EMULATION == 1
     memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 #else
-    printk("Memory to be copied to data field\n");
-    memcpy(&data, partitionInfo, sizeof(PartitionInfo));
-    printk("Copy to data successful\n");
+    // printk("Memory to be copied to data field\n");
+    // memcpy(&data, partitionInfo, sizeof(PartitionInfo));
+    // printk("Copy to data successful\n");
 #endif
 
 #if EMULATION == 1
@@ -354,9 +355,7 @@ int initFileIfNotDefined() {
         return 1;
     }
 
-#if EMULATION == 1
-    printk("Exiting init file if not defined\n");
-#endif
+    printk("Exiting init file if not defined with value 0\n");
 
     return 0;
 }
@@ -470,14 +469,15 @@ void printPartition(const void* mappedPartition) {
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id) {
 
     printk("Entering add key node to partition\n");
-    if(initFileIfNotDefined() !=0) {
+    if(initFileIfNotDefined() != 0) {
         return -2;
     }
     printk("Partition initialised\n");
 
-    if(data.numberOfKeys == MAX_KEY_NUM) {
-        return -2;
-    }
+    // if(data.numberOfKeys == MAX_KEY_NUM) {
+    //     printk("Max key num reached\n");
+    //     return -2;
+    // }
 
     size_t fileSizeAdd;
     printk("Loading file to buffer\n");
@@ -523,14 +523,25 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
 #if EMULATION == 1
             *id = (uint64_t* )malloc(sizeof(*id));
-#else
-            *id = (uint64_t* )kmalloc(sizeof(*id), GFP_KERNEL);
-#endif
-
             if(!id) {
+                printk("Kmalloc to user id failed\n");
                 return -2;
             }
+#else
+
+            printk("Ommiting kernel -> user allocation\n", nextId);
+            // *id = (uint64_t* )kmalloc(sizeof(*id), GFP_USER);
+            // printk("User allocation done\n");
+#endif
+
+            
+            
+#if EMULATION == 1
             **id = nextId;
+#else
+            printk("Assigning id\n");
+            copy_to_user(*id, &nextId, sizeof(nextId));
+#endif
             break;
         }
         currentElementInMap = currentElementInMap + 1;
@@ -583,7 +594,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
     partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd->keySize;
     memcpy(partitionInfo, partitionInfoToUpdate, sizeof(PartitionInfo));
-    memcpy(&data, partitionInfo, sizeof(PartitionInfo));
+    // memcpy(&data, partitionInfo, sizeof(PartitionInfo));
 
 #if EMULATION == 1
     free(partitionInfoToUpdate);
