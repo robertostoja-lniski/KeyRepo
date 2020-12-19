@@ -362,8 +362,8 @@
 438 common  read_key                                __x64_sys_read_key    
 439 common  remove_key                              __x64_sys_remove_key
 440 common  get_mode                                __x64_sys_get_mode
-411 common  set_mode                                __x64_sys_set_mode
-412 common  get_key_size                            __x64_sys_get_key_size
+441 common  set_mode                                __x64_sys_set_mode
+442 common  get_key_size                            __x64_sys_get_key_size
 #
 # x32-specific system call numbers start at 512 to avoid cache impact
 # for native 64-bit operation. The __x32_compat_sys stubs are created

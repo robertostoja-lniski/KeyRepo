@@ -45,6 +45,7 @@ enum {
 
 #define VERBOSE_LEVEL VERBOSE_NO
 #define SU_SECURITY 0
+#define KEY_PARTITION_NODE_INITIAL_SIZE 4096
 
 struct MapNode {
     uint64_t id;
@@ -64,13 +65,13 @@ struct PartitionInfo {
 typedef struct PartitionInfo PartitionInfo;
 
 struct KeyNode {
-    uint32_t keySize;
-    char keyContent[4096];
+    uint64_t keySize;
+    char keyContent[KEY_PARTITION_NODE_INITIAL_SIZE];
 };
 typedef struct KeyNode KeyNode;
 
 struct KeyPartitionNode {
-    char data[4096];
+    char data[KEY_PARTITION_NODE_INITIAL_SIZE];
 };
 typedef struct KeyPartitionNode KeyPartitionNode;
 
@@ -86,23 +87,23 @@ static int getDefaultMode() {
 }
 
 int initFileIfNotDefined();
-int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t** id);
+int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t* id);
 void printPartition(const void* mappedPartition);
-int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t** id);
-int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen);
+int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t* id);
+int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal, uint64_t keyLen);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
 int removePrvKeyById(uint64_t id);
 int getCurrentKeyNumFromEmulation();
 uint64_t removeFragmentation(PartitionInfo* );
 // PUBLIC
-int writeKey(const char* key, const size_t keyLen, uint64_t** id);
-int readKey(const uint64_t* id, char** key, uint64_t* keyLen);
-int removeKey(const uint64_t* id, const char* filepath);
-int getKeySize(const uint64_t* id, uint64_t* size);
+int writeKey(const char* key, const size_t keyLen, uint64_t* id);
+int readKey(const uint64_t id, char* key, uint64_t keyLen);
+int removeKey(const uint64_t id, const char* filepath);
+int getKeySize(const uint64_t id, uint64_t* size);
 // MODE HANDLING
-int getMode(const uint64_t* id, int** output);
+int getMode(const uint64_t id, int** output);
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);
-int setMode(const uint64_t* id, int* newMode);
+int setMode(const uint64_t id, int* newMode);
 int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int mode);
 
 int canRead(int mode, int uid, int gid);

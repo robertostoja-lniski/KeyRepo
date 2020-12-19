@@ -3849,17 +3849,9 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
             auto parser = std::make_shared<Parser>(syntaxAnalyser);
             auto executor = std::make_shared<Executor>(parser);
+            auto msg = executor->execute();
 
-            bool caught {false};
-            try {
-                executor->execute();
-            } catch(std::exception &e) {
-                if(e.what() == std::string("OpenSSLHandler: Verification failed")) {
-                    caught = true;
-                }
-            }
-
-            BOOST_CHECK_EQUAL(caught, true);
+            BOOST_CHECK_EQUAL(msg, "Signature not correct");
         }
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
@@ -4026,17 +4018,10 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
             auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
             auto parser = std::make_shared<Parser>(syntaxAnalyser);
             auto executor = std::make_shared<Executor>(parser);
+            auto msg = executor->execute();
 
-            bool caught {false};
-            try {
-                executor->execute();
-            } catch(std::exception &e) {
-                if(e.what() == std::string("OpenSSLHandler: Verification failed")) {
-                    caught = true;
-                }
-            }
+            BOOST_CHECK_EQUAL(msg, "Signature not correct");
 
-            BOOST_CHECK_EQUAL(caught, true);
         }
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");
@@ -4205,18 +4190,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
             auto parser = std::make_shared<Parser>(syntaxAnalyser);
             auto executor = std::make_shared<Executor>(parser);
-
-            bool caught {false};
-            try {
-                executor->execute();
-            } catch(std::exception &e) {
-                auto tmp = e.what();
-                if(e.what() == std::string("OpenSSLHandler: Verification failed")) {
-                    caught = true;
-                }
-            }
-
-            BOOST_CHECK_EQUAL(caught, true);
+            auto msg = executor->execute();
+            BOOST_CHECK_EQUAL(msg, "Signature not correct");
         }
     }
     system("mv ~/.keyPartition.old ~/.keyPartition");

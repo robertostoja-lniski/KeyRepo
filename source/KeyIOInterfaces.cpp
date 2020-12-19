@@ -17,19 +17,17 @@ RSA* RsaKeyFileIOInterface::readPrivateKeyFromFile(std::string filepath) {
     iss >> id;
 
     uint64_t keyLen;
-    auto getSizeRet = getKeySize(&id, &keyLen);
+    auto getSizeRet = getKeySize(id, &keyLen);
     if(getSizeRet !=0 ) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
-
-    uint64_t keyLenLegacy;
 
     char* prvKey = (char* )malloc(keyLen + 1);
     if(!prvKey) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
-    if(readKey(&id, &prvKey, &keyLen) < 0) {
+    if(readKey(id, prvKey, keyLen) < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
@@ -116,52 +114,43 @@ void RsaKeyFileIOInterface::writePublicKeyToFile(std::string filepath, std::stri
     }
 }
 void RsaKeyFileIOInterface::writePrivateKeyToFile(std::string filepath, std::string mode, RSA *r, bool overwrite) {
-    uint64_t* id = nullptr;
+    uint64_t id;
 
-    BIO *bio = BIO_new(BIO_s_mem());
+    std::shared_ptr<BIO> bio(BIO_new(BIO_s_mem()), BIO_free);
     if(!bio) {
-        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+        throw std::runtime_error("KeyIOInterface: OpenSSL BIO init error");
     }
 
-    if(!PEM_write_bio_RSAPrivateKey(bio, r, NULL, NULL, 0, NULL, NULL)) {
-        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+    if(!PEM_write_bio_RSAPrivateKey(bio.get(), r, nullptr, nullptr, 0, nullptr, nullptr)) {
+        throw std::runtime_error("KeyIOInterface: OpenSSL BIO write private key error");
     }
 
-    auto keylen = BIO_pending(bio);
-    char* pem_key = (char* )calloc(keylen+1, 1);
+    auto keylen = BIO_pending(bio.get());
+    char* pem_key = (char* )malloc(keylen+1);
     if(!pem_key) {
-        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+        throw std::runtime_error("KeyIOInterface: OpenSSL BIO malloc error");
     }
 
-    if(BIO_read(bio, pem_key, keylen) <=0 ){
-        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO error");
+    if(BIO_read(bio.get(), pem_key, keylen) <=0 ){
+        throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO read error");
     }
-    BIO_free(bio);
     auto result = writeKey(pem_key, keylen, &id);
 
     if(result == -1) {
-        free(id);
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
     if(result == -2) {
-        free(id);
         throw std::runtime_error("KeyIOInterface: Partition full");
-    }
-
-    if(id == nullptr) {
-        free(id);
-        throw std::runtime_error("Unhandled Error!");
     }
 
     throwIfOverwriteForbidden(filepath, overwrite);
 
     std::ofstream os;
     os.open(filepath);
-    os << *id;
+    os << id;
     os.close();
 
-    free(id);
 }
 void RsaKeyFileIOInterface::writeToFile(std::string filepath, std::string data, bool overwrite) {
 
@@ -181,7 +170,7 @@ void RsaKeyFileIOInterface::removePrivateKey(std::string privateKeyPath) {
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto result = removeKey(&id, privateKeyPath.c_str());
+    auto result = removeKey(id, privateKeyPath.c_str());
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
@@ -207,26 +196,21 @@ std::string RsaKeyFileIOInterface::getPrivateKey(std::string filepathWithPrvKeyI
     iss >> id;
 
     uint64_t keyLen;
-    auto getSizeRet = getKeySize(&id, &keyLen);
+    auto getSizeRet = getKeySize(id, &keyLen);
     if(getSizeRet !=0 ) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
-
-    uint64_t keyLenLegacy;
 
     char* prvKey = (char* )malloc(keyLen + 1);
     if(!prvKey) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
-    auto ret = readKey(&id, &prvKey, &keyLenLegacy);
+    auto ret = readKey(id, prvKey, keyLen);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
-    if(keyLen != keyLenLegacy) {
-        throw std::runtime_error("Unhandled error: new API NOT STABLE");
-    }
     auto keyStr = std::string(prvKey);
     free(prvKey);
     return keyStr;
@@ -256,7 +240,7 @@ int RsaKeyFileIOInterface::getKeyMode(std::string filepathWithPrvKeyId) {
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto ret = getMode(&id, &modes);
+    auto ret = getMode(id, &modes);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
     }
@@ -275,7 +259,7 @@ void RsaKeyFileIOInterface::changeKeyMode(std::string filepathWithPrvKeyId, int 
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto ret = setMode(&id, &newMode);
+    auto ret = setMode(id, &newMode);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
     }

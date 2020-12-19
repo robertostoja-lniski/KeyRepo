@@ -20,6 +20,8 @@
 
 #define AES_256_KEY_SIZE 32
 #define AES_BLOCK_SIZE 16
+#define BUF_SIZE 4096
+#define MAX_FILE_READ_TRIALS 1000
 
 struct Config{
     const char* key;
