@@ -271,7 +271,6 @@ public:
     std::shared_ptr<KeyFileIOInterface> getCurrentInterface() {
         return interface;
     }
-//    ~Executor() { free(currentlyEncryptedMsg); }
     std::string execute();
 };
 

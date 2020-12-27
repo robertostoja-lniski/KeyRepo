@@ -1095,7 +1095,7 @@ SYSCALL_DEFINE3(read_key, const uint64_t, id, char __user *, key, uint64_t, keyL
 }
 
 #if EMULATION == 1
-int removeKey(const uint64_t id, const char* filepath) {
+int removeKey(const uint64_t id) {
 #else
 SYSCALL_DEFINE1(remove_key, const uint64_t __user *, id) {
 #endif

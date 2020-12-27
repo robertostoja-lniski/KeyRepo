@@ -28,15 +28,10 @@ struct Config{
     const char* iv;
 };
 
-struct OpenSSLInterface {
-    virtual std::string sign(std::string toSign) = 0;
-    virtual bool checkSignature(std::string hash, std::string msg) = 0;
-};
 struct OpenSSLHandler {
     std::string sign(RSA* r, std::string toSign);
     std::shared_ptr<RSA> createKey(int ketLen);
     bool checkSignature(RSA* r, std::string hash, std::string msg);
-    //  void sign(std::string toSign) = 0;
 
     void encrypt(std::shared_ptr<Config> config, FILE *ifp, FILE *ofp);
     void decrypt(std::shared_ptr<Config> config, FILE *ifp, FILE *ofp);
