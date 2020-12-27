@@ -66,12 +66,6 @@ struct PartitionInfo {
 };
 typedef struct PartitionInfo PartitionInfo;
 
-struct KeyNode {
-    uint64_t keySize;
-    char keyContent[KEY_PARTITION_NODE_INITIAL_SIZE];
-};
-typedef struct KeyNode KeyNode;
-
 struct KeyPartitionNode {
     char data[KEY_PARTITION_NODE_INITIAL_SIZE];
 };
@@ -85,9 +79,9 @@ const std::string partition = ".keyPartition";
 #endif
 
 int initFileIfNotDefined();
-int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t* id);
+int addKeyNodeToPartition(char* key, uint64_t keyLen, uint64_t* id);
 void printPartition(const void* mappedPartition);
-int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t* id);
+int addKeyNodeByPartitionPointer(void* mappedPartition, char* key, uint64_t keyLen, uint64_t* id);
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal, uint64_t keyLen);
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
 int removePrvKeyById(uint64_t id);

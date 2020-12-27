@@ -5,7 +5,7 @@
 #include "../include/Executor.h"
 #include <memory>
 
-#define LONG_RUN 0
+#define LONG_RUN 1
 #define RAW_PARTITION 1
 
 #include <iostream>

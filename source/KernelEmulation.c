@@ -495,7 +495,7 @@ void printPartition(const void* mappedPartition) {
 }
 
 #if EMULATION == 1
-int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t *id) {
+int addKeyNodeToPartition(char* key, uint64_t keyLen, uint64_t *id) {
 #else
 int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t __user *id) {
 #endif
@@ -513,25 +513,23 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t __user *id) {
 
     size_t fileSizeAdd;
     printk("Loading file to buffer\n");
-    void* mappedPartition = get_buffered_file(partition, &fileSizeAdd, keyNodeToAdd->keySize);
+    void* mappedPartition = get_buffered_file(partition, &fileSizeAdd, keyLen);
     printk("File loaded to buffer\n");
     if(!mappedPartition || fileSizeAdd == 0) {
         return -1;
     }
 
     printk("Adding key to partition\n");
-    int addRet = addKeyNodeByPartitionPointer(mappedPartition, keyNodeToAdd, id);
+    int addRet = addKeyNodeByPartitionPointer(mappedPartition, key, keyLen, id);
     if(addRet == 1) {
-        fileSizeAdd -= keyNodeToAdd->keySize;
+        fileSizeAdd -= keyLen;
     }
     printk("Key to partition added\n");
 
     printk("Saving buffer with size %zu\n", fileSizeAdd);
-    printk("And extra size: %zu\n", keyNodeToAdd->keySize);
+    printk("And extra size: %zu\n", keyLen);
 
-//    printf("Exiting add key with fileSizeAdd (legacy) %zu\n", fileSizeAdd);
     fileSizeAdd = ((PartitionInfo* )mappedPartition)->freeSlot;
-//    printf("Exiting add key with fileSizeAdd %zu\n", fileSizeAdd);
     printPartition(mappedPartition);
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSizeAdd) != fileSizeAdd) {
         printk("Error in saving to buffer\n");
@@ -542,17 +540,17 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t __user *id) {
     return addRet;
 }
 #if EMULATION == 1
-int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t *id) {
+int addKeyNodeByPartitionPointer(void* mappedPartition, char* key, uint64_t keyLen, uint64_t *id) {
 #else
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t __user *id) {
 #endif
 
     printk("Entering add key node to partition\n");
-    printk("Key value is: %s\n", keyNodeToAdd->keyContent);
+    printk("Key value is: %s\n", key);
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->freeSlot;
 
-    if(keyNodeToAdd->keySize + partitionInfo->fileContentSize > MAX_PARTITION_SIZE) {
+    if(keyLen + partitionInfo->fileContentSize > MAX_PARTITION_SIZE) {
         return -1;
     }
 
@@ -571,7 +569,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
             nextId = generateRandomId(mappedPartition);
 
             // optimised storage of keys shorter than 4096
-            if (keyNodeToAdd->keySize <= currentElementInMap->size) {
+            if (keyLen <= currentElementInMap->size) {
 
                 // if not first key in this slot
                 if (currentElementInMap->offset != 0) {
@@ -605,7 +603,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
     elementDataToUpdate->offset = offsetToAdd;
     elementDataToUpdate->id = nextId;
-    elementDataToUpdate->size = keyNodeToAdd->keySize;
+    elementDataToUpdate->size = keyLen;
     printk("Next action: get uid\n");
     elementDataToUpdate->uid = getuid();
     printk("Next action: get gid\n");
@@ -638,13 +636,21 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
 
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
-    memcpy(keyPlaceToAdd, keyNodeToAdd->keyContent, keyNodeToAdd->keySize);
 
-    printk("Copied key in partiton is \n");
-    printk("0 %c\n", keyPlaceToAdd->data[0]);
-    printk("1 %c\n", keyPlaceToAdd->data[1]);
-    printk("2 %c\n", keyPlaceToAdd->data[2]);
-    printk("8 %c\n", keyPlaceToAdd->data[8]);
+#if EMULATION == 1
+    memcpy(keyPlaceToAdd, key, keyLen);
+#else
+    mm_segment_t fs;
+    printk("Next action: get fs\n");
+    fs = get_fs();
+    printk("Next action: set fs\n");
+    set_fs(KERNEL_DS);
+
+    copy_from_user(keyPlaceToAdd, key, keyLen);
+    printk("Memcpy successful\n");
+
+    set_fs(fs);
+#endif
 
 #if EMULATION == 1
     PartitionInfo* partitionInfoToUpdate = (PartitionInfo* )malloc(sizeof(PartitionInfo));
@@ -654,8 +660,8 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
     partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
     partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
-    partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyNodeToAdd->keySize;
-    partitionInfoToUpdate->freeSlot = partitionInfo->freeSlot + keyNodeToAdd->keySize;
+    partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyLen;
+    partitionInfoToUpdate->freeSlot = partitionInfo->freeSlot + keyLen;
 
     uint64_t newFreeSlot = 0;
 //    printf("File content size is %zu\n", partitionInfoToUpdate->fileContentSize);
@@ -680,7 +686,6 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
 #if EMULATION == 1
     free(partitionInfoToUpdate);
-    free(keyNodeToAdd);
 #else
     kfree(partitionInfoToUpdate);
     kfree(keyNodeToAdd);
@@ -729,11 +734,6 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal
 //        std::cout << "offset is " << offset << std::endl;
     KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
     printk("Key value from place to add is %s\n", keyPlaceToAdd->data);
-    char tmp[10];
-    tmp[9] = NULL;
-
-    memcpy(tmp, keyPlaceToAdd->data, 9);
-    printk("TMP CHECK ! ! ! %s\n", tmp);
 
     uint64_t size = currentElementInMap->size;
     printk("Legacy assignment removed - size is %zu\n", size);
@@ -1100,52 +1100,9 @@ SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, keyLen, uint6
         usedLen = strlen(key);
     }
 
-    size_t allocationSize = sizeof(KeyNode);
-    printk("AllocationSize (size of key node is) %zu\n", allocationSize);
-    if(usedLen > 4096) {
-        allocationSize += keyLen - 4096;
-        printk("AllocationSize extended to %zu\n", allocationSize);
-    }
-
-    KeyNode* keyNode;
-
-#if EMULATION == 1
-    keyNode = (KeyNode* )malloc(allocationSize);
-#endif
-
-#if EMULATION == 0
-    printk("Kernel space memory to be allocated\n");
-    keyNode = (KeyNode* )kmalloc(allocationSize, GFP_KERNEL);
-    printk("Kernel space memory maybe allocated\n");
-#endif
-
-    if(keyNode == NULL) {
-        printk("Kernel space memory allocation failed\n");
-        return -1;
-    }
-
     printk("Kernel space memory successfully allocated, %zu of bytes to be copied to keyNode\n", keyLen);
 
-#if EMULATION == 1
-    memcpy(keyNode->keyContent, key, usedLen);
-#else
-    mm_segment_t fs;
-    printk("Next action: get fs\n");
-    fs = get_fs();
-    printk("Next action: set fs\n");
-    set_fs(KERNEL_DS);
-
-    copy_from_user(keyNode->keyContent, key, keyLen);
-    printk("Memcpy successful\n");
-
-    set_fs(fs);
-#endif
-
-    printk("Copied key is %s\n", keyNode->keyContent);
-
-    keyNode->keySize = usedLen;
-
-    int ret = addKeyNodeToPartition(keyNode, id);
+    int ret = addKeyNodeToPartition(key, usedLen, id);
     if(ret == -1 || ret == -2) {
         return ret;
     }
