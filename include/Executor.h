@@ -240,12 +240,12 @@ class Executor {
 private:
     // methods for crypto handler
     std::shared_ptr<Parser> parser;
-    std::shared_ptr<RsaKeyFileIOInterface> interface;
+    std::shared_ptr<KeyFileIOInterface> interface;
     std::unique_ptr<OpenSSLHandler> openSSLHandler;
 
 public:
     Executor(std::shared_ptr<Parser> parser) : parser(parser) {
-        interface = std::make_shared<RsaKeyFileIOInterface>();
+        interface = std::make_shared<KeyPartitionIOInterface>();
         openSSLHandler = std::make_unique<OpenSSLHandler>();
         ERR_load_CRYPTO_strings();
         OpenSSL_add_all_algorithms();
@@ -268,7 +268,7 @@ public:
         std::cout << "\t\tkey_repo decrypt-file       path_to_key             path_to_iv                path_to_encrypted_file    path_to_decrypted_file  [overwrite]\n";
     }
 
-    std::shared_ptr<RsaKeyFileIOInterface> getCurrentInterface() {
+    std::shared_ptr<KeyFileIOInterface> getCurrentInterface() {
         return interface;
     }
 //    ~Executor() { free(currentlyEncryptedMsg); }
