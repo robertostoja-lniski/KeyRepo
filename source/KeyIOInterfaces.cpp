@@ -65,7 +65,7 @@ void KeyPartitionIOInterface::removePrivateKey(std::string privateKeyPath) {
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto result = removeKey(id, privateKeyPath.c_str());
+    auto result = removeKey(id);
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
@@ -127,7 +127,7 @@ void KeyPartitionIOInterface::throwIfCannotRemoveFile(std::string filepath) {
 
 int KeyPartitionIOInterface::getKeyMode(std::string filepathWithPrvKeyId) {
 
-    int* modes = nullptr;
+    int modes;
 
     auto keyId = readFromFile(std::move(filepathWithPrvKeyId));
 
@@ -140,9 +140,7 @@ int KeyPartitionIOInterface::getKeyMode(std::string filepathWithPrvKeyId) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
     }
 
-    int funcRet = *modes;
-    free(modes);
-    return funcRet;
+    return modes;
 
 }
 
@@ -154,7 +152,7 @@ void KeyPartitionIOInterface::changeKeyMode(std::string filepathWithPrvKeyId, in
     std::istringstream iss(keyId);
     iss >> id;
 
-    auto ret = setMode(id, &newMode);
+    auto ret = setMode(id, newMode);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key modes");
     }

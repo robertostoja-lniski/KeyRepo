@@ -535,6 +535,10 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     PartitionInfo* partitionInfo = (PartitionInfo* )mappedPartition;
     uint64_t offsetToAdd = partitionInfo->fileContentSize;
 
+    if(keyNodeToAdd->keySize + partitionInfo->fileContentSize > MAX_PARTITION_SIZE) {
+        return -1;
+    }
+
     uint64_t mapSize = partitionInfo->mapSize;
     MapNode* currentElementInMap = (MapNode* )(partitionInfo + 1);
     uint64_t nextId;
@@ -765,7 +769,7 @@ int getKeySizeByPartitionPointer(void* mappedPartition, uint64_t id, uint64_t* k
 #endif
     return 0;
 }
-int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMode) {
+int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int* keyMode) {
 
     printk("Entering: get key mode by pp\n");
 
@@ -790,15 +794,22 @@ int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** keyMo
     }
 
 #if EMULATION == 1
-    *keyMode = (int* )malloc(sizeof(currentElementInMap->mode));
+    memcpy(keyMode, &currentElementInMap->mode, sizeof(*keyMode));
 #else
-    *keyMode = (int* )kmalloc(sizeof(currentElementInMap->mode), GFP_KERNEL);
-#endif
 
-    if(*keyMode == NULL) {
-        return -1;
-    }
-    **keyMode = currentElementInMap->mode;
+    mm_segment_t fs;
+    printk("Next action: get fs\n");
+    fs = get_fs();
+    printk("Next action: set fs\n");
+    set_fs(KERNEL_DS);
+
+    printk("cpy to usr\n");
+    char dummy = NULL;
+    copy_to_user(keyMode, &currentElementInMap->mode, sizeof(*keyMode));
+    printk("Copied mode %d\n", currentElementInMap->mode);
+
+    set_fs(fs);
+#endif
 
     printk("Exiting: get key mode by pp\n");
     return 0;
@@ -1015,9 +1026,18 @@ SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, keyLen, uint6
     printk("Entering write key\n");
 #endif
 
+    if(keyLen == 0) {
+        return -1;
+    }
+
+    uint64_t usedLen = keyLen;
+    if(keyLen > strlen(key)) {
+        usedLen = strlen(key);
+    }
+
     size_t allocationSize = sizeof(KeyNode);
     printk("AllocationSize (size of key node is) %zu\n", allocationSize);
-    if(keyLen > 4096) {
+    if(usedLen > 4096) {
         allocationSize += keyLen - 4096;
         printk("AllocationSize extended to %zu\n", allocationSize);
     }
@@ -1042,7 +1062,7 @@ SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, keyLen, uint6
     printk("Kernel space memory successfully allocated, %zu of bytes to be copied to keyNode\n", keyLen);
 
 #if EMULATION == 1
-    memcpy(keyNode->keyContent, key, keyLen);
+    memcpy(keyNode->keyContent, key, usedLen);
 #else
     mm_segment_t fs;
     printk("Next action: get fs\n");
@@ -1058,7 +1078,7 @@ SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, keyLen, uint6
 
     printk("Copied key is %s\n", keyNode->keyContent);
 
-    keyNode->keySize = keyLen;
+    keyNode->keySize = usedLen;
 
     int ret = addKeyNodeToPartition(keyNode, id);
     if(ret == -1 || ret == -2) {
@@ -1107,7 +1127,7 @@ SYSCALL_DEFINE1(remove_key, const uint64_t __user *, id) {
 
 // for kernel kuid_t instead of uid
 #if EMULATION == 1
-int getMode(const uint64_t id, int** output) {
+int getMode(const uint64_t id, int* output) {
 #else
 SYSCALL_DEFINE2(get_mode, const uint64_t __user*, id, int __user **, output) {
 #endif
@@ -1143,7 +1163,7 @@ SYSCALL_DEFINE2(get_mode, const uint64_t __user*, id, int __user **, output) {
 }
 
 #if EMULATION == 1
-int setMode(const uint64_t id, int* newMode) {
+int setMode(const uint64_t id, int newMode) {
     if(SU_SECURITY == 1 && geteuid() != 0) {
         return -1;
     }
@@ -1167,7 +1187,7 @@ SYSCALL_DEFINE2(set_mode, const uint64_t __user*, id, int*, newMode) {
     }
 
     printk("Next action: set key mode by pp\n");
-    int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, id, *newMode);
+    int getKeyRet = setKeyModeByPartitionPointer(mappedPartition, id, newMode);
     if(getKeyRet == -1) {
 
 #if EMULATION == 1
