@@ -635,7 +635,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 #endif
 
 
-    KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offsetToAdd);
+    uint8_t *keyPlaceToAdd = (uint8_t *)partitionInfo + offsetToAdd;
 
 #if EMULATION == 1
     memcpy(keyPlaceToAdd, key, keyLen);
@@ -731,20 +731,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal
         return -1;
     }
     printk("Found\n");
-//        std::cout << "offset is " << offset << std::endl;
-    KeyPartitionNode *keyPlaceToAdd = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
-    printk("Key value from place to add is %s\n", keyPlaceToAdd->data);
-
-    uint64_t size = currentElementInMap->size;
-    printk("Legacy assignment removed - size is %zu\n", size);
-
-    size_t allocationSize = 0;
-    if(size > 4096) {
-        allocationSize = size;
-    } else {
-        printk("Assigning to allocation size %zu + 1\n", sizeof(KeyPartitionNode));
-        allocationSize = sizeof(KeyPartitionNode);
-    }
+    uint64_t allocationSize = currentElementInMap->size;
 
     if(keyLen < allocationSize) {
         printk("Allocation size: %zu is shortened to key len of %zu\n", allocationSize, keyLen);
@@ -752,7 +739,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal
     }
 
 #if EMULATION == 1
-    memcpy(keyVal, keyPlaceToAdd->data, allocationSize);
+    memcpy(keyVal, (uint8_t *)partitionInfo + offset, allocationSize);
     memset(keyVal + allocationSize, 0x00, sizeof(*keyVal));
 #else
     mm_segment_t fs;
@@ -762,7 +749,7 @@ int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal
     set_fs(KERNEL_DS);
     
     printk("cpy to usr\n");
-    copy_to_user(keyVal, keyPlaceToAdd->data, allocationSize);
+    copy_to_user(keyVal, (uint8_t *)partitionInfo + offset, allocationSize);
     char dummy = NULL;
     copy_to_user(keyVal + allocationSize, &dummy, sizeof(dummy));
     printk("Copied key is %s\n", keyPlaceToAdd->data);
@@ -905,11 +892,10 @@ int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id) {
             }
 
             offset = currentElementInMap->offset;
-            KeyPartitionNode* keyPlaceToRemove = (KeyPartitionNode* )((uint8_t *)partitionInfo + offset);
             uint64_t sizeToRemove = currentElementInMap->size;
 //            currentElementInMap->size = 0;
             currentElementInMap->id = 0;
-            memset(keyPlaceToRemove, 0x00, sizeToRemove);
+            memset((uint8_t *)partitionInfo + offset, 0x00, sizeToRemove);
             partitionInfo->numberOfKeys -= 1;
             partitionInfo->fileContentSize -= sizeToRemove;
             printk("memcpy done");

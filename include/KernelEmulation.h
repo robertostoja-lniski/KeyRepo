@@ -66,11 +66,6 @@ struct PartitionInfo {
 };
 typedef struct PartitionInfo PartitionInfo;
 
-struct KeyPartitionNode {
-    char data[KEY_PARTITION_NODE_INITIAL_SIZE];
-};
-typedef struct KeyPartitionNode KeyPartitionNode;
-
 static PartitionInfo data;
 #if __APPLE__
 const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
