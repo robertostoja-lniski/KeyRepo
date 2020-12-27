@@ -61,6 +61,7 @@ typedef struct MapNode MapNode;
 struct PartitionInfo {
     uint64_t numberOfKeys;
     uint64_t fileContentSize;
+    uint64_t freeSlot;
     uint64_t mapSize;
 };
 typedef struct PartitionInfo PartitionInfo;
