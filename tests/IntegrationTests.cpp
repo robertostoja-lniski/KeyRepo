@@ -6,8 +6,10 @@
 #include <memory>
 
 #define LONG_RUN 1
+#define RAW_PARTITION 1
 
 #include <iostream>
+
 namespace testHelpers {
     std::string toString(std::vector<std::string> input) {
         std::string serialisedArgs;
@@ -1939,84 +1941,6 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
 
 }
 
-BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE_HUGE)
-{
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    system("echo 3123213213 > /tmp/file_to_encrypt.txt");
-
-    for(int i = 0; i < 1000; i++) {
-        system("echo 3123213213 >> /tmp/file_to_encrypt.txt");
-    }
-    system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
-    system("echo 1234567887654321 > /tmp/iv");
-    {
-        std::vector<std::string> input {
-                "program",
-                "encrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/file_to_encrypt.txt",
-                "/tmp/encrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        auto msg = executor->execute();
-
-        BOOST_CHECK_EQUAL(msg, "File encrypted");
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
-BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
-{
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    system("echo 3123213213 > /tmp/file_to_decrypt.txt");
-    system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
-    system("echo 1234567887654321 > /tmp/iv");
-
-    {
-        std::vector<std::string> input {
-                "program",
-                "decrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/file_to_decrypt.txt",
-                "/tmp/decrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        bool caught {false};
-        try {
-            executor->execute();
-        } catch(std::exception &e) {
-            if(e.what() == std::string("OpenSSLHandler: cannot encrypt last block of file")) {
-                caught = true;
-            }
-        }
-
-        BOOST_CHECK_EQUAL(caught, true);
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
 {
@@ -2642,189 +2566,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
-{
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    {
-        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
-        for(int i = 0; i < 1000; i++) {
-            system("echo 3123213213 >> /tmp/file_to_encrypt.txt");
-        }
-        system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
-        system("echo 1234567887654321 > /tmp/iv");
 
-        std::vector<std::string> input {
-                "program",
-                "encrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/file.txt",
-                "/tmp/encrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        executor->execute();
-    }
-    {
-        std::vector<std::string> input {
-                "program",
-                "decrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/encrypted_file.txt",
-                "/tmp/decrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        auto msg = executor->execute();
-
-        BOOST_CHECK_EQUAL(msg, "File decrypted");
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
-BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
-{
-
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    std::string base = "1234567890";
-    std::string content;
-
-    for(int i = 0; i < 1000; i++) {
-        content+=base;
-    }
-
-    {
-        std::string syscall = "echo " + content + " > /tmp/file.txt";
-        system(syscall.c_str());
-        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
-        system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
-        system("echo 1234567887654321 > /tmp/iv");
-
-        std::vector<std::string> input {
-                "program",
-                "encrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/file.txt",
-                "/tmp/encrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        executor->execute();
-    }
-    {
-        std::string contentAfterEncryption = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
-        std::vector<std::string> input {
-                "program",
-                "decrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/encrypted_file.txt",
-                "/tmp/decrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        auto msg = executor->execute();
-
-        std::string contentAfterEncryption2 = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
-        std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
-        bool areSame = (contentAfterDecryption == content);
-        BOOST_CHECK_EQUAL(areSame, true);
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
-BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_KEY)
-{
-    std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w8X7MR0fd9830w";
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    {
-        std::string syscall = "echo " + content + " > /tmp/file.txt";
-        system(syscall.c_str());
-        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
-        system("echo 0123456789abcdeF > /tmp/key");
-        system("echo 1234567887654321 > /tmp/iv");
-
-        std::vector<std::string> input {
-                "program",
-                "encrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/file.txt",
-                "/tmp/encrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-        executor->execute();
-    }
-    {
-        system("echo 123 > /tmp/key");
-        std::vector<std::string> input {
-                "program",
-                "decrypt-file",
-                "/tmp/key",
-                "/tmp/iv",
-                "/tmp/encrypted_file.txt",
-                "/tmp/decrypted_file.txt",
-                "overwrite"
-        };
-
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
-        bool areSame = (contentAfterDecryption == content);
-        BOOST_CHECK_EQUAL(areSame, false);
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_IV)
 {
@@ -5081,7 +4823,973 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
+#if(RAW_PARTITION) 
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_OK) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    BOOST_CHECK_EQUAL(ret, 0);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)100000000, &id);
+
+    BOOST_CHECK_EQUAL(ret, 0);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    char tmp[1000000];
+    memset(tmp, 0x41, 1000000 - 1);
+    memset(tmp + 1000000 - 1, 0x00, 1);
+    uint64_t id;
+    auto ret = writeKey(tmp, (const size_t)1000000, &id);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    char *buf;
+    buf = (char* )malloc(5);
+    auto readRet = readKey(id, buf, 4);
+    BOOST_CHECK_EQUAL(key, buf);
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    char *buf;
+    buf = (char* )malloc(5);
+    auto readRet = readKey(id, buf, 3);
+    BOOST_CHECK_EQUAL(buf, "abc");
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    char *buf;
+    buf = (char* )malloc(3);
+    auto readRet = readKey(id, buf, 3);
+    BOOST_CHECK_EQUAL(buf, "abc");
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_0_SIZE) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)0, &id);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    char *buf;
+    buf = (char* )malloc(3);
+    auto readRet = readKey(id, buf, 3);
+    BOOST_CHECK_EQUAL(buf, "abc");
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    char *buf;
+    buf = (char* )malloc(3);
+    auto readRet = readKey(0, buf, 3);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    char *buf;
+    buf = (char* )malloc(3);
+    auto readRet = readKey(1000, buf, 3);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    int mode;
+    auto readRet = getMode(id, &mode);
+    BOOST_CHECK_EQUAL(mode, 600);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_NO_PART) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    int mode;
+    auto readRet = getMode(1000, &mode);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_WRONG_ID) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    int mode;
+    auto readRet = getMode(1000, &mode);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_ID) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    int mode;
+    auto readRet = setMode(1000, mode);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    int mode;
+    auto readRet = setMode(1000, mode);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    int mode;
+    auto setRet = setMode(id, mode);
+
+    int newMode;
+    auto getRet = getMode(id, &newMode);
+
+    BOOST_CHECK_EQUAL(setRet, 0);
+    BOOST_CHECK_EQUAL(getRet, 0);
+    BOOST_CHECK_EQUAL(mode, newMode);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    auto isProperMode = [](int mode) {
+        if(mode > 777) {
+            return false;
+        }
+        auto hDigit = (mode / 100);
+        auto dDigit = (mode / 10) % 10; 
+        auto digit = mode % 10;
+
+        return hDigit <= 7 && dDigit <= 7 && digit <= 7;
+    };
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    int lastProperMode;
+    auto getRet = getMode(id, &lastProperMode);
+
+    for(int i = 0; i < 1000; i++) {
+
+        auto setRet = setMode(id, i);
+
+        int newMode;
+        auto getRet = getMode(id, &newMode);
+
+        if(isProperMode(i)) {
+            BOOST_CHECK_EQUAL(setRet, 0);
+            BOOST_CHECK_EQUAL(getRet, 0);
+            BOOST_CHECK_EQUAL(i, newMode);
+            lastProperMode = i;
+        } else {
+            BOOST_CHECK_EQUAL(setRet, -1);
+            BOOST_CHECK_EQUAL(getRet, 0);
+            BOOST_CHECK_EQUAL(newMode, lastProperMode);
+        }
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abc777777d";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)10, &id);
+    auto keyNum = getCurrentKeyNumFromEmulation();
+
+    BOOST_CHECK_EQUAL(ret, 0);
+    BOOST_CHECK_EQUAL(keyNum, 1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abc777777d";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)10, &id);
+    BOOST_CHECK_EQUAL(ret, 0);
+
+    uint64_t size;
+    auto getSizeRet = getKeySize(id, &size);
+    BOOST_CHECK_EQUAL(getSizeRet, 0);
+
+    BOOST_CHECK_EQUAL(size, 10);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_NO_PARTITION) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    uint64_t size;
+    auto getSizeRet = getKeySize(1000, &size);
+    BOOST_CHECK_EQUAL(getSizeRet, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abc777777d";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)10, &id);
+    BOOST_CHECK_EQUAL(ret, 0);
+
+    uint64_t size;
+    auto getSizeRet = getKeySize(1000, &size);
+    BOOST_CHECK_EQUAL(getSizeRet, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_NO_PART) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    auto keyNum = getCurrentKeyNumFromEmulation();
+    BOOST_CHECK_EQUAL(keyNum, -1);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MULT) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    for(int i = 1; i < 100; i ++) {
+        const char* key = "abc777777d";
+        uint64_t id;
+        auto ret = writeKey(key, (const size_t)10, &id);
+        auto keyNum = getCurrentKeyNumFromEmulation();
+
+        BOOST_CHECK_EQUAL(ret, 0);
+        BOOST_CHECK_EQUAL(keyNum, i);
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = writeKey(key, (const size_t)4, &id);
+
+    auto rmvRet = removeKey(id);
+
+    char *buf;
+    buf = (char* )malloc(5);
+    auto readRet = readKey(id, buf, 4);
+
+    BOOST_CHECK_EQUAL(ret, 0);
+    BOOST_CHECK_EQUAL(rmvRet, 0);
+    BOOST_CHECK_EQUAL(readRet, -1);
+
+    free(buf);
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    int readRet;
+    int getSizeRet;
+    int num;
+    uint64_t size;
+
+    for(int i = 0; i < 20; i++) {
+
+        // create 3 keys
+        const char* key = "xxxxxxxxxx";
+        uint64_t id;
+        auto ret1 = writeKey(key, (const size_t)10, &id);
+        BOOST_CHECK_EQUAL(ret1, 0);
+
+        const char* key2 = "ooooooooooo";
+        uint64_t id2;
+        auto ret2 = writeKey(key2, (const size_t)11, &id2);
+        BOOST_CHECK_EQUAL(ret2, 0);
+
+        const char* key3 = "cccccccccccc";
+        uint64_t id3;
+        auto ret3 = writeKey(key3, (const size_t)12, &id3);
+        BOOST_CHECK_EQUAL(ret3, 0);
+
+        // remove middles
+        auto rmvRet = removeKey(id2);
+        BOOST_CHECK_EQUAL(rmvRet, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 2);
+
+        // algorithm will add 3rd key between first and last
+        const char* key4 = "tttttttttt";
+        uint64_t id4;
+        auto ret4 = writeKey(key4, (const size_t)10, &id4);
+        BOOST_CHECK_EQUAL(ret4, 0);
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 3);
+      
+        // reading 3 keys by get size
+        getSizeRet = getKeySize(id, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf = (char* )malloc(size + 1);
+        readRet = readKey(id, buf, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf, key);
+        free(buf);
+
+        getSizeRet = getKeySize(id3, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf3 = (char* )malloc(size + 1);
+        readRet = readKey(id3, buf3, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf3, key3);
+        free(buf3);
+
+        getSizeRet = getKeySize(id4, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf4 = (char* )malloc(size + 1);
+        readRet = readKey(id4, buf4, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf4, key4);
+        free(buf4);
+
+        auto rmvRet1 = removeKey(id);
+        auto rmvRet2 = removeKey(id3);
+        auto rmvRet3 = removeKey(id4);
+
+        BOOST_CHECK_EQUAL(rmvRet1, 0);
+        BOOST_CHECK_EQUAL(rmvRet2, 0);
+        BOOST_CHECK_EQUAL(rmvRet3, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 0);
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD_NEVER_EMPTY) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    int readRet;
+    int getSizeRet;
+    int num;
+    uint64_t size;
+
+    const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
+    uint64_t id_init;
+    auto ret_init = writeKey(key_init, (const size_t)30, &id_init);
+    BOOST_CHECK_EQUAL(ret_init, 0);
+
+    for(int i = 0; i < 20; i++) {
+
+        // create 3 keys
+        const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+        uint64_t id;
+        auto ret1 = writeKey(key, (const size_t)30, &id);
+        BOOST_CHECK_EQUAL(ret1, 0);
+
+        const char* key2 = "ooooooooooooooooooooooooooooooooo";
+        uint64_t id2;
+        auto ret2 = writeKey(key2, (const size_t)33, &id2);
+        BOOST_CHECK_EQUAL(ret2, 0);
+
+        const char* key3 = "cccccccccccccccccccccccccccccccccccc";
+        uint64_t id3;
+        auto ret3 = writeKey(key3, (const size_t)36, &id3);
+        BOOST_CHECK_EQUAL(ret3, 0);
+
+        // remove middles
+        auto rmvRet = removeKey(id2);
+        BOOST_CHECK_EQUAL(rmvRet, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 3);
+
+        // algorithm will add 3rd key between first and last
+        const char* key4 = "tttttttttttttttttttttttttttttt";
+        uint64_t id4;
+        auto ret4 = writeKey(key4, (const size_t)30, &id4);
+        BOOST_CHECK_EQUAL(ret4, 0);
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 4);
+      
+        // reading 3 keys by get size
+        getSizeRet = getKeySize(id, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf = (char* )malloc(size + 1);
+        readRet = readKey(id, buf, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf, key);
+        free(buf);
+
+        getSizeRet = getKeySize(id3, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf3 = (char* )malloc(size + 1);
+        readRet = readKey(id3, buf3, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf3, key3);
+        free(buf3);
+
+        getSizeRet = getKeySize(id4, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf4 = (char* )malloc(size + 1);
+        readRet = readKey(id4, buf4, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf4, key4);
+        free(buf4);
+
+        auto rmvRet1 = removeKey(id);
+        auto rmvRet2 = removeKey(id3);
+        auto rmvRet3 = removeKey(id4);
+
+        BOOST_CHECK_EQUAL(rmvRet1, 0);
+        BOOST_CHECK_EQUAL(rmvRet2, 0);
+        BOOST_CHECK_EQUAL(rmvRet3, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 1);
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+#endif
+
 #if(LONG_RUN)
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD_L) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    int readRet;
+    int getSizeRet;
+    int num;
+    uint64_t size;
+
+    for(int i = 0; i < 200; i++) {
+
+        // create 3 keys
+        const char* key = "xxxxxxxxxx";
+        uint64_t id;
+        auto ret1 = writeKey(key, (const size_t)10, &id);
+        BOOST_CHECK_EQUAL(ret1, 0);
+
+        const char* key2 = "ooooooooooo";
+        uint64_t id2;
+        auto ret2 = writeKey(key2, (const size_t)11, &id2);
+        BOOST_CHECK_EQUAL(ret2, 0);
+
+        const char* key3 = "cccccccccccc";
+        uint64_t id3;
+        auto ret3 = writeKey(key3, (const size_t)12, &id3);
+        BOOST_CHECK_EQUAL(ret3, 0);
+
+        // remove middles
+        auto rmvRet = removeKey(id2);
+        BOOST_CHECK_EQUAL(rmvRet, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 2);
+
+        // algorithm will add 3rd key between first and last
+        const char* key4 = "tttttttttt";
+        uint64_t id4;
+        auto ret4 = writeKey(key4, (const size_t)10, &id4);
+        BOOST_CHECK_EQUAL(ret4, 0);
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 3);
+      
+        // reading 3 keys by get size
+        getSizeRet = getKeySize(id, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf = (char* )malloc(size + 1);
+        readRet = readKey(id, buf, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf, key);
+        free(buf);
+
+        getSizeRet = getKeySize(id3, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf3 = (char* )malloc(size + 1);
+        readRet = readKey(id3, buf3, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf3, key3);
+        free(buf3);
+
+        getSizeRet = getKeySize(id4, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf4 = (char* )malloc(size + 1);
+        readRet = readKey(id4, buf4, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf4, key4);
+        free(buf4);
+
+        auto rmvRet1 = removeKey(id);
+        auto rmvRet2 = removeKey(id3);
+        auto rmvRet3 = removeKey(id4);
+
+        BOOST_CHECK_EQUAL(rmvRet1, 0);
+        BOOST_CHECK_EQUAL(rmvRet2, 0);
+        BOOST_CHECK_EQUAL(rmvRet3, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 0);
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD_NEVER_EMPTY_L) {
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    int readRet;
+    int getSizeRet;
+    int num;
+    uint64_t size;
+
+    const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
+    uint64_t id_init;
+    auto ret_init = writeKey(key_init, (const size_t)30, &id_init);
+    BOOST_CHECK_EQUAL(ret_init, 0);
+
+    for(int i = 0; i < 200; i++) {
+
+        // create 3 keys
+        const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+        uint64_t id;
+        auto ret1 = writeKey(key, (const size_t)30, &id);
+        BOOST_CHECK_EQUAL(ret1, 0);
+
+        const char* key2 = "ooooooooooooooooooooooooooooooooo";
+        uint64_t id2;
+        auto ret2 = writeKey(key2, (const size_t)33, &id2);
+        BOOST_CHECK_EQUAL(ret2, 0);
+
+        const char* key3 = "cccccccccccccccccccccccccccccccccccc";
+        uint64_t id3;
+        auto ret3 = writeKey(key3, (const size_t)36, &id3);
+        BOOST_CHECK_EQUAL(ret3, 0);
+
+        // remove middles
+        auto rmvRet = removeKey(id2);
+        BOOST_CHECK_EQUAL(rmvRet, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 3);
+
+        // algorithm will add 3rd key between first and last
+        const char* key4 = "tttttttttttttttttttttttttttttt";
+        uint64_t id4;
+        auto ret4 = writeKey(key4, (const size_t)30, &id4);
+        BOOST_CHECK_EQUAL(ret4, 0);
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 4);
+      
+        // reading 3 keys by get size
+        getSizeRet = getKeySize(id, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf = (char* )malloc(size + 1);
+        readRet = readKey(id, buf, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf, key);
+        free(buf);
+
+        getSizeRet = getKeySize(id3, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf3 = (char* )malloc(size + 1);
+        readRet = readKey(id3, buf3, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf3, key3);
+        free(buf3);
+
+        getSizeRet = getKeySize(id4, &size);
+        BOOST_CHECK_EQUAL(getSizeRet, 0);
+        char* buf4 = (char* )malloc(size + 1);
+        readRet = readKey(id4, buf4, size);
+        BOOST_CHECK_EQUAL(readRet, 0);
+        BOOST_CHECK_EQUAL(buf4, key4);
+        free(buf4);
+
+        auto rmvRet1 = removeKey(id);
+        auto rmvRet2 = removeKey(id3);
+        auto rmvRet3 = removeKey(id4);
+
+        BOOST_CHECK_EQUAL(rmvRet1, 0);
+        BOOST_CHECK_EQUAL(rmvRet2, 0);
+        BOOST_CHECK_EQUAL(rmvRet3, 0);
+
+        num = getCurrentKeyNumFromEmulation();
+        BOOST_CHECK_EQUAL(num, 1);
+    }
+
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
+{
+
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    std::string base = "1234567890";
+    std::string content;
+
+    for(int i = 0; i < 1000; i++) {
+        content+=base;
+    }
+
+    {
+        std::string syscall = "echo " + content + " > /tmp/file.txt";
+        system(syscall.c_str());
+        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+        system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+        system("echo 1234567887654321 > /tmp/iv");
+
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::string contentAfterEncryption = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/encrypted_file.txt",
+                "/tmp/decrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        std::string contentAfterEncryption2 = testHelpers::readFileIntoString("/tmp/encrypted_file.txt");
+        std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
+        bool areSame = (contentAfterDecryption == content);
+        BOOST_CHECK_EQUAL(areSame, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    {
+        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+        for(int i = 0; i < 1000; i++) {
+            system("echo 3123213213 >> /tmp/file_to_encrypt.txt");
+        }
+        system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+        system("echo 1234567887654321 > /tmp/iv");
+
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/encrypted_file.txt",
+                "/tmp/decrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File decrypted");
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+
+
+BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_KEY)
+{
+    std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w8X7MR0fd9830w";
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    {
+        std::string syscall = "echo " + content + " > /tmp/file.txt";
+        system(syscall.c_str());
+        system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+        system("echo 0123456789abcdeF > /tmp/key");
+        system("echo 1234567887654321 > /tmp/iv");
+
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        executor->execute();
+    }
+    {
+        system("echo 123 > /tmp/key");
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/encrypted_file.txt",
+                "/tmp/decrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
+        bool areSame = (contentAfterDecryption == content);
+        BOOST_CHECK_EQUAL(areSame, false);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE_HUGE)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+
+    system("echo 3123213213 > /tmp/file_to_encrypt.txt");
+
+    for(int i = 0; i < 1000; i++) {
+        system("echo 3123213213 >> /tmp/file_to_encrypt.txt");
+    }
+    system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+    system("echo 1234567887654321 > /tmp/iv");
+    {
+        std::vector<std::string> input {
+                "program",
+                "encrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file_to_encrypt.txt",
+                "/tmp/encrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+        auto msg = executor->execute();
+
+        BOOST_CHECK_EQUAL(msg, "File encrypted");
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
+{
+    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("echo 3123213213 > /tmp/file_to_decrypt.txt");
+    system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
+    system("echo 1234567887654321 > /tmp/iv");
+
+    {
+        std::vector<std::string> input {
+                "program",
+                "decrypt-file",
+                "/tmp/key",
+                "/tmp/iv",
+                "/tmp/file_to_decrypt.txt",
+                "/tmp/decrypted_file.txt",
+                "overwrite"
+        };
+
+        TerminalEmulation terminalEmulation(input);
+        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+        auto argc = emulatedTerminalArgs.argc;
+        auto argv = emulatedTerminalArgs.argv;
+
+        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
+        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto executor = std::make_shared<Executor>(parser);
+
+        bool caught {false};
+        try {
+            executor->execute();
+        } catch(std::exception &e) {
+            if(e.what() == std::string("OpenSSLHandler: cannot encrypt last block of file")) {
+                caught = true;
+            }
+        }
+
+        BOOST_CHECK_EQUAL(caught, true);
+    }
+    system("mv ~/.keyPartition.old ~/.keyPartition");
+}
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
 
@@ -5486,8 +6194,9 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
     struct stat st{};
     stat(partition, &st);
     auto sizeAfterMultipleLoop =  st.st_size;
+    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
 
-    BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 5144);
+    BOOST_CHECK_EQUAL(isWithinBounds, true);
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
@@ -5997,7 +6706,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
     stat(partition, &st);
     auto sizeAfterMultipleLoop =  st.st_size;
 
-    BOOST_CHECK_EQUAL(sizeAfterMultipleLoop, 5144);
+    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
+    BOOST_CHECK_EQUAL(isWithinBounds, true);
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }

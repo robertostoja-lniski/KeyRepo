@@ -71,7 +71,7 @@ std::string Executor::execute() {
 
         auto messageToSign = interface->readFromFile(fileToBeSigned);
 
-        RSA* rsaPrv = interface->readPrivateKeyFromFile(prvKeyPath);
+        RSA* rsaPrv = interface->readPrivateKeyFromFile<RSA*>(prvKeyPath);
 
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
 
@@ -99,7 +99,7 @@ std::string Executor::execute() {
             std::cout << messageToCheckHash << " it was encrypted msg\n";
         }
 
-        auto rsaPub = interface->readPublicKeyFromFile(filePathToPublicKey);
+        auto rsaPub = interface->readPublicKeyFromFile<RSA*>(filePathToPublicKey);
         auto isSignatureCorrect = openSSLHandler->checkSignature(rsaPub, messageToCheckHash, messageToCheck);
         if(isSignatureCorrect) {
             std::cout << "Signature correct" << std::endl;
@@ -150,7 +150,6 @@ std::string Executor::execute() {
         auto key = interface->readFromFile(filePathWithKey);
         auto iv = interface->readFromFile(filePathWithIv);
 
-//        if(key.size())
         auto config = std::make_shared<Config>();
         config->key = key.c_str();
         config->iv = iv.c_str();

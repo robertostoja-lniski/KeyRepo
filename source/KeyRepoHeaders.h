@@ -28,6 +28,7 @@
 #define DEFAULT_NUMBER_OF_KEYS DEFAULT_MAP_SIZE
 #define MAX_KEY_NUM DEFAULT_MAP_SIZE
 #define KEY_PARTITION_NODE_INITIAL_SIZE 4096 + 128
+#define MAX_PARTITION_SIZE MAX_KEY_NUM * 4096
 #define REDUCTION_PARAM 2
 #define READ_MASK	4
 #define WRITE_MASK	2
@@ -73,11 +74,7 @@ int canWrite(int mode, kuid_t uid, kgid_t gid);
 int initFileIfNotDefined(void);
 int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, uint64_t* id);
 int addKeyNodeToPartition(struct KeyNode* keyNodeToAdd, uint64_t* id);
-<<<<<<< HEAD
-int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, KeyPartitionNode** keyVal, uint64_t* keyLen);
-=======
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal, uint64_t keyLen);
->>>>>>> dd954ef... Devel
 int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
 int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int** output);
 int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int mode);

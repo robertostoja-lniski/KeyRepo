@@ -6,4 +6,6 @@ include_directories (${Boost_INCLUDE_DIRS})
 # 'test1.cpp tests2.cpp' are source files with tests
 add_executable (tests IntegrationTests.cpp  ../source/Parser.cpp ../source/Statement.cpp ../source/SyntaxAnalyser.cpp ../source/Executor.cpp ../source/KeyIOInterfaces.cpp
         ../source/OpenSSLHandler.cpp ../source/KernelEmulation.c)
+#add_executable (tests RawPartitionTests.cpp ../source/Parser.cpp ../source/Statement.cpp ../source/SyntaxAnalyser.cpp ../source/Executor.cpp ../source/KeyIOInterfaces.cpp
+#                ../source/OpenSSLHandler.cpp ../source/KernelEmulation.c)
 target_link_libraries (tests ${Boost_LIBRARIES})
