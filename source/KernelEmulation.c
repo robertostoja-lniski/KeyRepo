@@ -520,16 +520,21 @@ int addKeyNodeToPartition(KeyNode* keyNodeToAdd, uint64_t __user *id) {
     }
 
     printk("Adding key to partition\n");
+
+    uint64_t firstSlotBeforeAdd = ((PartitionInfo* )mappedPartition)->freeSlot;
     int addRet = addKeyNodeByPartitionPointer(mappedPartition, key, keyLen, id);
-    if(addRet == 1) {
-        fileSizeAdd -= keyLen;
+    if(addRet != 0) {
+        return -1;
     }
     printk("Key to partition added\n");
 
     printk("Saving buffer with size %zu\n", fileSizeAdd);
     printk("And extra size: %zu\n", keyLen);
 
-    fileSizeAdd = ((PartitionInfo* )mappedPartition)->freeSlot;
+    uint64_t firstSlotAfterAdd = ((PartitionInfo* )mappedPartition)->freeSlot;
+    if(firstSlotBeforeAdd != firstSlotAfterAdd) {
+        fileSizeAdd = firstSlotAfterAdd;
+    }
     printPartition(mappedPartition);
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSizeAdd) != fileSizeAdd) {
         printk("Error in saving to buffer\n");
@@ -661,24 +666,11 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
     partitionInfoToUpdate->mapSize = partitionInfo->mapSize;
     partitionInfoToUpdate->numberOfKeys = partitionInfo->numberOfKeys + 1;
     partitionInfoToUpdate->fileContentSize = partitionInfo->fileContentSize + keyLen;
-    partitionInfoToUpdate->freeSlot = partitionInfo->freeSlot + keyLen;
 
-    uint64_t newFreeSlot = 0;
-//    printf("File content size is %zu\n", partitionInfoToUpdate->fileContentSize);
-    if(partitionInfoToUpdate->freeSlot > 2 * partitionInfoToUpdate->fileContentSize) {
-//        printf("Entering freeSlot reduction\n");
-        currentElementInMap = (MapNode* )(partitionInfo + 1);
-        for(i = 0; i < mapSize; i++) {
-            uint64_t currentId = currentElementInMap->id;
-            if(currentId == 0) {
-                uint64_t possibleFreeSlot = currentElementInMap->offset + currentElementInMap->size;
-                if(possibleFreeSlot > newFreeSlot) {
-                    newFreeSlot = possibleFreeSlot;
-                }
-            }
-            currentElementInMap = currentElementInMap + 1;
-        }
-        partitionInfoToUpdate->freeSlot = newFreeSlot;
+    if(!isStorageOptimised) {
+        partitionInfoToUpdate->freeSlot = partitionInfo->freeSlot + keyLen;
+    } else {
+        partitionInfoToUpdate->freeSlot = partitionInfo->freeSlot;
     }
 
     memcpy(partitionInfo, partitionInfoToUpdate, sizeof(PartitionInfo));
@@ -693,9 +685,7 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
 
     printPartition(mappedPartition);
     printk("Exiting add key Node\n");
-    if(isStorageOptimised) {
-        return 1;
-    }
+
     return 0;
 }
 int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal, uint64_t keyLen) {
