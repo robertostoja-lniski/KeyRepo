@@ -2,6 +2,8 @@
 
 #if EMULATION == 1
     #include "../include/KernelEmulation.h"
+    uint64_t remove_fragmentation = 1;
+    uint64_t map_optimisation = 1;
 #else
     #include "KeyRepoHeaders.h"
 #endif
@@ -573,15 +575,24 @@ int addKeyNodeByPartitionPointer(void* mappedPartition, KeyNode* keyNodeToAdd, u
             printk("Id is\n");
             nextId = generateRandomId(mappedPartition);
 
-            // optimised storage of keys shorter than 4096
-            if (keyLen <= currentElementInMap->size) {
+#if EMULATION == 1
+            if(map_optimisation) {
+#endif
 
-                // if not first key in this slot
-                if (currentElementInMap->offset != 0) {
-                    offsetToAdd = currentElementInMap->offset;
-                    isStorageOptimised = 1;
+                // optimised storage of keys shorter than 4096
+                if (keyLen <= currentElementInMap->size) {
+
+                    // if not first key in this slot
+                    if (currentElementInMap->offset != 0) {
+                        offsetToAdd = currentElementInMap->offset;
+                        isStorageOptimised = 1;
+                    }
                 }
+
+#if EMULATION == 1
             }
+#endif
+
 #if EMULATION == 1
             // memcpy is to make emulation as close to final coden, which uses copy_to_user
             memcpy(id, &nextId, sizeof(nextId));
@@ -990,45 +1001,55 @@ int removePrvKeyById(uint64_t id) {
     uint64_t numberOfKeys = partitionInfo->numberOfKeys;
     uint64_t metadataSize = sizeof(PartitionInfo) + partitionInfo->mapSize * sizeof(MapNode);
 
-    if(numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
-
-        printk("IMPORTANT: remove fragmentation to be triggered\n");
-        uint64_t changedSize = removeFragmentation(partitionInfo);
+#if REMOVE_FRAGMENTATION == 1
 
 #if EMULATION == 1
-        if(changedSize != 0) {
+    if(remove_fragmentation) {
+#endif
+
+        if (numberOfKeys > 0 && fileContentSize * REDUCTION_PARAM <= fileSize) {
+
+            printk("IMPORTANT: remove fragmentation to be triggered\n");
+            uint64_t changedSize = removeFragmentation(partitionInfo);
+
+#if EMULATION == 1
+            if (changedSize != 0) {
+                int fdDef = open(partition, O_RDWR, 0);
+                if (fdDef < 0) {
+                    return -1;
+                }
+                ftruncate(fdDef, changedSize);
+                close(fdDef);
+            }
+#endif
+            printk("trunc temporary ommited\n");
+            partitionInfo->fileContentSize = changedSize;
+            partitionInfo->freeSlot = changedSize;
+            fileSize = changedSize;
+        } else if (numberOfKeys == 0) {
+            printk("Number of keys = 0\n");
+#if EMULATION == 1
+
+            memset((uint8_t *) partitionInfo + sizeof(PartitionInfo), 0x00, metadataSize - sizeof(PartitionInfo));
+            partitionInfo->fileContentSize = metadataSize;
+            partitionInfo->freeSlot = metadataSize;
+
             int fdDef = open(partition, O_RDWR, 0);
-            if(fdDef < 0) {
+            if (fdDef < 0) {
                 return -1;
             }
-            ftruncate(fdDef, changedSize);
+            ftruncate(fdDef, metadataSize);
             close(fdDef);
-        }
 #endif
-        printk("trunc temporary ommited\n");
-        partitionInfo->fileContentSize = changedSize;
-        partitionInfo->freeSlot = changedSize;
-        fileSize = changedSize;
-    }
+            printk("trunc temporary ommited\n");
+            fileSize = metadataSize;
+        }
 
-    if(numberOfKeys == 0) {
-        printk("Number of keys = 0\n");
 #if EMULATION == 1
-
-        memset((uint8_t* )partitionInfo + sizeof(PartitionInfo), 0x00, metadataSize - sizeof(PartitionInfo));
-        partitionInfo->fileContentSize = metadataSize;
-        partitionInfo->freeSlot = metadataSize;
-
-        int fdDef = open(partition, O_RDWR, 0);
-        if(fdDef < 0) {
-            return -1;
-        }
-        ftruncate(fdDef, metadataSize);
-        close(fdDef);
-#endif
-        printk("trunc temporary ommited\n");
-        fileSize = metadataSize;
     }
+#endif
+
+#endif
 
     printk("Next action: set bufferd file\n");
     if(set_buffered_file(partition, (char** )&mappedPartition, fileSize) != fileSize) {
