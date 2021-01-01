@@ -35,6 +35,12 @@
 #define READ_MASK       4
 #define WRITE_MASK      2
 
+#define REMOVE_FRAGMENTATION 1
+#define MAP_UNUSED_ROW_OPTIMISATION 1
+
+extern uint64_t remove_fragmentation;
+extern uint64_t map_optimisation;
+
 enum {
     VERBOSE_NO = 0,
     VERBOSE_LOW = 1,
