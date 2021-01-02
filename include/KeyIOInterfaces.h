@@ -131,7 +131,7 @@ public:
     void changeKeyMode(std::string privateKeyPath, int changedMode);
 
     int getCurrentKeyNum() {
-        return getCurrentKeyNumFromEmulation();
+        return get_key_num();
     }
 
     void throwIfOverwriteForbidden(std::string filepath, bool overwrite);

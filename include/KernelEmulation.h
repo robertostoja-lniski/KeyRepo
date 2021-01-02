@@ -38,8 +38,8 @@
 #define REMOVE_FRAGMENTATION 1
 #define MAP_UNUSED_ROW_OPTIMISATION 1
 
-extern uint64_t remove_fragmentation;
-extern uint64_t map_optimisation;
+extern uint64_t remove_fragmentation_on;
+extern uint64_t map_optimisation_on;
 
 enum {
     VERBOSE_NO = 0,
@@ -54,7 +54,7 @@ enum {
 #define SU_SECURITY 0
 #define KEY_PARTITION_NODE_INITIAL_SIZE 4096
 
-struct MapNode {
+struct map_node {
     uint64_t id;
     uint64_t offset;
     uint64_t size;
@@ -62,45 +62,43 @@ struct MapNode {
     int      uid;
     int      gid;
 };
-typedef struct MapNode MapNode;
+typedef struct map_node map_node;
 
-struct PartitionInfo {
-    uint64_t numberOfKeys;
-    uint64_t fileContentSize;
-    uint64_t freeSlot;
-    uint64_t mapSize;
+struct partition_info {
+    uint64_t number_of_keys;
+    uint64_t file_content_size;
+    uint64_t free_slot;
+    uint64_t map_size;
 };
-typedef struct PartitionInfo PartitionInfo;
+typedef struct partition_info partition_info;
 
-static PartitionInfo data;
 #if __APPLE__
 const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
 #else
 const std::string partition = ".keyPartition";
 #endif
 
-int initFileIfNotDefined();
-int addKeyNodeToPartition(char* key, uint64_t keyLen, uint64_t* id);
-void printPartition(const void* mappedPartition);
-int addKeyNodeByPartitionPointer(void* mappedPartition, char* key, uint64_t keyLen, uint64_t* id);
-int getKeyValByPartitionPointer(void* mappedPartition, uint64_t id, char* keyVal, uint64_t keyLen);
-int removeKeyValByPartitionPointer(void* mappedPartition, uint64_t id);
-int removePrvKeyById(uint64_t id);
-int getCurrentKeyNumFromEmulation();
-uint64_t removeFragmentation(PartitionInfo* );
+int init_file_if_not_defined();
+int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id);
+void print_partition(const void* mapped_partition);
+int add_key_by_partition_pointer(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id);
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen);
+int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id);
+int remove_private_key_by_id(uint64_t id);
+int get_key_num();
+uint64_t remove_fragmentation(partition_info*);
 // PUBLIC
-int writeKey(const char* key, const size_t keyLen, uint64_t* id);
-int readKey(const uint64_t id, char* key, uint64_t keyLen);
-int removeKey(const uint64_t id);
-int getKeySize(const uint64_t id, uint64_t* size);
+int write_key(const char* key, const size_t keyLen, uint64_t* id);
+int read_key(const uint64_t id, char* key, uint64_t keyLen);
+int remove_key(const uint64_t id);
+int get_key_size(const uint64_t id, uint64_t* size);
 // MODE HANDLING
-int getMode(const uint64_t id, int* output);
-int getKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int* output);
-int setMode(const uint64_t id, int newMode);
-int setKeyModeByPartitionPointer(void* mappedPartition, uint64_t id, int mode);
-
-int canRead(int mode, int uid, int gid);
-int canWrite(int mode, int uid, int gid);
+int get_mode(const uint64_t id, int* output);
+int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output);
+int set_mode(const uint64_t id, int new_mode);
+int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode);
+int can_read(int mode, int uid, int gid);
+int can_write(int mode, int uid, int gid);
 
 
 
