@@ -106,9 +106,6 @@ std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKe
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
-    if(keyLen != keyLenLegacy) {
-        throw std::runtime_error("Unhandled error: new API NOT STABLE");
-    }
     auto keyStr = std::string(prvKey);
     free(prvKey);
     return keyStr;

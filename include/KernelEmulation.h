@@ -75,7 +75,7 @@ typedef struct partition_info partition_info;
 #if __APPLE__
 const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
 #else
-const std::string partition = ".keyPartition";
+const static char* partition = ".keyPartition";
 #endif
 
 int init_file_if_not_defined();
