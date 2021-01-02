@@ -11,7 +11,7 @@
 #include "KeyIOInterfaces.h"
 #include "OpenSSLHandler.h"
 extern "C" {
-    #include "KernelEmulation.h"
+    #include "KeyRepoSyscallWrapper.h"
 };
 
 #include <stdio.h>

@@ -1424,11 +1424,11 @@ long ksys_old_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
 long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
 			    unsigned int nsops,
 			    const struct old_timespec32 __user *timeout);
-long get_current_key_num(void);
-long write_key(const char __user *key, const size_t keyLen, uint64_t __user *id);
-long read_key(const uint64_t id, char __user * key, uint64_t keyLen);
-long remove_key(const uint64_t __user id);
-long get_mode(const uint64_t __user id, int__user * output);
-long set_mode(const uint64_t __user id, int __user newMode);
-long get_key_size(const uint64_t __user id, uint64_t* size);
+long get_key_num(void);
+long write_key(const char __user *key, const size_t keyLen, uint64_t __user *id, int __user uid, int __user gid);
+long read_key(const uint64_t id, char __user * key, uint64_t keyLen, int __user uid, int __user gid);
+long remove_key(const uint64_t __user id, int __user uid, int __user gid);
+long get_mode(const uint64_t __user id, int __user * output, int __user uid, int __user gid);
+long set_mode(const uint64_t __user id, int __user newMode, int __user uid, int __user gid);
+long get_key_size(const uint64_t __user id, uint64_t* size, int __user uid, int __user gid);
 #endif

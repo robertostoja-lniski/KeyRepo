@@ -357,13 +357,13 @@
 433	common	fspick			__x64_sys_fspick
 434	common	pidfd_open		__x64_sys_pidfd_open
 435	common	clone3			__x64_sys_clone3/ptregs
-436 common  get_current_key_num      __x64_sys_get_current_key_num
-437 common  write_key                               __x64_sys_write_key
-438 common  read_key                                __x64_sys_read_key    
-439 common  remove_key                              __x64_sys_remove_key
-440 common  get_mode                                __x64_sys_get_mode
-441 common  set_mode                                __x64_sys_set_mode
-442 common  get_key_size                            __x64_sys_get_key_size
+436 	common  get_key_num       	__x64_sys_get_key_num
+437 	common  write_key               __x64_sys_write_key
+438	common  read_key                __x64_sys_read_key    
+439 	common  remove_key              __x64_sys_remove_key
+440 	common  get_mode                __x64_sys_get_mode
+441 	common  set_mode                __x64_sys_set_mode
+442 	common  get_key_size            __x64_sys_get_key_size
 #
 # x32-specific system call numbers start at 512 to avoid cache impact
 # for native 64-bit operation. The __x32_compat_sys stubs are created

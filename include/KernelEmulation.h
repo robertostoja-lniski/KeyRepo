@@ -53,6 +53,8 @@ enum {
 #define VERBOSE_LEVEL VERBOSE_NO
 #define SU_SECURITY 0
 #define KEY_PARTITION_NODE_INITIAL_SIZE 4096
+#define MAGIC 312312312312
+#define AVG_KEY_LEN 4096
 
 struct map_node {
     uint64_t id;
@@ -65,6 +67,7 @@ struct map_node {
 typedef struct map_node map_node;
 
 struct partition_info {
+    uint64_t magic;
     uint64_t number_of_keys;
     uint64_t file_content_size;
     uint64_t free_slot;
@@ -78,28 +81,34 @@ const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
 const static char* partition = ".keyPartition";
 #endif
 
+struct access_rights {
+    int uid;
+    int gid;
+};
+typedef struct access_rights access_rights;
+
+
 int init_file_if_not_defined();
-int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id);
+int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, access_rights);
 void print_partition(const void* mapped_partition);
-int add_key_by_partition_pointer(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id);
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen);
-int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id);
-int remove_private_key_by_id(uint64_t id);
-int get_key_num();
+int add_key_by_partition_pointer(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights);
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, access_rights);
+int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_rights);
+int remove_private_key_by_id(uint64_t id, access_rights);
 uint64_t remove_fragmentation(partition_info*);
 // PUBLIC
-int write_key(const char* key, const size_t keyLen, uint64_t* id);
-int read_key(const uint64_t id, char* key, uint64_t keyLen);
-int remove_key(const uint64_t id);
-int get_key_size(const uint64_t id, uint64_t* size);
+int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output, access_rights);
+int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode, access_rights);
+int can_read(int mode, access_rights mapped, access_rights effective);
+int can_write(int mode, access_rights mapped, access_rights effective);
+
+int do_write_key(const char* key, const uint64_t keyLen, uint64_t* id, int uid, int gid);
+int do_read_key(const uint64_t id, char* key, uint64_t keyLen, int uid, int gid);
+int do_remove_key(const uint64_t id, int uid, int gid);
+int do_get_key_size(const uint64_t id, uint64_t* size, int uid, int gid);
 // MODE HANDLING
-int get_mode(const uint64_t id, int* output);
-int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output);
-int set_mode(const uint64_t id, int new_mode);
-int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode);
-int can_read(int mode, int uid, int gid);
-int can_write(int mode, int uid, int gid);
-
-
+int do_get_mode(const uint64_t id, int* output, int uid, int gid);
+int do_set_mode(const uint64_t id, int new_mode, int uid, int gid);
+int do_get_key_num();
 
 #endif //KEYREPO_KERNELEMULATION_H

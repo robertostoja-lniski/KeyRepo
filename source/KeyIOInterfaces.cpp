@@ -190,7 +190,7 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
     if(read_key(id, prvKey, keyLen) < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
-
+//    std::cout << prvKey;
     BIO* bo = BIO_new( BIO_s_mem() );
     if(bo == nullptr) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
