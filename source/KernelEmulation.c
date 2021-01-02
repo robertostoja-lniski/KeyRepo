@@ -307,13 +307,6 @@ int initFileIfNotDefined() {
     printk("After allocation\n");
 #endif
 
-#if EMULATION == 1
-    void* partitionStart = malloc(fileSize);
-#else
-    printk("New partition file to be allocated\n");
-    void* partitionStart = kmalloc(fileSize, GFP_KERNEL);
-    printk("After allocation\n");
-#endif
 
     if(!partitionStart) {
         printk("Allocation failed\n");
@@ -338,25 +331,6 @@ int initFileIfNotDefined() {
         map_node* mapData = (map_node* )kmalloc(sizeof(map_node), GFP_KERNEL);
         // printk("Malloc ok\n");
 #endif
-
-    printk("Memset ok\n");
-
-    memcpy(partitionStart, partitionInfo, sizeof(PartitionInfo));
-
-    printk("Memcpy ok\n");
-
-    MapNode* mapPosition = (MapNode* )((PartitionInfo* )partitionStart + 1);
-    int i;
-    for(i = 0; i < partitionInfo->mapSize; i++) {
-
-#if EMULATION == 1
-        MapNode* mapData = (MapNode* )malloc(sizeof(MapNode));
-#else
-        // printk("Malloc to be used\n");
-        MapNode* mapData = (MapNode* )kmalloc(sizeof(MapNode), GFP_KERNEL);
-        // printk("Malloc ok\n");
-#endif
-
         if(!mapData) {
             return 1;
         }
@@ -526,8 +500,8 @@ int add_key_to_partition(char* __user key, uint64_t __user *id) {
 #endif
 
     printk("Entering add key node to partition\n");
-    printk("Key val is %s\n", keyNodeToAdd->keyContent);
-    printk("Key len is %zu\n", keyNodeToAdd->keySize);
+    printk("Key val is %s\n", key);
+    printk("Key len is %zu\n", key_len);
     if(initFileIfNotDefined() != 0) {
         return -2;
     }
@@ -669,27 +643,13 @@ int add_key_by_partition_pointer(void* mapped_partition, char* __user key, uint6
     printk("id: %zu\n", current_elem_in_map->id);
     printk("size: %zu\n", current_elem_in_map->size);
 
-
-    printk("Copied element to update has values of:\n");
-    printk("offset %zu:\n", currentElementInMap->offset);
-    printk("id: %zu\n", currentElementInMap->id);
-    printk("size: %zu\n", currentElementInMap->size);
-
-
 #if EMULATION == 1
     free(new_content);
 #else 
     kfree(new_content);
 #endif
 
-
     uint8_t *key_address = (uint8_t *)partion_metadata + offsetToAdd;
-
-    printk("Copied key in partiton is \n");
-    printk("0 %c\n", keyPlaceToAdd->data[0]);
-    printk("1 %c\n", keyPlaceToAdd->data[1]);
-    printk("2 %c\n", keyPlaceToAdd->data[2]);
-    printk("8 %c\n", keyPlaceToAdd->data[8]);
 
 #if EMULATION == 1
     memcpy(key_address, key, key_len);
@@ -1088,7 +1048,6 @@ int remove_private_key_by_id(uint64_t id) {
     }
 #endif
 
-#endif
 
     printk("Next action: set bufferd file\n");
     if(set_buffered_file(partition, (char** )&mapped_partition, file_size) != file_size) {
@@ -1146,8 +1105,6 @@ SYSCALL_DEFINE3(write_key, const char __user *, key, const size_t, key_len, uint
 #if EMULATION == 0
     printk("Exiting write key\n");
 #endif
-
-    kfree(keyNode);
 
     return 0;
 }
