@@ -18,6 +18,10 @@
 
 #include "../../include/KernelEmulation.h"
 
+#else
+
+#include "../../include/KeyRepoSyscallWrapper.h"
+
 #endif
 
 int main(int argc, char *argv[])
@@ -53,8 +57,8 @@ int main(int argc, char *argv[])
 
     char* buf = (char* )malloc(6);
     int readRet = read_key(id, buf, 6);
-    free(buf);
     printf("Get key ret is: %d and key is: %s\n", readRet, buf);
+    free(buf);
 
     int removeRet = remove_key(id);
     printf("Remove key ret is: %d\n", removeRet);
