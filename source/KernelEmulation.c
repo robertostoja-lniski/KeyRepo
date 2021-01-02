@@ -35,7 +35,6 @@ size_t set_buffered_file(const char* partition, char** buf, size_t bufsize);
 
 #endif
 
-
 size_t set_buffered_file(const char* partition, char** buf, size_t bufsize) {
 #if EMULATION == 1
     FILE* fd = fopen(partition, "w");
@@ -77,6 +76,7 @@ size_t set_buffered_file(const char* partition, char** buf, size_t bufsize) {
     filp_close(fp, NULL);
     printk("Next action: kfree on *buf\n");
     kfree(*buf);
+    
     printk("Next action: set fs\n");
     set_fs(fs);
     printk("Exiting: Set buffered file\n");
@@ -160,7 +160,9 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 
     printk("Next action: vfs_stat\n");
     vfs_stat(partition, stat);
-    *size = stat->size;
+    *size = stat->size + extra_size;
+
+    printk("File size is %zu\n", *size);
 
     printk("File size is %zu\n", *size);
 
@@ -191,6 +193,8 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 
 // private
 uint64_t generate_random_id(void* mapped_partition){
+
+    printk("Entering generate random id\n");
 
     printk("Entering generate random id\n");
 
@@ -260,6 +264,9 @@ int initFileIfNotDefined() {
         set_fs(fs);
         return;
     }
+    printk("Open file success\n");
+    filp_close(fp, NULL);
+    printk("File closed\n");
 
     printk("Open file error! - maybe does not exist\n");
     fp = filp_open(partition, O_CREAT, 0644);
@@ -300,6 +307,7 @@ int initFileIfNotDefined() {
     printk("After allocation\n");
 #endif
 
+
     if(!partitionStart) {
         printk("Allocation failed\n");
         return 1;
@@ -323,7 +331,6 @@ int initFileIfNotDefined() {
         map_node* mapData = (map_node* )kmalloc(sizeof(map_node), GFP_KERNEL);
         // printk("Malloc ok\n");
 #endif
-
         if(!mapData) {
             return 1;
         }
@@ -493,6 +500,8 @@ int add_key_to_partition(char* __user key, uint64_t __user *id) {
 #endif
 
     printk("Entering add key node to partition\n");
+    printk("Key val is %s\n", key);
+    printk("Key len is %zu\n", key_len);
     if(initFileIfNotDefined() != 0) {
         return -2;
     }
@@ -619,7 +628,7 @@ int add_key_by_partition_pointer(void* mapped_partition, char* __user key, uint6
 #if EMULATION == 1
     new_content->mode = 600;
 #else
-    new_content->mode = 777;
+    new_content->mode = 600;
 #endif
 
     printk("Element to update has values of:\n");
@@ -634,13 +643,11 @@ int add_key_by_partition_pointer(void* mapped_partition, char* __user key, uint6
     printk("id: %zu\n", current_elem_in_map->id);
     printk("size: %zu\n", current_elem_in_map->size);
 
-
 #if EMULATION == 1
     free(new_content);
 #else 
     kfree(new_content);
 #endif
-
 
     uint8_t *key_address = (uint8_t *)partion_metadata + offsetToAdd;
 
@@ -719,6 +726,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
         current_elem_in_map = current_elem_in_map + 1;
     }
     if(!found) {
+        printk("Not found\n");
         return -1;
     }
     printk("Found\n");
@@ -728,6 +736,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
         printk("Allocation size: %zu is shortened to key len of %zu\n", allocation_size, key_len);
         allocation_size = key_len;
     }
+
 
 #if EMULATION == 1
     memcpy(keyVal, (uint8_t *)partion_metadata + offset, allocation_size);
@@ -1034,12 +1043,11 @@ int remove_private_key_by_id(uint64_t id) {
             printk("trunc temporary ommited\n");
             file_size = metadataSize;
         }
-
+#endif
 #if EMULATION == 1
     }
 #endif
 
-#endif
 
     printk("Next action: set bufferd file\n");
     if(set_buffered_file(partition, (char** )&mapped_partition, file_size) != file_size) {
