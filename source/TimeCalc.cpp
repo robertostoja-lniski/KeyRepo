@@ -120,7 +120,7 @@ void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
     for(int i = 1; i <= trials; i++) {
 
         if(i % 127 == 0) {
-            auto keyNum = getCurrentKeyNumFromEmulation();
+            auto keyNum = get_key_num();
             while(keyNum > 0) {
 
                 auto start = std::chrono::high_resolution_clock::now();
@@ -133,7 +133,7 @@ void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
 
                 removeKeyTime += std::chrono::duration_cast<std::chrono::microseconds>(singleRemove).count();
 
-                keyNum = getCurrentKeyNumFromEmulation();
+                keyNum = get_key_num();
             }
         }
 
@@ -199,7 +199,7 @@ void EmulationTimeCalc::getKeySizeTime(unsigned int trials) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-void EmulationTimeCalc::getCurrentKeyNumFromEmulationTime(unsigned int trials) {
+void EmulationTimeCalc::getKeyNumTime(unsigned int trials) {
 
     system("mv ~/.keyPartition ~/.keyPartition.old");
 
@@ -229,7 +229,7 @@ void EmulationTimeCalc::getCurrentKeyNumFromEmulationTime(unsigned int trials) {
         uint64_t size;
 
         auto start = std::chrono::high_resolution_clock::now();
-        auto getSizeRet = getCurrentKeyNumFromEmulation();
+        auto getSizeRet = get_key_num();
         auto singleRemove = std::chrono::high_resolution_clock::now() - start;
 
         getKeySizeTime += std::chrono::duration_cast<std::chrono::microseconds>(singleRemove).count();
@@ -260,7 +260,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
         for (int i = 1; i <= 127; i++) {
 
             if (i % 127 == 0) {
-                auto keyNum = getCurrentKeyNumFromEmulation();
+                auto keyNum = get_key_num();
                 while (keyNum > 0) {
 
                     auto removeRet = removeKey(ids[keyNum]);
@@ -268,7 +268,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
                         throw std::runtime_error("Error while testing testing optimisation");
                     }
 
-                    keyNum = getCurrentKeyNumFromEmulation();
+                    keyNum = get_key_num();
                     // omits half of keys
                     keyNum -= 3;
                 }
@@ -382,7 +382,7 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
                 }
 
                 auto start = std::chrono::high_resolution_clock::now();
-                auto getNumRet = getCurrentKeyNumFromEmulation();
+                auto getNumRet = get_key_num();
                 auto singleRead = std::chrono::high_resolution_clock::now() - start;
 
                 if (getNumRet < 0) {

@@ -23,7 +23,7 @@ public:
     virtual void getKeySizeTime(unsigned int trials) = 0;
     virtual void getKeyModeTime(unsigned int trials) = 0;
     virtual void setKeyModeTime(unsigned int trials) = 0;
-    virtual void getCurrentKeyNumFromEmulationTime(unsigned int trials) = 0;
+    virtual void getKeyNumTime(unsigned int trials) = 0;
     virtual uint64_t unusedMapRowOptimisation(unsigned int trials) = 0;
     virtual void defragmentationOptimisation(unsigned int trials, unsigned int scenario_id) = 0;
     virtual ~TimeCalc() = 0;
@@ -42,7 +42,7 @@ public:
     void getKeySizeTime(unsigned int trials);
     void getKeyModeTime(unsigned int trials);
     void setKeyModeTime(unsigned int trials);
-    void getCurrentKeyNumFromEmulationTime(unsigned int trials);
+    void getKeyNumTime(unsigned int trials);
     uint64_t unusedMapRowOptimisation(unsigned int trials);
     void defragmentationOptimisation(unsigned int trials, unsigned int scenario_id);
     ~EmulationTimeCalc() = default;
