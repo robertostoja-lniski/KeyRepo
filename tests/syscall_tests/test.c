@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define EMULATION 1
+#define EMULATION 0
 
 #if EMULATION == 1
 
@@ -30,13 +30,13 @@ int main(int argc, char *argv[])
     memset(action, 0x00, 1024);
     char *prefix = "rm ";
     strcat(action, prefix);
-    strcat(action, partition);
-    system(action);
+    strcat(action, ".keyPartition");
+//    system(action);
     printf("Running %s\n", action);
     const char* key = "abcde";
     uint64_t id;
     printf("Key is %s\n", key);
-    int writeRet = write_key(key, (const size_t)5, &id);
+    int writeRet = write_key(key, (uint64_t)5, &id);
     printf("Write ret: %d\n", writeRet);
     int getKeyNumRet = get_key_num();
     printf("Get key num: %d\n", getKeyNumRet);
@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
     int setKeyModeRet = set_mode(id, 777);
     printf("Set mode ret is %d\n", getKeyModeRet);
 
+//    return 0;
     int getKeyModeRetNew = get_mode(id, &mode);
     printf("Get mode ret is: %d and mode is: %d\n", getKeyModeRetNew, mode);
 

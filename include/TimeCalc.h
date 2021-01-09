@@ -12,7 +12,7 @@
 #include <algorithm>
 
 extern "C" {
-    #include "KernelEmulation.h"
+    #include "KeyRepoSyscallWrapper.h"
 };
 
 class TimeCalc {

@@ -1,1 +1,1 @@
-obj-y := KernelEmulation.o
+obj-y := krepo.o

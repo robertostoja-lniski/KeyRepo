@@ -32,7 +32,7 @@
 // currently (may 2020) I am working on the most effective solution
 
 extern "C" {
-    #include "KernelEmulation.h"
+    #include "KeyRepoSyscallWrapper.h"
 };
 
 
