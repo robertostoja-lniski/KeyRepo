@@ -305,8 +305,6 @@ int init_file_if_not_defined(void) {
         return 1;
     }
 
-//    = (int)ftell(file);
-//    fseek(file, 0L, SEEK_END);
 
 #else
 
@@ -315,7 +313,6 @@ int init_file_if_not_defined(void) {
     size_t              part_size;
     struct kstat*       stat;
     partition_info*     partition_metadata;
-
 
     printk("Entering init file if not defined %s\n", partition);
     printk("Next action: getting fs\n");
@@ -341,17 +338,6 @@ int init_file_if_not_defined(void) {
         printk("Part size is %lu\n", part_size);
         kfree(stat);
         filp_close(fp, NULL);
-//
-//        if(part_size == 0) {
-//
-//            printk("Check if it is separate partition\n");
-//            int fd = open("/dev/sdb2", O_RDONLY);
-//            off_t real_size = lseek(fd, 0, SEEK_END);
-//            close(fd);
-//
-//            printk("Real size is %llu\n", real_size);
-//
-//        }
 
         // if current used size is lower than minimal partition size
         // it means that at the beggining of partition there are non-partition bytes
@@ -386,6 +372,8 @@ int init_file_if_not_defined(void) {
         printk("Allocation failed, exiting\n");
         return 1;
     }
+
+    sema_init(&sem, 1);
 
 #endif
 
@@ -1409,12 +1397,25 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 
     proc_rights.uid = uid;
     proc_rights.gid = gid;
+
+#if EMULATION == 0
+    up(&sem);
+#endif
+
     ret = add_key_to_partition(key, used_len, id, proc_rights);
     if(ret == -1 || ret == -2) {
+#if EMULATION == 0
+        down(&sem);
+#endif
+
         return ret;
     }
 
     printk("Exiting write key\n");
+
+#if EMULATION == 0
+    down(&sem);
+#endif
 
     return 0;
 }
@@ -1454,11 +1455,28 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
 #endif
 
     access_rights proc_rights;
+    int           ret;
+    if(id == 0) {
+        return -1;
+    }
 
     printk("Entering and soon exiting remove key\n");
     proc_rights.uid = uid;
     proc_rights.gid = gid;
-    return id == 0 ? -1 : remove_private_key_by_id(id, proc_rights);
+
+#if EMULATION == 0
+    up(&sem);
+#endif
+
+    ret = remove_private_key_by_id(id, proc_rights);
+
+#if EMULATION == 0
+    down(&sem);
+#endif
+
+    return ret;
+
+
 }
 
 
@@ -1535,9 +1553,17 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
         return -1;
     }
 
+#if EMULATION == 0
+    up(&sem);
+#endif
+
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if(mapped_partition == NULL || file_size == 0) {
+
+#if EMULATION == 0
+        down(&sem);
+#endif
         return -1;
     }
 
@@ -1552,15 +1578,23 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
     free(mapped_partition);
 #else
     kfree(mapped_partition);
+    down(&sem);
 #endif
         return -1;
     }
 
     printk("Next action: set buffered file\n");
     if(set_buffered_file(partition, (char** )&mapped_partition, file_size, 0, 0) != file_size) {
+
+#if EMULATION == 0
+        down(&sem);
+#endif
         return -1;
     }
 
+#if EMULATION == 0
+    down(&sem);
+#endif
     printk("Exiting: set mode\n");
     return 0;
 }
