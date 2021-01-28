@@ -81,6 +81,8 @@ const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
 const static char* partition = ".keyPartition";
 #endif
 
+static struct semaphore *sem;
+
 struct access_rights {
     int uid;
     int gid;

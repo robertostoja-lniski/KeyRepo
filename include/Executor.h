@@ -61,14 +61,6 @@ public:
         return digit <= 7 && decDigit <= 7 && hundredDigit <= 7;
     }
 
-    std::string intToString(int flags) {
-
-        if(!isFlagInRightFormat(flags)) {
-            throw std::runtime_error("ModeHandler: Wrong int flag format");
-        }
-
-    }
-
     ModeSetter stringToModeSetter(std::string flags) {
 
         // basic edge cases
