@@ -1,4 +1,4 @@
-#define EMULATION 0
+#define EMULATION 1
 
 #if EMULATION == 1
     #include "../include/KernelEmulation.h"
