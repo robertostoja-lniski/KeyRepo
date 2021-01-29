@@ -34,6 +34,7 @@ Z punktu widzenia programisty nie ma znaczenia czy korzysta z partycji po stroni
 
 ## Kompilacja aplikacji ##
 Aplikacja była tworzona w programie CLion, ale posiada standardowy podział na pliki źródłowe i nagłówkowe i jest kompilowana poleceniem cmake.
+Ważne jest, żeby ustawić ścieżki do tworzenia emulacji w pliku KernelEmulation.h na lokalne. 
 
 z katalogu głównego projektu należy uruchomić:
 ```
