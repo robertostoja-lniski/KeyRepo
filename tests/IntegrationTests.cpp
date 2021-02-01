@@ -580,8 +580,8 @@ BOOST_AUTO_TEST_CASE(NOT_ENOUGH_ARGS_EXCEPTION)
     bool caught {false};
 
     try {
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_unique<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_unique<Parser>(lexicalAnalyser);
         parser->parse();
     } catch(std::exception &e) {
         if(e.what() == std::string("Not enough args")) {
@@ -603,8 +603,8 @@ BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_1)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     BOOST_CHECK_EQUAL(statement, std::string("help"));
@@ -621,8 +621,8 @@ BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_2)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     BOOST_CHECK_EQUAL(statement, std::string("help"));
@@ -639,8 +639,8 @@ BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_3)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     auto ret = executor->execute();
@@ -658,8 +658,8 @@ BOOST_AUTO_TEST_CASE(HELP_FLAG_TEST_4)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     auto ret = executor->execute();
@@ -681,8 +681,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -702,8 +702,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -722,8 +722,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_2)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -743,8 +743,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_3)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -764,8 +764,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_4)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -786,8 +786,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_5)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -809,8 +809,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_Decrypt)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -829,8 +829,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GET_MODE)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -850,8 +850,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -871,8 +871,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GET_MODE_TOO_MANY_PARAMS)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -893,8 +893,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_TOO_MANY_PARAMS)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -919,8 +919,8 @@ BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -943,8 +943,8 @@ BOOST_AUTO_TEST_CASE(GetPrivateKeyTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -964,8 +964,8 @@ BOOST_AUTO_TEST_CASE(DeleteKeyTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -985,8 +985,8 @@ BOOST_AUTO_TEST_CASE(DeleteKeyTooManyParamsOverwrite)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -1006,8 +1006,8 @@ BOOST_AUTO_TEST_CASE(SignTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -1028,8 +1028,8 @@ BOOST_AUTO_TEST_CASE(CheckSignatureTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -1051,8 +1051,8 @@ BOOST_AUTO_TEST_CASE(EncryptFileTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -1075,8 +1075,8 @@ BOOST_AUTO_TEST_CASE(DecryptFileTooManyParams)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -1101,8 +1101,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
     auto msg = executor->execute();
 
@@ -1124,8 +1124,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_1)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1154,8 +1154,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_2)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1184,8 +1184,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_3)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1214,8 +1214,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_INPUT_4)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1245,8 +1245,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_NOT_EXISTING_KEY)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1275,8 +1275,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_NOT_EXISTING_KEY)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1306,8 +1306,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_WRONG_KEY)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1336,8 +1336,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_WRONG_KEY)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_unique<Executor>(parser);
 
     bool caught {false};
@@ -1372,8 +1372,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GMOD)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1389,8 +1389,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GMOD)
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_unique<Executor>(parser);
         auto msg = executor->execute();
         BOOST_CHECK_EQUAL(msg, "600");
@@ -1419,8 +1419,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1436,8 +1436,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_unique<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1453,8 +1453,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_unique<Executor>(parser);
         auto msg = executor->execute();
         BOOST_CHECK_EQUAL(msg, "060");
@@ -1482,8 +1482,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1499,8 +1499,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_unique<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1516,8 +1516,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_unique<Executor>(parser);
         auto msg = executor->execute();
         BOOST_CHECK_EQUAL(msg, "400");
@@ -1546,8 +1546,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1587,8 +1587,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
             auto argc = args.argc;
             auto argv = args.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_unique<Executor>(parser);
 
 
@@ -1611,8 +1611,8 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
             auto argc = args.argc;
             auto argv = args.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_unique<Executor>(parser);
 
             std::string msg;
@@ -1650,8 +1650,8 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool caught {false};
@@ -1686,8 +1686,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1707,8 +1707,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1738,8 +1738,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN_OFFSET_PART)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1761,8 +1761,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN_OFFSET_PART)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1791,8 +1791,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1809,8 +1809,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1839,8 +1839,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1858,8 +1858,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1888,8 +1888,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1907,8 +1907,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1941,8 +1941,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -1971,8 +1971,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -1991,8 +1991,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -2010,8 +2010,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -2040,8 +2040,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2080,8 +2080,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_IV)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2119,8 +2119,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_IV)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             auto msg = executor->execute();
             BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
@@ -2150,8 +2150,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
         BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
@@ -2182,8 +2182,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_FILE_IV)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         auto msg = executor->execute();
@@ -2214,8 +2214,8 @@ BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_IV)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2253,8 +2253,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_FILE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2292,8 +2292,8 @@ BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2328,8 +2328,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -2350,8 +2350,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         try {
@@ -2386,8 +2386,8 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -2408,8 +2408,8 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         try {
@@ -2450,8 +2450,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_CONTENT_CHECK)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
 
@@ -2485,8 +2485,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -2506,8 +2506,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -2542,8 +2542,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -2564,8 +2564,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -2605,8 +2605,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_IV)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -2627,8 +2627,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_IV)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
@@ -2658,8 +2658,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -2677,8 +2677,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -2696,8 +2696,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             auto msg = executor->execute();
 
@@ -2725,8 +2725,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
             auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -2755,8 +2755,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -2776,8 +2776,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -2806,8 +2806,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -2824,8 +2824,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -2850,8 +2850,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2886,8 +2886,8 @@ BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_PARTITION) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2922,8 +2922,8 @@ BOOST_AUTO_TEST_CASE(GET_KEY_NOT_EXISTING_PARTITION) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2961,8 +2961,8 @@ BOOST_AUTO_TEST_CASE(SIGN_NOT_EXISTING_PARTITION) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -2999,8 +2999,8 @@ BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_ID) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -3017,8 +3017,8 @@ BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_ID) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -3055,8 +3055,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -3077,8 +3077,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -3112,8 +3112,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_1)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -3141,8 +3141,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_2)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -3170,8 +3170,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_3)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -3199,8 +3199,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_4)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -3227,8 +3227,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_5)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -3255,8 +3255,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_6)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -3285,8 +3285,8 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool caught {false};
@@ -3321,8 +3321,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -3355,8 +3355,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_NOT_EXISTING_DATA_TO_SIGN) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -3390,8 +3390,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -3412,8 +3412,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -3439,8 +3439,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -3461,8 +3461,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -3497,8 +3497,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -3520,8 +3520,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -3558,8 +3558,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3579,8 +3579,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3599,8 +3599,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             auto msg = executor->execute();
 
@@ -3629,8 +3629,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3650,8 +3650,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3670,8 +3670,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
 
             bool caught {false};
@@ -3708,8 +3708,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3728,8 +3728,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3749,8 +3749,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3768,8 +3768,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             auto msg = executor->execute();
 
@@ -3799,8 +3799,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3820,8 +3820,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3861,8 +3861,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
 
             bool caught {false};
@@ -3899,8 +3899,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3920,8 +3920,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             executor->execute();
         }
@@ -3940,8 +3940,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
             auto msg = executor->execute();
             BOOST_CHECK_EQUAL(msg, "Signature not correct");
@@ -3965,8 +3965,8 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_ID)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool caught {false};
@@ -3996,8 +3996,8 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_FILE)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool caught {false};
@@ -4027,8 +4027,8 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_TEST)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool caught {false};
@@ -4062,8 +4062,8 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -4079,8 +4079,8 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool error_caught {false};
@@ -4111,8 +4111,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -4133,8 +4133,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_GET_PRV_TEST)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -4156,8 +4156,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -4179,8 +4179,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_ENCRYPT_FILE_TEST)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -4201,8 +4201,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_DECRYPT_FILE_TEST)
     auto argc = args.argc;
     auto argv = args.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_unique<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_unique<Parser>(lexicalAnalyser);
     parser->parse();
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
@@ -4229,8 +4229,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
@@ -4250,8 +4250,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
 
@@ -4283,8 +4283,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite_prv.pem");
@@ -4304,8 +4304,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
 
@@ -4338,8 +4338,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite_prv.pem");
@@ -4358,8 +4358,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         try {
@@ -4397,8 +4397,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
@@ -4417,8 +4417,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         try {
@@ -4452,8 +4452,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -4471,8 +4471,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -4507,8 +4507,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         contentBeforeOverwrite = testHelpers::readFileIntoString("/tmp/to_overwrite.pem");
@@ -4527,8 +4527,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -4562,8 +4562,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -4582,8 +4582,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         afterOverwrite = testHelpers::readFileIntoString("/tmp/result");
@@ -4613,8 +4613,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -4631,8 +4631,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         try {
@@ -4667,8 +4667,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -4685,8 +4685,8 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
         auto argc = args.argc;
         auto argv = args.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -4718,8 +4718,8 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     bool caught {false};
@@ -4751,8 +4751,8 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
     auto argc = emulatedTerminalArgs.argc;
     auto argv = emulatedTerminalArgs.argv;
 
-    auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-    auto parser = std::make_shared<Parser>(syntaxAnalyser);
+    auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+    auto parser = std::make_shared<Parser>(lexicalAnalyser);
     auto executor = std::make_shared<Executor>(parser);
 
     try {
@@ -4789,8 +4789,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -4816,8 +4816,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -5568,8 +5568,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -5590,8 +5590,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -5628,8 +5628,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -5649,8 +5649,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -5687,8 +5687,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -5709,8 +5709,8 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_KEY)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         std::string contentAfterDecryption = testHelpers::readFileIntoString("/tmp/decrypted_file.txt");
@@ -5746,8 +5746,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE_HUGE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         auto msg = executor->execute();
 
@@ -5779,8 +5779,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -5816,8 +5816,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -5845,8 +5845,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -5878,8 +5878,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -5900,8 +5900,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -5932,8 +5932,8 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -5952,8 +5952,8 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -5990,8 +5990,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6012,8 +6012,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6037,8 +6037,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         try {
@@ -6074,8 +6074,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) 
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6096,8 +6096,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) 
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6121,8 +6121,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) 
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6170,8 +6170,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
 
             executor->execute();
@@ -6189,8 +6189,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
 
             executor->execute();
@@ -6227,8 +6227,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12_4096) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -6251,8 +6251,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12_4096) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6284,8 +6284,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_8192) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -6306,8 +6306,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_8192) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
@@ -6349,8 +6349,8 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION_RANDOM_SIZE) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
         executor->execute();
     }
@@ -6369,8 +6369,8 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION_RANDOM_SIZE) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         bool caught {false};
@@ -6416,8 +6416,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6438,8 +6438,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6463,8 +6463,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         if(i == 126) {
@@ -6511,8 +6511,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_R
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6533,8 +6533,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_R
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6558,8 +6558,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_R
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         if(i == 126) {
@@ -6606,8 +6606,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6629,8 +6629,8 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
         auto argc = emulatedTerminalArgs.argc;
         auto argv = emulatedTerminalArgs.argv;
 
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(lexicalAnalyser);
         auto executor = std::make_shared<Executor>(parser);
 
         executor->execute();
@@ -6681,8 +6681,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
 
             executor->execute();
@@ -6700,8 +6700,8 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
             auto argc = emulatedTerminalArgs.argc;
             auto argv = emulatedTerminalArgs.argv;
 
-            auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-            auto parser = std::make_shared<Parser>(syntaxAnalyser);
+            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+            auto parser = std::make_shared<Parser>(lexicalAnalyser);
             auto executor = std::make_shared<Executor>(parser);
 
             executor->execute();

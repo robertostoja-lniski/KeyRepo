@@ -8,8 +8,8 @@ int main(int argc, char** argv) {
 
     std::shared_ptr<Executor> executor;
     try {
-        auto syntaxAnalyser = std::make_shared<SyntaxAnalyser>(argc, argv);
-        auto parser = std::make_shared<Parser>(syntaxAnalyser);
+        auto lexer = std::make_shared<Lexer>(argc, argv);
+        auto parser = std::make_shared<Parser>(semanticAnalyzer);
         executor = std::make_shared<Executor>(parser);
         executor->execute();
     } catch(std::exception &e) {

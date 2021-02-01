@@ -4,13 +4,13 @@
 
 #include <iostream>
 #include <cstring>
-#include "../include/SyntaxAnalyser.h"
+#include "../include/Lexer.h"
 
-Token SyntaxAnalyser::getNextToken() {
+Token Lexer::getNextToken() {
     auto value = getNextAndRead();
     return {value};
 }
-std::string SyntaxAnalyser::getNextAndRead() {
+std::string Lexer::getNextAndRead() {
     std::string toReturn;
     toReturn = *it;
     it++;

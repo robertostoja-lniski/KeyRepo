@@ -12,7 +12,7 @@
 #include <map>
 #include <iostream>
 
-class SyntaxAnalyser {
+class Lexer {
 
 private:
     class InputIterator {
@@ -43,7 +43,7 @@ private:
 
 
 public:
-    SyntaxAnalyser(int argc, char** argv) : it(argc, argv) {
+    Lexer(int argc, char** argv) : it(argc, argv) {
         // ommit
         if(argc == 1) {
             throw std::runtime_error("Not enough args");
