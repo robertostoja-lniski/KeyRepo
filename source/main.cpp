@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     std::shared_ptr<Executor> executor;
     try {
         auto lexer = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(semanticAnalyzer);
+        auto parser = std::make_shared<Parser>(lexer);
         executor = std::make_shared<Executor>(parser);
         executor->execute();
     } catch(std::exception &e) {
