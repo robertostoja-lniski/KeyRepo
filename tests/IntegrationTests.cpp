@@ -6654,6 +6654,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
+#if __APPLE__
 BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
 
@@ -6717,5 +6718,6 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
+#endif
 
 #endif

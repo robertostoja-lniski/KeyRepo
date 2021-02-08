@@ -18,12 +18,12 @@ original_uids get_original_uids() {
     int num_gid = -1;
 
     uid = getenv("SUDO_UID");
-    if(uid == NULL) {
+    if(uid != NULL) {
         num_uid = (int)geteuid();
     }
 
     gid = getenv("SUDO_GID");
-    if(gid == NULL) {
+    if(gid != NULL) {
         num_gid = (int)getegid();
     }
 
@@ -42,6 +42,7 @@ int get_key_num() {
 
 int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
 
+    printf("Entering write key\n");
     uint64_t usedLen = keyLen;
     if(keyLen > strlen(key)) {
         usedLen = strlen(key);
@@ -51,8 +52,7 @@ int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
-
-    printf("Len is %zu\n", usedLen);
+	
     return syscall(__x64_write_key, key, usedLen, id, ids.uid, ids.gid);
 }
 

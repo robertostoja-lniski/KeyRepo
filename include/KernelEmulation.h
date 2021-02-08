@@ -78,7 +78,7 @@ typedef struct partition_info partition_info;
 #if __APPLE__
 const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
 #else
-const static char* partition = ".keyPartition";
+const static char* partition = "/home/robert/.keyPartition";
 #endif
 
 static struct semaphore *sem;

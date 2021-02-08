@@ -35,7 +35,9 @@ int get_magic_offset(void* mapped_partition) {
 
 // kernel functions signatures defined for user space
 #if EMULATION == 1
-    void printk(const char* dummy, ...) {}
+    void printk(const char* dummy, ...) {
+//	 printf(dummy);
+    }
     void get_random_bytes(uint64_t* n, size_t size) {
         assert(size == sizeof(*n));
         uint64_t r = 0;
@@ -298,7 +300,9 @@ int init_file_if_not_defined(void) {
             return 0;
         }
     }
-    fclose(file);
+    if(file != NULL) {
+    	fclose(file);
+    }
 
     partition_info* partition_metadata = (partition_info* )malloc(sizeof(partition_info));
     if(!partition_metadata) {
