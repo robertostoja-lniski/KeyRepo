@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 project(KeyRepo)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 if(APPLE)
     set(CMAKE_SHARED_LINKER_FLAGS "-L/usr/local/opt/openssl@1.1/lib -I/usr/local/opt/openssl@1.1/include -lcrypto")
     set(CMAKE_CXX_STANDARD_LIBRARIES "-L/usr/local/opt/openssl@1.1/lib -I/usr/local/opt/openssl@1.1/include -lcrypto")
 else()
-    set(CMAKE_SHARED_LINKER_FLAGS "-lcrypto -lstdc++fs")
-    set(CMAKE_CXX_STANDARD_LIBRARIES "-lstdc++fs -lcrypto")
+    set(CMAKE_SHARED_LINKER_FLAGS "-lcrypto -lstdc++fs -lboost_system")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "-lstdc++fs -lcrypto -lboost_system")
 endif()
 #set(CMAKE_CXX_FLAGS "-lcrypto")
 #set(CMAKE_C_FLAGS "-lcrypto")

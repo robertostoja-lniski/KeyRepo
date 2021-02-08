@@ -246,7 +246,7 @@ public:
     }
 
     static void printHelp() {
-        std::cout << "key_repo - Tool used for key storage\n";
+        std::cout << "\nkey_repo - Tool used for key storage\n";
         std::cout << "USAGE:\n";
         std::cout << "\tKEY MANAGEMENT:\n";
         std::cout << "\t\tkey_repo create-key         path_to_private_key_id  path_to_public_key  key_length key_type [overwrite]\n";

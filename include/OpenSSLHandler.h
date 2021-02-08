@@ -15,6 +15,7 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
+#include <cassert>
 #endif
 #include <iostream>
 

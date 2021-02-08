@@ -5,7 +5,7 @@
 #ifndef KEYREPO_KEYREPOSYSCALLWRAPPER_H
 #define KEYREPO_KEYREPOSYSCALLWRAPPER_H
 
-#define EMULATION 1
+#define EMULATION 0
 #if EMULATION == 0
 
 #include <sys/mman.h>
@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <stdint.h>
 
 #define __x64_get_key_num   436
 #define __x64_write_key     437
@@ -22,40 +24,13 @@
 #define __x64_set_mode      441
 #define __x64_get_key_size  442
 
-int get_key_num() {
-    return syscall(__x64_get_key_num);
-}
-
-int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
-
-    uint64_t usedLen = keyLen;
-    if(keyLen > strlen(key)) {
-        usedLen = strlen(key);
-    }
-
-    printf("Len is %zu\n", usedLen);
-    return syscall(__x64_write_key, key, usedLen, id);
-}
-
-int read_key(const uint64_t id, char* key, uint64_t keyLen) {
-    return syscall(__x64_read_key, id, key, keyLen);
-}
-
-int remove_key(const uint64_t id) {
-    return syscall(__x64_remove_key, id);
-}
-
-int get_key_size(const uint64_t id, uint64_t* size) {
-    return syscall(__x64_get_key_size, id, size);
-}
-
-int get_mode(const uint64_t id, int* output) {
-    return syscall(__x64_get_mode, id, output);
-}
-
-int set_mode(const uint64_t id, int new_mode) {
-    return syscall(__x64_set_mode, id, new_mode);
-}
+int get_key_num();
+int write_key(const char* key, const uint64_t keyLen, uint64_t* id);
+int read_key(const uint64_t id, char* key, uint64_t keyLen);
+int remove_key(const uint64_t id);
+int get_key_size(const uint64_t id, uint64_t* size);
+int get_mode(const uint64_t id, int* output);
+int set_mode(const uint64_t id, int new_mode);
 
 #else
 
