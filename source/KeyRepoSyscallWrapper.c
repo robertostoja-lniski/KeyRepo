@@ -18,6 +18,17 @@ original_uids get_original_uids() {
     int num_gid = -1;
 
     uid = getenv("SUDO_UID");
+
+#if __APPLE__
+    if(uid == NULL) {
+        num_uid = (int)geteuid();
+    }
+
+    gid = getenv("SUDO_GID");
+    if(gid == NULL) {
+        num_gid = (int)getegid();
+    }
+#else
     if(uid != NULL) {
         num_uid = (int)geteuid();
     }
@@ -26,6 +37,8 @@ original_uids get_original_uids() {
     if(gid != NULL) {
         num_gid = (int)getegid();
     }
+#endif
+
 
     original_uids ret;
     ret.uid = num_uid;

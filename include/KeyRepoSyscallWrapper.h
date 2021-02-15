@@ -5,7 +5,7 @@
 #ifndef KEYREPO_KEYREPOSYSCALLWRAPPER_H
 #define KEYREPO_KEYREPOSYSCALLWRAPPER_H
 
-#define EMULATION 0
+#define EMULATION 1
 #if EMULATION == 0
 
 #include <sys/mman.h>
