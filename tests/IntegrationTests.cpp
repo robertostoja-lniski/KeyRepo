@@ -4767,73 +4767,6 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    size_t realKeySize = 1650;
-
-    for (int i = 0; i < 7; i++)
-    {
-        auto str = std::to_string(i);
-        std::vector<std::string> input {
-                "program",
-                "create-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-                "2048",
-                "RSA",
-                "overwrite"
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-
-        auto dummy = {"dummy"};
-    }
-
-    struct stat st{};
-    stat(partition, &st);
-    auto sizeWithFragmentation =  st.st_size;
-
-    for(int i = 0; i < 6; i++)
-    {
-        auto str = std::to_string(i);
-        std::vector<std::string> input {
-                "program",
-                "delete-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-    }
-
-    stat(partition, &st);
-    int64_t sizeAfterDefragmention =  st.st_size;
-    int64_t sizeExpected = sizeWithFragmentation - 6 * realKeySize;
-    auto isSizeWithPaddingBounds = (sizeAfterDefragmention - sizeExpected <= 10)
-            && (sizeExpected - sizeAfterDefragmention >= -10);
-
-    BOOST_CHECK_EQUAL(isSizeWithPaddingBounds, true);
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
 #if(RAW_PARTITION) 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_OK) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -5045,7 +4978,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
     uint64_t id;
     auto ret = write_key(key, (const size_t)4, &id);
 
-    int mode;
+    int mode = 667;
     auto setRet = set_mode(id, mode);
 
     int newMode;
@@ -6146,66 +6079,66 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) 
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    for (int i = 0; i < 100; i++)
-    {
-        if(i % 100 == 0) {
-            std::cout << i / 10 << "% of multiple loop test\n";
-        }
-        {
-            auto str = std::to_string(i);
-            std::vector<std::string> input {
-                    "program",
-                    "create-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-                    "2048",
-                    "RSA",
-                    "overwrite"
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-        {
-            auto str = std::to_string(i);
-            std::vector<std::string> input {
-                    "program",
-                    "delete-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-    }
-
-    struct stat st{};
-    stat(partition, &st);
-    auto sizeAfterMultipleLoop =  st.st_size;
-    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
-
-    BOOST_CHECK_EQUAL(isWithinBounds, true);
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
+//BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
+//    system("mv ~/.keyPartition ~/.keyPartition.old");
+//
+//    for (int i = 0; i < 100; i++)
+//    {
+//        if(i % 100 == 0) {
+//            std::cout << i / 10 << "% of multiple loop test\n";
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            std::vector<std::string> input {
+//                    "program",
+//                    "create-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//                    "2048",
+//                    "RSA",
+//                    "overwrite"
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            std::vector<std::string> input {
+//                    "program",
+//                    "delete-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//    }
+//
+//    struct stat st{};
+//    stat(partition, &st);
+//    auto sizeAfterMultipleLoop =  st.st_size;
+//    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
+//
+//    BOOST_CHECK_EQUAL(isWithinBounds, true);
+//
+//    system("mv ~/.keyPartition.old ~/.keyPartition");
+//}
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12_4096) {
     system("mv ~/.keyPartition ~/.keyPartition.old");
@@ -6654,70 +6587,70 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
     system("mv ~/.keyPartition.old ~/.keyPartition");
 }
 
-#if __APPLE__
-BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    for (int i = 0; i < 5; i++)
-    {
-        if(i % 100 == 0) {
-            std::cout << i / 10 << "% of multiple loop test\n";
-        }
-        {
-            auto str = std::to_string(i);
-            auto size = std::to_string(int(std::pow(2, 11 + i / 2)));
-
-
-            std::vector<std::string> input {
-                    "program",
-                    "create-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-                    size,
-                    "RSA",
-                    "overwrite"
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-        {
-            auto str = std::to_string(i);
-            std::vector<std::string> input {
-                    "program",
-                    "delete-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-    }
-
-    struct stat st{};
-    stat(partition, &st);
-    auto sizeAfterMultipleLoop =  st.st_size;
-
-    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
-    BOOST_CHECK_EQUAL(isWithinBounds, true);
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-#endif
+//#if __APPLE__
+//BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
+//    system("mv ~/.keyPartition ~/.keyPartition.old");
+//
+//    for (int i = 0; i < 5; i++)
+//    {
+//        if(i % 100 == 0) {
+//            std::cout << i / 10 << "% of multiple loop test\n";
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            auto size = std::to_string(int(std::pow(2, 11 + i / 2)));
+//
+//
+//            std::vector<std::string> input {
+//                    "program",
+//                    "create-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//                    size,
+//                    "RSA",
+//                    "overwrite"
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            std::vector<std::string> input {
+//                    "program",
+//                    "delete-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//    }
+//
+//    struct stat st{};
+//    stat(partition, &st);
+//    auto sizeAfterMultipleLoop =  st.st_size;
+//
+//    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
+//    BOOST_CHECK_EQUAL(isWithinBounds, true);
+//
+//    system("mv ~/.keyPartition.old ~/.keyPartition");
+//}
+//#endif
 
 #endif

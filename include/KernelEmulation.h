@@ -58,7 +58,6 @@ enum {
 
 struct map_node {
     uint64_t id;
-    uint64_t offset;
     uint64_t size;
     uint32_t mode;
     int      uid;
@@ -69,14 +68,13 @@ typedef struct map_node map_node;
 struct partition_info {
     uint64_t magic;
     uint64_t number_of_keys;
-    uint64_t file_content_size;
-    uint64_t free_slot;
     uint64_t map_size;
 };
 typedef struct partition_info partition_info;
 
 #if __APPLE__
 const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
+const static char* partition_base = "/Users/robertostoja-lniski/.keyPartitionV2/";
 #else
 const static char* partition = "/home/robert/.keyPartition";
 #endif
@@ -93,7 +91,7 @@ typedef struct access_rights access_rights;
 int init_file_if_not_defined();
 int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, access_rights);
 void print_partition(const void* mapped_partition);
-int add_key_by_partition_pointer(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights);
+int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights);
 int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, access_rights);
 int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_rights);
 int remove_private_key_by_id(uint64_t id, access_rights);
