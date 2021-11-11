@@ -48,6 +48,8 @@ public:
     uint64_t unusedMapRowOptimisation(unsigned int trials);
     void defragmentationOptimisation(unsigned int trials, unsigned int scenario_id);
     ~EmulationTimeCalc() = default;
+
+    void test(unsigned int trials);
 };
 
 
