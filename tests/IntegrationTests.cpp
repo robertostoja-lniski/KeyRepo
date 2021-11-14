@@ -5763,11 +5763,6 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
     {
         keysInPartitionAfterAdd--;
 
-        if(keysInPartitionAfterAdd == 62) {
-            auto dummy = 0;
-            auto a = 5;
-        }
-
         auto str = std::to_string(i);
         std::vector<std::string> input {
                 "program",
@@ -5988,98 +5983,98 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
-BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) {
-    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
-
-    for (int i = 0; i < 128; i++)
-    {
-        auto str = std::to_string(i);
-//        std::cout << "create" << i << std::endl;
-        std::vector<std::string> input {
-                "program",
-                "create-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-                "2048",
-                "RSA",
-                "overwrite"
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-    }
-
-    for(int i = 0; i < 100; i++)
-    {
-        auto str = std::to_string(i);
-        std::cout << "delete" << i << std::endl;
-        std::vector<std::string> input {
-                "program",
-                "delete-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-    }
-
-    bool caught {false};
-
-    for(int i = 100; i < 128; i++)
-    {
-        auto str = std::to_string(i);
-//        std::cout << "get" << i << std::endl;
-        std::vector<std::string> input {
-                "program",
-                "get-private-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/private_key_value",
-                "overwrite",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-        std::string content = testHelpers::readFileIntoString("/tmp/private_key_value");
-        std::string header {"-----BEGIN RSA PRIVATE KEY-----"};
-        std::string feet {"-----END RSA PRIVATE KEY-----"};
-
-        bool result = header == content.substr(0, header.size())
-                      && feet == content.substr(content.size() - feet.size(), feet.size());
-
-        auto hSize = header.size();
-        auto fSize = feet.size();
-        std::string l = content.substr(0, hSize);
-        std::string r = content.substr(content.size() - fSize, fSize);
-
-        auto left = l == header;
-        auto right = r == feet;
-
-        BOOST_CHECK_EQUAL(result, true);
-    }
-    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
-}
+//BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) {
+//    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+//
+//    for (int i = 0; i < 128; i++)
+//    {
+//        auto str = std::to_string(i);
+////        std::cout << "create" << i << std::endl;
+//        std::vector<std::string> input {
+//                "program",
+//                "create-key",
+//                "/tmp/private" + str + ".pem",
+//                "/tmp/public" + str + ".pem",
+//                "2048",
+//                "RSA",
+//                "overwrite"
+//        };
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//        auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//
+//        executor->execute();
+//    }
+//
+//    for(int i = 0; i < 100; i++)
+//    {
+//        auto str = std::to_string(i);
+//        std::cout << "delete" << i << std::endl;
+//        std::vector<std::string> input {
+//                "program",
+//                "delete-key",
+//                "/tmp/private" + str + ".pem",
+//                "/tmp/public" + str + ".pem",
+//        };
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//        auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//
+//        executor->execute();
+//    }
+//
+//    bool caught {false};
+//
+//    for(int i = 100; i < 128; i++)
+//    {
+//        auto str = std::to_string(i);
+////        std::cout << "get" << i << std::endl;
+//        std::vector<std::string> input {
+//                "program",
+//                "get-private-key",
+//                "/tmp/private" + str + ".pem",
+//                "/tmp/private_key_value",
+//                "overwrite",
+//        };
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//        auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//
+//        executor->execute();
+//        std::string content = testHelpers::readFileIntoString("/tmp/private_key_value");
+//        std::string header {"-----BEGIN RSA PRIVATE KEY-----"};
+//        std::string feet {"-----END RSA PRIVATE KEY-----"};
+//
+//        bool result = header == content.substr(0, header.size())
+//                      && feet == content.substr(content.size() - feet.size(), feet.size());
+//
+//        auto hSize = header.size();
+//        auto fSize = feet.size();
+//        std::string l = content.substr(0, hSize);
+//        std::string r = content.substr(content.size() - fSize, fSize);
+//
+//        auto left = l == header;
+//        auto right = r == feet;
+//
+//        BOOST_CHECK_EQUAL(result, true);
+//    }
+//    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+//}
 
 //BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
 //    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");

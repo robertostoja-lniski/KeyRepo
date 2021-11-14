@@ -8,9 +8,15 @@
     #include "KeyRepoHeaders.h"
 #endif
 
-
 void* get_buffered_file(const char* filepath, size_t* filesize, size_t extra_size);
 size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc, int offset);
+
+int fast_modulo(uint64_t num, uint32_t pow_of_2) {
+
+    uint64_t tmpNum = num >> pow_of_2;
+    tmpNum = tmpNum << pow_of_2;
+    return (int)(num - tmpNum);
+}
 
 int get_magic_offset(void* mapped_partition) {
     uint64_t*           first_byte;
@@ -53,7 +59,7 @@ int get_magic_offset(void* mapped_partition) {
 size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc, int offset) {
 #if EMULATION == 1
     FILE* fd = fopen(file, "w");
-    if(fd < 0) {
+    if(fd == NULL) {
         free(buf);
         return -1;
     }
@@ -228,7 +234,7 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 }
 
 // private
-uint64_t generate_random_id(void* mapped_partition, int offset){
+uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
 
     int                 generateTrials;
     partition_info*     partition_metadata;
@@ -236,8 +242,10 @@ uint64_t generate_random_id(void* mapped_partition, int offset){
     uint64_t            newId;
     int                 foundSameId;
     map_node*           current_elem_in_map;
+    lookup_slot*        lookup;
     uint64_t            id;
     int                 i;
+    uint64_t            modulo;
 
 
     printk("Entering generate random id\n");
@@ -252,7 +260,16 @@ uint64_t generate_random_id(void* mapped_partition, int offset){
         get_random_bytes(&newId, sizeof(newId));
         printk("New id is %llu\n", newId);
 
+        modulo = fast_modulo(newId, LOOKUP_MAP_SIZE_POW);
+        *mod = modulo;
+
         current_elem_in_map = (map_node* )(partition_metadata + 1);
+
+        lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + modulo;
+        if (lookup -> cnt == 0) {
+            return newId;
+        }
+
         for(i = 0; i < map_size; i++) {
 
             // 0 and 1 are reserved for error codes (and give
@@ -430,7 +447,7 @@ int init_file_if_not_defined(void) {
 
 #endif
 
-    file_size = DEFAULT_MAP_SIZE * sizeof(map_node) + sizeof(partition_info);
+    file_size = DEFAULT_MAP_SIZE * sizeof(map_node) + sizeof(partition_info) + LOOKUP_SLOTS_NUM * sizeof(lookup_slot);
 
 #if EMULATION == 1
     partitionStart = malloc(file_size);
@@ -460,6 +477,8 @@ int init_file_if_not_defined(void) {
         // printk("Memcpy ok\n");
         map_position = map_position + 1;
     }
+
+    memset(map_position, 0x00, LOOKUP_SLOTS_NUM * sizeof(lookup_slot));
 
     print_partition(partitionStart);
 
@@ -540,9 +559,6 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     void*       partition_metadata;
     int         magic_offset;
     uint64_t    key_num;
-    uint64_t    first_slot_before_add;
-    int         add_ret;
-    uint64_t    first_slot_after_add;
 
     if (key_len > MAX_PARTITION_SIZE) {
         return -1;
@@ -555,13 +571,10 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     }
 
     printk("Loading file to buffer\n");
-    partition_metadata = get_buffered_file(partition, &file_size, key_len);
+    partition_metadata = get_buffered_file(partition, &file_size, 0);
     if(partition_metadata == NULL || file_size == 0) {
         return -1;
     }
-
-//    TODO temporary
-    file_size -= key_len;
 
     printk("File loaded to buffer with file size %lu\n", file_size);
     magic_offset = get_magic_offset(partition_metadata);
@@ -613,9 +626,10 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
+    lookup_slot*        lookup;
     uint64_t            next_id;
-    partition_info*     partition_metadata_to_be_updated;
     uint64_t            i;
+    int                 mod;
 
 #if EMULATION == 0
     mm_segment_t        fs;
@@ -643,7 +657,10 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     }
 
     printk("Id is\n");
-    next_id = generate_random_id(mapped_partition, help_counter);
+    next_id = generate_random_id(mapped_partition, help_counter, &mod);
+
+    lookup = ((lookup_slot* )((map_node* )(partition_metadata + 1) + DEFAULT_MAP_SIZE)) + mod;
+    lookup -> cnt ++;
 
 #if EMULATION == 1
     // memcpy is to make emulation as close to final code, which uses copy_to_user
@@ -684,6 +701,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
+    lookup_slot*        lookup;
     uint64_t            offset;
     int                 found;
     int                 i;
@@ -709,6 +727,12 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     map_size = partition_metadata->map_size;
 
     current_elem_in_map = (map_node* )(partition_metadata + 1);
+    lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
+    if (lookup -> cnt == 0) {
+        printk("Not found by cached info\n");
+        return -1;
+    }
+
     found = 0;
     for(i = 0; i < map_size; i++) {
         current_id = current_elem_in_map->id;
@@ -752,6 +776,7 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
     int                 help_counter;
     partition_info*     partition_metadata;
     map_node*           current_elem_in_map;
+    lookup_slot*        lookup;
     int                 found;
     uint64_t            i;
     access_rights       mapped_rights;
@@ -766,12 +791,17 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
-
     current_elem_in_map = (map_node* )(partition_metadata + 1);
-    found = 0;
 
+    lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
+    if (lookup -> cnt == 0) {
+        printk("Not found by cached info\n");
+        return -1;
+    }
+
+    found = 0;
     i = 0;
-    while(i++ < partition_metadata->map_size && !found) {
+    while(i++ < partition_metadata->map_size) {
         if (current_elem_in_map->id == id) {
             printk("Read rights to be checked\n");
 
@@ -809,6 +839,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
     partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
+    lookup_slot*        lookup;
     int                 found;
     uint64_t            i;
     access_rights       mapped_rights;
@@ -826,9 +857,16 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
         return -1;
     }
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
+    current_elem_in_map = (map_node* )(partition_metadata + 1);
+
+    lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
+    if (lookup -> cnt == 0) {
+        printk("Not found by cached info\n");
+        return -1;
+    }
+
     map_size = partition_metadata->map_size;
 
-    current_elem_in_map = (map_node* )(partition_metadata + 1);
     found = 0;
     for(i = 0; i < map_size; i++) {
         uint64_t current_id = current_elem_in_map->id;
@@ -877,6 +915,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
+    lookup_slot*        lookup;
     int                 found;
     int                 i;
     access_rights       mapped_rights;
@@ -890,10 +929,16 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
-    map_size = partition_metadata->map_size;
     current_elem_in_map = (map_node* )(partition_metadata + 1);
-    found = 0;
 
+    lookup = ((lookup_slot * )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
+    if (lookup -> cnt == 0) {
+        printk("Not found by cached info\n");
+        return -1;
+    }
+
+    map_size = partition_metadata->map_size;
+    found = 0;
     for(i = 0; i < map_size; i++) {
         uint64_t current_id = current_elem_in_map->id;
         if(current_id == id) {
@@ -924,11 +969,9 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
     partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
-    uint64_t            offset;
+    lookup_slot*        lookup;
     int                 i;
-    uint64_t            current_id;
     access_rights       mapped_rights;
-    uint64_t            size_to_remove;
 
     print_partition(mapped_partition);
     printk("Entering: key val by pp\n");
@@ -939,8 +982,19 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
+
     map_size = partition_metadata->map_size;
     current_elem_in_map = (map_node* )(partition_metadata + 1);
+
+    lookup = ((lookup_slot * )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
+
+    int diff = ((uint8_t* )lookup - (uint8_t* )((map_node* )partition_metadata + DEFAULT_MAP_SIZE)) / 4;
+
+    if (lookup -> cnt == 0) {
+        printk("Not found by cached info\n");
+        return -1;
+    }
+
     for(i = 0; i < map_size; i++) {
 
         if(current_elem_in_map->id == id) {
@@ -955,6 +1009,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
 
             current_elem_in_map->id = 0;
             partition_metadata->number_of_keys -= 1;
+            lookup -> cnt --;
             printk("Exiting: key val by pp (with failure)\n");
             print_partition(mapped_partition);
             return 0;

@@ -34,6 +34,8 @@
 #define REDUCTION_PARAM 2
 #define READ_MASK       4
 #define WRITE_MASK      2
+#define LOOKUP_MAP_SIZE_POW 7
+#define LOOKUP_SLOTS_NUM 128
 
 #define REMOVE_FRAGMENTATION 1
 #define MAP_UNUSED_ROW_OPTIMISATION 1
@@ -62,8 +64,13 @@ struct map_node {
     uint32_t mode;
     int      uid;
     int      gid;
-    int      matching_ids_count;
 };
+
+struct lookup_slot {
+    int cnt;
+};
+
+typedef struct lookup_slot lookup_slot;
 typedef struct map_node map_node;
 
 struct partition_info {

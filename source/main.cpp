@@ -19,8 +19,8 @@ int main(int argc, char** argv) {
 
     EmulationTimeCalc timeCalc;
     timeCalc.setTestedSize(2048);
-    timeCalc.test(200);
+    timeCalc.removeKeyTime(200);
     timeCalc.setTestedSize(4096);
-    timeCalc.test(200);
+    timeCalc.removeKeyTime(200);
 
 }
