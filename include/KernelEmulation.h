@@ -62,6 +62,7 @@ struct map_node {
     uint32_t mode;
     int      uid;
     int      gid;
+    int      matching_ids_count;
 };
 typedef struct map_node map_node;
 
@@ -73,7 +74,7 @@ struct partition_info {
 typedef struct partition_info partition_info;
 
 #if __APPLE__
-const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
+const static char* partition = "/Users/robertostoja-lniski/.keyPartitionV2/meta";
 const static char* partition_base = "/Users/robertostoja-lniski/.keyPartitionV2/";
 #else
 const static char* partition = "/home/robert/.keyPartition";
