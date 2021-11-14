@@ -60,14 +60,14 @@ enum {
 
 struct map_node {
     uint64_t id;
-    uint64_t size;
+    uint16_t size;
     uint32_t mode;
     int      uid;
     int      gid;
 };
 
 struct lookup_slot {
-    int cnt;
+    uint8_t cnt;
 };
 
 typedef struct lookup_slot lookup_slot;
@@ -75,8 +75,8 @@ typedef struct map_node map_node;
 
 struct partition_info {
     uint64_t magic;
-    uint64_t number_of_keys;
-    uint64_t map_size;
+    uint16_t number_of_keys;
+    uint16_t map_size;
 };
 typedef struct partition_info partition_info;
 
