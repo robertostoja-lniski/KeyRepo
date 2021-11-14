@@ -101,7 +101,7 @@ std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKe
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
-    auto ret = read_key(id, prvKey, keyLen);
+    auto ret = read_key(id, prvKey, keyLen, 1);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
@@ -187,7 +187,7 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
-    if(read_key(id, prvKey, keyLen) < 0) {
+    if(read_key(id, prvKey, keyLen, 1) < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 //    std::cout << prvKey;
@@ -245,7 +245,7 @@ void KeyPartitionIOInterface::protectedWritePrivateKeyToFile(std::string filepat
     if(BIO_read(bio.get(), pem_key, keylen) <=0 ){
         throw std::runtime_error("KeyIOInterface: Unhandled OpenSSL BIO read error");
     }
-    auto result = write_key(pem_key, keylen, &id);
+    auto result = write_key(pem_key, keylen, &id, 1);
 
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");

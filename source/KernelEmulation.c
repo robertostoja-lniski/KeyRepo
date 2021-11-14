@@ -293,7 +293,7 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
     return newId;
 }
 
-int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id) {
+int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uint8_t type) {
 
     FILE *file;
 
@@ -305,10 +305,24 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id) {
         return 1;
     }
 
-    size_t ret = fwrite(key , sizeof(char) , key_len, file);
+    uint64_t ajdusted_len = 0;
+    size_t ret = 0;
+
+    if (type == KEY_TYPE_RSA) {
+        ajdusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
+        ret = fwrite(key + strlen(RSA_BEGIN_LABEL), sizeof(char) , ajdusted_len, file);
+
+    } else if (type == KEY_TYPE_CUSTOM) {
+        ajdusted_len = key_len;
+        ret = fwrite(key, sizeof(char) , ajdusted_len, file);
+
+    } else {
+        return 1;
+    }
+
     fclose(file);
 
-    if(ret != key_len) {
+    if(ret != ajdusted_len) {
         printk("Writing key to file failed\n");
         return 1;
     }
@@ -322,7 +336,7 @@ int delete_custom_file(uint64_t id) {
     return remove(filename);
 }
 
-int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id) {
+int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t type) {
 
     FILE *file;
 
@@ -335,10 +349,31 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id) {
     }
 
     memset(key + key_len, 0x00, sizeof(char));
-    size_t ret = fread(key , sizeof(char) , key_len, file);
+    
+    uint64_t ajdusted_len = 0;
+    uint64_t ret = 0;
+    
+    if (type == KEY_TYPE_RSA) {
+        ajdusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
+
+        strcpy(key, RSA_BEGIN_LABEL);
+        ret = fread(key + strlen(RSA_BEGIN_LABEL), sizeof(char), ajdusted_len, file);
+        strcpy(key + key_len - strlen(RSA_END_LABEL) - 1, RSA_END_LABEL);
+        
+    } else if (type == KEY_TYPE_CUSTOM) {
+
+        ajdusted_len = key_len;
+        ret = fread(key, sizeof(char), ajdusted_len, file);
+        
+    } else {
+        return 1;
+    }
+    
+   
+
     fclose(file);
 
-    if(ret != key_len) {
+    if(ret != ajdusted_len) {
         printk("Reading key from file failed\n");
         return 1;
     }
@@ -474,6 +509,7 @@ int init_file_if_not_defined(void) {
 
         map_position -> id = 0;
         map_position -> size = 0;
+        map_position -> type = KEY_TYPE_CUSTOM;
         // printk("Memcpy ok\n");
         map_position = map_position + 1;
     }
@@ -550,7 +586,7 @@ void print_partition(const void* mapped_partition) {
 }
 
 #if EMULATION == 1
-int add_key_to_partition(const char* key, uint64_t key_len, uint64_t *id, access_rights rights) {
+int add_key_to_partition(const char* key, uint64_t key_len, uint64_t *id, access_rights rights, uint8_t type) {
 #else
 int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __user *id, access_rights rights) {
 #endif
@@ -597,11 +633,11 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
         return -2;
     }
 
-    if (update_metadata_when_writing(partition_metadata, key, key_len, id, rights) < 0) {
+    if (update_metadata_when_writing(partition_metadata, key, key_len, id, rights, type) < 0) {
         return -1;
     }
 
-    if (write_key_to_custom_file(key, key_len, *id) != 0) {
+    if (write_key_to_custom_file(key, key_len, *id, type) != 0) {
         return - 1;
     }
 
@@ -617,7 +653,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     return 0;
 }
 #if EMULATION == 1
-int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t key_len, uint64_t *id, access_rights proc_rights) {
+int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t key_len, uint64_t *id, access_rights proc_rights, uint8_t type) {
 #else
 int update_metadata_when_writing(void* mapped_partition, const char* __user key, uint64_t key_len, uint64_t __user *id, access_rights proc_rights) {
 #endif
@@ -672,6 +708,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 #endif
 
     current_elem_in_map->id = next_id;
+    current_elem_in_map->type = type;
     current_elem_in_map->size = key_len;
     current_elem_in_map->uid = proc_rights.uid;
     current_elem_in_map->gid = proc_rights.gid;
@@ -695,7 +732,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     return help_counter;
 }
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, access_rights proc_rights) {
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, access_rights proc_rights, uint8_t type) {
 
     int                 help_counter;
     partition_info*     partition_metadata;
@@ -742,6 +779,11 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
 
             mapped_rights.uid = current_elem_in_map->uid;
             mapped_rights.gid = current_elem_in_map->gid;
+
+            if (current_elem_in_map->type != type) {
+                printk("Wrong type");
+                return -2;
+            }
 
             if(!can_read(current_elem_in_map->mode, mapped_rights, proc_rights)) {
                 printk("Cannot read");
@@ -1021,7 +1063,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
 }
 
 #if EMULATION == 1
-int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, access_rights proc_rights) {
+int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, access_rights proc_rights, uint8_t type) {
 #else
 int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, access_rights proc_rights) {
 #endif
@@ -1041,7 +1083,7 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
     printk("Next action: get key val by pp\n");
 
     print_partition(mapped_partition);
-    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prvKey, key_len, proc_rights);
+    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prvKey, key_len, proc_rights, type);
     print_partition(mapped_partition);
 
 #if EMULATION == 1
@@ -1054,7 +1096,7 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
         return check_key_rights_ret;
     }
 
-    get_key_ret = read_key_from_custom_file(prvKey, key_len, id);
+    get_key_ret = read_key_from_custom_file(prvKey, key_len, id, type);
     if (get_key_ret != 0) {
         return get_key_ret;
     }
@@ -1168,7 +1210,7 @@ SYSCALL_DEFINE0(get_key_num) {
 }
 
 #if EMULATION == 1
-int do_write_key(const char* key, uint64_t key_len, uint64_t* id, int uid, int gid) {
+int do_write_key(const char* key, uint64_t key_len, uint64_t* id, int uid, int gid, uint8_t type) {
 #else
 SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t __user *, id, int __user, uid, int __user, gid) {
 #endif
@@ -1201,7 +1243,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
     up(&sem);
 #endif
 
-    ret = add_key_to_partition(key, used_len, id, proc_rights);
+    ret = add_key_to_partition(key, used_len, id, proc_rights, type);
     if(ret == -1 || ret == -2) {
 #if EMULATION == 0
         down(&sem);
@@ -1220,7 +1262,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 }
 
 #if EMULATION == 1
-int do_read_key(const uint64_t id, char* key, uint64_t key_len, int uid, int gid) {
+int do_read_key(const uint64_t id, char* key, uint64_t key_len, int uid, int gid, uint8_t type) {
 #else
 SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
 #endif
@@ -1238,7 +1280,7 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
     proc_rights.uid = uid;
     proc_rights.gid = gid;
 
-    ret = get_prv_key_by_id(id, key, key_len, proc_rights);
+    ret = get_prv_key_by_id(id, key, key_len, proc_rights, type);
     if(ret != 0) {
         return ret;
     }
