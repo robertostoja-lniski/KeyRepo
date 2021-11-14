@@ -37,6 +37,9 @@
 #define LOOKUP_MAP_SIZE_POW 7
 #define LOOKUP_SLOTS_NUM 128
 
+#define RSA_BEGIN_LABEL "-----BEGIN RSA PRIVATE KEY-----"
+#define RSA_END_LABEL "-----END RSA PRIVATE KEY-----"
+
 #define REMOVE_FRAGMENTATION 1
 #define MAP_UNUSED_ROW_OPTIMISATION 1
 
@@ -62,8 +65,8 @@ struct map_node {
     uint64_t id;
     uint16_t size;
     uint32_t mode;
-    int      uid;
-    int      gid;
+    uint16_t uid;
+    uint64_t gid;
 };
 
 struct lookup_slot {
