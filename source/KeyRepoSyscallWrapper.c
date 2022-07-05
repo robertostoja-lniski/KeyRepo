@@ -122,57 +122,57 @@ int set_mode(const uint64_t id, int new_mode) {
 
 #include "../include/KernelEmulation.h"
 
-int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
+int write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_write_key(key, keyLen, id, ids.uid, ids.gid);
+    return do_write_key(key, password, keyLen, id, ids.uid, ids.gid);
 }
-int read_key(const uint64_t id, char* key, uint64_t keyLen) {
+int read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_read_key(id, key, keyLen, ids.uid, ids.gid);
+    return do_read_key(id, password, key, keyLen, ids.uid, ids.gid);
 }
-int remove_key(const uint64_t id) {
+int remove_key(const uint64_t id, const char* password) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_remove_key(id, ids.uid, ids.gid);
+    return do_remove_key(id, password, ids.uid, ids.gid);
 }
-int get_key_size(const uint64_t id, uint64_t* size) {
+int get_key_size(const uint64_t id, const char* password, uint64_t* size) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_get_key_size(id, size, ids.uid, ids.gid);
+    return do_get_key_size(id, password, size, ids.uid, ids.gid);
 }
-int get_mode(const uint64_t id, int* output) {
+int get_mode(const uint64_t id, const char* password, int* output) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_get_mode(id, output, ids.uid, ids.gid);
+    return do_get_mode(id, password, output, ids.uid, ids.gid);
 }
-int set_mode(const uint64_t id, int new_mode) {
+int set_mode(const uint64_t id, const char* password, int new_mode) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_set_mode(id, new_mode, ids.uid, ids.gid);
+    return do_set_mode(id, password, new_mode, ids.uid, ids.gid);
 }
 int get_key_num() {
     return do_get_key_num();

@@ -8,6 +8,41 @@
     #include "KeyRepoHeaders.h"
 #endif
 
+// changes are done to buffer in place for optimization purposes
+int encrypt_data_at_rest(char* buf, size_t len, const char* password) {
+
+    if (buf == NULL) {
+        return -1;
+    }
+
+    if (password == NULL) {
+        return -2;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        buf[i] -= 30;
+    }
+
+    return 0;
+}
+
+// changes are done to buffer in place for optimization purposes
+int decrypt_data_at_rest(char* buf, size_t len, const char* password) {
+
+    if (buf == NULL) {
+        return -1;
+    }
+
+    if (password == NULL) {
+        return -2;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        buf[i] += 30;
+    }
+
+    return 0;
+}
 
 void* get_buffered_file(const char* filepath, size_t* filesize, size_t extra_size);
 size_t set_buffered_file(const char* partition, char** buf, size_t bufsize, int trunc, int offset);
@@ -59,6 +94,8 @@ size_t set_buffered_file(const char* partition, char** buf, size_t bufsize, int 
     }
 
     fseek(fd, offset, SEEK_SET);
+
+    encrypt_data_at_rest(*buf, bufsize, "dummy");
     size_t ret = fwrite(*buf , sizeof(char) , bufsize, fd);
 
     fclose(fd);
@@ -157,6 +194,8 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 
     *size = bufsize;
     fclose(fp);
+
+    decrypt_data_at_rest(source, *size, "dummy");
     return (void* )source;
 #else
 
@@ -1373,7 +1412,7 @@ SYSCALL_DEFINE0(get_key_num) {
 }
 
 #if EMULATION == 1
-int do_write_key(const char* key, uint64_t key_len, uint64_t* id, int uid, int gid) {
+int do_write_key(const char* key, const char* password, uint64_t key_len, uint64_t* id, int uid, int gid) {
 #else
 SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t __user *, id, int __user, uid, int __user, gid) {
 #endif
@@ -1425,7 +1464,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 }
 
 #if EMULATION == 1
-int do_read_key(const uint64_t id, char* key, uint64_t key_len, int uid, int gid) {
+int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key_len, int uid, int gid) {
 #else
 SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
 #endif
@@ -1453,7 +1492,7 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
 }
 
 #if EMULATION == 1
-int do_remove_key(const uint64_t id, int uid, int gid) {
+int do_remove_key(const uint64_t id, const char* password, int uid, int gid) {
 #else
 SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __user, gid) {
 #endif
@@ -1486,7 +1525,7 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
 
 // for kernel kuid_t instead of uid
 #if EMULATION == 1
-int do_get_mode(const uint64_t id, int* output, int uid, int gid) {
+int do_get_mode(const uint64_t id, const char* password, int* output, int uid, int gid) {
 #else
 SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int __user, uid, int __user, gid) {
 #endif
@@ -1528,7 +1567,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 }
 
 #if EMULATION == 1
-int do_set_mode(const uint64_t id, int new_mode, int uid, int gid) {
+int do_set_mode(const uint64_t id, const char* password, int new_mode, int uid, int gid) {
 #else
 SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, uid, int __user, gid) {
 #endif
@@ -1636,7 +1675,7 @@ int can_write(int mode, access_rights mapped, access_rights proc) {
 }
 
 #if EMULATION == 1
-int do_get_key_size(const uint64_t id, uint64_t* size, int uid, int gid) {
+int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int uid, int gid) {
 #else
     SYSCALL_DEFINE4(get_key_size, const uint64_t __user, id, uint64_t*, size, int __user, uid, int __user, gid) {
 #endif
