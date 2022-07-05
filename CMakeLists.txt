@@ -16,3 +16,23 @@ endif()
 add_subdirectory(source)
 add_subdirectory(tests)
 #add_executable(KeyRepo main.cpp)
+
+add_library(key_repo_lib SHARED
+        source/KernelEmulation.c
+        source/KeyRepoSyscallWrapper.c
+        )
+
+set_target_properties(key_repo_lib PROPERTIES SOVERSION 1)
+include(GNUInstallDirs)
+
+install(TARGETS key_repo_lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+add_library(lib_repo_static STATIC
+        source/KernelEmulation.c
+        source/KeyRepoSyscallWrapper.c
+        )
+
+
+
