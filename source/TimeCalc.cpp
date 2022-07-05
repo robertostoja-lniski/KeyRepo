@@ -16,7 +16,7 @@ void EmulationTimeCalc::writeKeyTime(unsigned int trials) {
             system("rm -rf ~/.keyPartitionV2/*");
             uint64_t dummy;
             std::string initStr = "null";
-            auto initRet = write_key(initStr.c_str(), initStr.size(), &dummy, 0);
+            auto initRet = write_key(initStr.c_str(), "dummy", initStr.size(), &dummy);
             if(initRet != 0) {
                 throw std::runtime_error("Error in time calc while initialising");
             }
@@ -34,7 +34,7 @@ void EmulationTimeCalc::writeKeyTime(unsigned int trials) {
 
         uint64_t id;
         auto start = std::chrono::high_resolution_clock::now();
-        auto ret = write_key(key.c_str(), key.size(), &id, 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
         auto singleWrite = std::chrono::high_resolution_clock::now() - start;
 
         if(ret != 0) {
@@ -60,7 +60,7 @@ void EmulationTimeCalc::readKeyTime(unsigned int trials) {
             system("rm -rf ~/.keyPartitionV2/*");
             uint64_t dummy;
             std::string initStr = "null";
-            auto initRet = write_key(initStr.c_str(), initStr.size(), &dummy, 0);
+            auto initRet = write_key(initStr.c_str(), "dummy", initStr.size(), &dummy);
             if(initRet != 0) {
                 throw std::runtime_error("Error in time calc while initialising");
             }
@@ -77,7 +77,7 @@ void EmulationTimeCalc::readKeyTime(unsigned int trials) {
         std::generate_n( key.begin(), testedSize, randomLetter);
 
         uint64_t id;
-        auto ret = write_key(key.c_str(), key.size(), &id, 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
         if(ret != 0) {
             throw std::runtime_error("Error while testing emulation");
         }
@@ -85,7 +85,7 @@ void EmulationTimeCalc::readKeyTime(unsigned int trials) {
         char *buf;
         buf = (char* )malloc(testedSize);
         auto start = std::chrono::high_resolution_clock::now();
-        auto readRet = read_key(id, buf, testedSize, 0);
+        auto readRet = read_key(id, "dummy", buf, testedSize);
         auto singleWrite = std::chrono::high_resolution_clock::now() - start;
 
         if(readRet != 0) {
@@ -124,7 +124,7 @@ void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
             while(keyNum > 0) {
 
                 auto start = std::chrono::high_resolution_clock::now();
-                auto removeRet = remove_key(ids[keyNum]);
+                auto removeRet = remove_key(ids[keyNum], "dummy");
                 auto singleRemove = std::chrono::high_resolution_clock::now() - start;
 
                 if(removeRet != 0) {
@@ -147,7 +147,7 @@ void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
         std::string key(testedSize,0);
         std::generate_n( key.begin(), testedSize, randomLetter);
 
-        auto ret = write_key(key.c_str(), key.size(), &ids[i], 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &ids[i]);
         if(ret != 0) {
             throw std::runtime_error("Error while testing emulation");
         }
@@ -180,7 +180,7 @@ void EmulationTimeCalc::getKeySizeTime(unsigned int trials) {
         std::string key(testedSize,0);
         std::generate_n( key.begin(), testedSize, randomLetter);
 
-        auto ret = write_key(key.c_str(), key.size(), &id, 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
         if(ret != 0) {
             throw std::runtime_error("Error while testing emulation");
         }
@@ -188,7 +188,7 @@ void EmulationTimeCalc::getKeySizeTime(unsigned int trials) {
         uint64_t size;
 
         auto start = std::chrono::high_resolution_clock::now();
-        auto getSizeRet = get_key_size(id, &size);
+        auto getSizeRet = get_key_size(id,"dummy",  &size);
         auto singleRemove = std::chrono::high_resolution_clock::now() - start;
 
         getKeySizeTime += std::chrono::duration_cast<std::chrono::microseconds>(singleRemove).count();
@@ -221,7 +221,7 @@ void EmulationTimeCalc::getKeyNumTime(unsigned int trials) {
         std::string key(testedSize,0);
         std::generate_n( key.begin(), testedSize, randomLetter);
 
-        auto ret = write_key(key.c_str(), key.size(), &id, 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
         if(ret != 0) {
             throw std::runtime_error("Error while testing emulation");
         }
@@ -263,7 +263,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
                 auto keyNum = get_key_num();
                 while (keyNum > 0) {
 
-                    auto removeRet = remove_key(ids[keyNum]);
+                    auto removeRet = remove_key(ids[keyNum], "dummy");
                     if (removeRet != 0) {
                         throw std::runtime_error("Error while testing testing optimisation");
                     }
@@ -278,7 +278,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
             std::string key(testedSize, 0);
             std::generate_n(key.begin(), testedSize, randomLetter);
 
-            auto ret = write_key(key.c_str(), key.size(), &ids[i], 0);
+            auto ret = write_key(key.c_str(), "dummy", key.size(), &ids[i]);
             if (ret != 0) {
                 throw std::runtime_error("Error while testing optimisation of emulation");
             }
@@ -294,7 +294,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
             buf = (char *) malloc(testedSize);
             uint64_t id;
             auto start = std::chrono::high_resolution_clock::now();
-            auto ret = write_key(key.c_str(), key.size(), &id, 0);
+            auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
             auto singleWrite = std::chrono::high_resolution_clock::now() - start;
             if (ret != 0) {
                 throw std::runtime_error("Error while testing emulation read");
@@ -329,14 +329,14 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
             std::string key(testedSize, 0);
             std::generate_n(key.begin(), testedSize, randomLetter);
 
-            auto ret = write_key(key.c_str(), key.size(), &ids[j], 0);
+            auto ret = write_key(key.c_str(), "dummy", key.size(), &ids[j]);
             if (ret != 0) {
                 throw std::runtime_error("Error while testing emulation");
             }
         }
 
         for (int j = 0; j < 100; j++) {
-            auto removeRet = remove_key(ids[j]);
+            auto removeRet = remove_key(ids[j], "dummy");
             if (removeRet != 0) {
                 throw std::runtime_error("Error while testing emulation remove");
             }
@@ -347,7 +347,7 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
             if (scenario_id == 1) {
 
                 auto start = std::chrono::high_resolution_clock::now();
-                auto removeRet = remove_key(ids[j]);
+                auto removeRet = remove_key(ids[j], "dummy");
                 auto singleRemove = std::chrono::high_resolution_clock::now() - start;
 
                 if (removeRet != 0) {
@@ -361,7 +361,7 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
                 char *buf;
                 buf = (char *) malloc(testedSize);
                 auto start = std::chrono::high_resolution_clock::now();
-                auto readRet = read_key(ids[j], buf, testedSize, 0);
+                auto readRet = read_key(ids[j], "dummy", buf, testedSize);
                 auto singleWrite = std::chrono::high_resolution_clock::now() - start;
 
                 if (readRet != 0) {
@@ -370,13 +370,13 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
 
                 free(buf);
 
-                auto removeRet = remove_key(ids[j]);
+                auto removeRet = remove_key(ids[j], "dummy");
 
                 time += std::chrono::duration_cast<std::chrono::microseconds>(singleWrite).count();
 
             } else if (scenario_id == 3) {
 
-                auto removeRet = remove_key(ids[j]);
+                auto removeRet = remove_key(ids[j], "dummy");
                 if (removeRet != 0) {
                     throw std::runtime_error("Error while testing emulation remove key");
                 }
@@ -429,7 +429,7 @@ void EmulationTimeCalc::getKeyModeTime(unsigned int trials) {
         std::string key(testedSize,0);
         std::generate_n( key.begin(), testedSize, randomLetter);
 
-        auto ret = write_key(key.c_str(), key.size(), &id, 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
         if(ret != 0) {
             throw std::runtime_error("Error while testing emulation");
         }
@@ -437,7 +437,7 @@ void EmulationTimeCalc::getKeyModeTime(unsigned int trials) {
         int mod;
 
         auto start = std::chrono::high_resolution_clock::now();
-        auto getSizeRet = get_mode(id, &mod);
+        auto getSizeRet = get_mode(id, "dummy", &mod);
         auto singleRemove = std::chrono::high_resolution_clock::now() - start;
 
         getKeyModTime += std::chrono::duration_cast<std::chrono::microseconds>(singleRemove).count();
@@ -471,7 +471,7 @@ void EmulationTimeCalc::setKeyModeTime(unsigned int trials) {
         std::string key(testedSize,0);
         std::generate_n( key.begin(), testedSize, randomLetter);
 
-        auto ret = write_key(key.c_str(), key.size(), &id, 0);
+        auto ret = write_key(key.c_str(), "dummy", key.size(), &id);
         if(ret != 0) {
             throw std::runtime_error("Error while testing emulation");
         }
@@ -486,7 +486,7 @@ void EmulationTimeCalc::setKeyModeTime(unsigned int trials) {
 
         auto newMode = randomMod();
         auto start = std::chrono::high_resolution_clock::now();
-        auto getSizeRet = set_mode(id, newMode);
+        auto getSizeRet = set_mode(id, "dummy", newMode);
 //        auto dummyRet = dummy(randomMod());
         auto singleRemove = std::chrono::high_resolution_clock::now() - start;
 

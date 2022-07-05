@@ -4773,7 +4773,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_OK) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
@@ -4784,7 +4784,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)100000000, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)100000000, &id);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
@@ -4797,7 +4797,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE) {
     memset(tmp, 0x41, 1000000 - 1);
     memset(tmp + 1000000 - 1, 0x00, 1);
     uint64_t id;
-    auto ret = write_key(tmp, (const size_t)1000000, &id, 0);
+    auto ret = write_key(tmp, "dummy", (const size_t)1000000, &id);
 
     BOOST_CHECK_EQUAL(ret, -1);
 
@@ -4808,11 +4808,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, buf, 4, 0);
+    auto readRet = read_key(id, "dummy", buf, 4);
     BOOST_CHECK_EQUAL(key, buf);
 
     free(buf);
@@ -4824,11 +4824,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, buf, 3, 0);
+    auto readRet = read_key(id, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
@@ -4840,11 +4840,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(id, buf, 3, 0);
+    auto readRet = read_key(id, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
@@ -4856,7 +4856,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_0_SIZE) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)0, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)0, &id);
 
     BOOST_CHECK_EQUAL(ret, -1);
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -4866,11 +4866,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_PARTITION) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(id, buf, 3, 0);
+    auto readRet = read_key(id, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
@@ -4882,11 +4882,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(0, buf, 3, 0);
+    auto readRet = read_key(0, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     free(buf);
@@ -4898,11 +4898,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(1000, buf, 3, 0);
+    auto readRet = read_key(1000, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     free(buf);
@@ -4914,10 +4914,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     int mode;
-    auto readRet = get_mode(id, &mode);
+    auto readRet = get_mode(id, "dummy", &mode);
     BOOST_CHECK_EQUAL(mode, 600);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -4927,7 +4927,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int mode;
-    auto readRet = get_mode(1000, &mode);
+    auto readRet = get_mode(1000, "dummy", &mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -4938,10 +4938,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_WRONG_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     int mode;
-    auto readRet = get_mode(1000, &mode);
+    auto readRet = get_mode(1000, "dummy", &mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -4952,10 +4952,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     int mode;
-    auto readRet = set_mode(1000, mode);
+    auto readRet = set_mode(1000, "dummy", mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -4965,7 +4965,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_PARTITION) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int mode;
-    auto readRet = set_mode(1000, mode);
+    auto readRet = set_mode(1000, "dummy", mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -4976,13 +4976,13 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
-    int mode = 667;
-    auto setRet = set_mode(id, mode);
+    int mode;
+    auto setRet = set_mode(id, "dummy", mode);
 
     int newMode;
-    auto getRet = get_mode(id, &newMode);
+    auto getRet = get_mode(id, "dummy", &newMode);
 
     BOOST_CHECK_EQUAL(setRet, 0);
     BOOST_CHECK_EQUAL(getRet, 0);
@@ -5007,17 +5007,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
     int lastProperMode;
-    auto getRet = get_mode(id, &lastProperMode);
+    auto getRet = get_mode(id, "dummy", &lastProperMode);
 
     for(int i = 600; i < 1000; i++) {
 
-        auto setRet = set_mode(id, i);
+        auto setRet = set_mode(id, "dummy", i);
 
         int newMode;
-        auto getRet = get_mode(id, &newMode);
+        auto getRet = get_mode(id, "dummy", &newMode);
 
         if(isProperMode(i)) {
             BOOST_CHECK_EQUAL(setRet, 0);
@@ -5034,7 +5034,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)10, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)10, &id);
     auto keyNum = get_key_num();
 
     BOOST_CHECK_EQUAL(ret, 0);
@@ -5048,11 +5048,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)10, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)10, &id);
     BOOST_CHECK_EQUAL(ret, 0);
 
     uint64_t size;
-    auto getSizeRet = get_key_size(id, &size);
+    auto getSizeRet = get_key_size(id, "dummy", &size);
     BOOST_CHECK_EQUAL(getSizeRet, 0);
 
     BOOST_CHECK_EQUAL(size, 10);
@@ -5064,7 +5064,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_NO_PARTITION) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     uint64_t size;
-    auto getSizeRet = get_key_size(1000, &size);
+    auto getSizeRet = get_key_size(1000, "dummy", &size);
     BOOST_CHECK_EQUAL(getSizeRet, -1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -5075,11 +5075,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)10, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)10, &id);
     BOOST_CHECK_EQUAL(ret, 0);
 
     uint64_t size;
-    auto getSizeRet = get_key_size(1000, &size);
+    auto getSizeRet = get_key_size(1000, "dummy", &size);
     BOOST_CHECK_EQUAL(getSizeRet, -1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -5100,7 +5100,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MULT) {
     for(int i = 1; i < 100; i ++) {
         const char* key = "abc777777d";
         uint64_t id;
-        auto ret = write_key(key, (const size_t)10, &id, 0);
+        auto ret = write_key(key, "dummy", (const size_t)10, &id);
         auto keyNum = get_key_num();
 
         BOOST_CHECK_EQUAL(ret, 0);
@@ -5115,13 +5115,13 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id, 0);
+    auto ret = write_key(key, "dummy", (const size_t)4, &id);
 
-    auto rmvRet = remove_key(id);
+    auto rmvRet = remove_key(id, "dummy");
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, buf, 4, 0);
+    auto readRet = read_key(id, "dummy", buf, 4);
 
     BOOST_CHECK_EQUAL(ret, 0);
     BOOST_CHECK_EQUAL(rmvRet, 0);
@@ -5146,22 +5146,21 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)10, &id, 0);
+        auto ret1 = write_key(key, "dummy", (const size_t)10, &id);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)11, &id2, 0);
+        auto ret2 = write_key(key2, "dummy", (const size_t)11, &id2);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)12, &id3, 0);
+        auto ret3 = write_key(key3, "dummy", (const size_t)12, &id3);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        std::cout << "removing " << id2 << " modulo: " << id2 % 128 << std::endl;
-        auto rmvRet = remove_key(id2);
+        auto rmvRet = remove_key(id2, "dummy");
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5170,39 +5169,39 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)10, &id4, 0);
+        auto ret4 = write_key(key4, "dummy", (const size_t)10, &id4);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 3);
       
         // reading 3 keys by get size
-        getSizeRet = get_key_size(id, &size);
+        getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size, 0);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
 
-        getSizeRet = get_key_size(id3, &size);
+        getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size, 0);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
 
-        getSizeRet = get_key_size(id4, &size);
+        getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size, 0);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id);
-        auto rmvRet2 = remove_key(id3);
-        auto rmvRet3 = remove_key(id4);
+        auto rmvRet1 = remove_key(id, "dummy");
+        auto rmvRet2 = remove_key(id3, "dummy");
+        auto rmvRet3 = remove_key(id4, "dummy");
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
@@ -5225,7 +5224,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
-    auto ret_init = write_key(key_init, (const size_t)30, &id_init, 0);
+    auto ret_init = write_key(key_init, "dummy", (const size_t)30, &id_init);
     BOOST_CHECK_EQUAL(ret_init, 0);
 
     for(int i = 0; i < 20; i++) {
@@ -5233,21 +5232,21 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)30, &id, 0);
+        auto ret1 = write_key(key, "dummy", (const size_t)30, &id);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooooooooooooooooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)33, &id2, 0);
+        auto ret2 = write_key(key2, "dummy", (const size_t)33, &id2);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccccccccccccccccccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)36, &id3, 0);
+        auto ret3 = write_key(key3, "dummy", (const size_t)36, &id3);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2);
+        auto rmvRet = remove_key(id2, "dummy");
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5256,39 +5255,39 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttttttttttttttttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)30, &id4, 0);
+        auto ret4 = write_key(key4, "dummy", (const size_t)30, &id4);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 4);
       
         // reading 3 keys by get size
-        getSizeRet = get_key_size(id, &size);
+        getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size, 0);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
 
-        getSizeRet = get_key_size(id3, &size);
+        getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size, 0);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
 
-        getSizeRet = get_key_size(id4, &size);
+        getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size, 0);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id);
-        auto rmvRet2 = remove_key(id3);
-        auto rmvRet3 = remove_key(id4);
+        auto rmvRet1 = remove_key(id, "dummy");
+        auto rmvRet2 = remove_key(id3, "dummy");
+        auto rmvRet3 = remove_key(id4, "dummy");
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
@@ -5317,21 +5316,21 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)10, &id, 0);
+        auto ret1 = write_key(key, "dummy", (const size_t)10, &id);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)11, &id2, 0);
+        auto ret2 = write_key(key2, "dummy", (const size_t)11, &id2);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)12, &id3, 0);
+        auto ret3 = write_key(key3, "dummy", (const size_t)12, &id3);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2);
+        auto rmvRet = remove_key(id2, "dummy");
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5340,39 +5339,39 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)10, &id4, 0);
+        auto ret4 = write_key(key4, "dummy", (const size_t)10, &id4);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 3);
       
         // reading 3 keys by get size
-        getSizeRet = get_key_size(id, &size);
+        getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size, 0);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
 
-        getSizeRet = get_key_size(id3, &size);
+        getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size, 0);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
 
-        getSizeRet = get_key_size(id4, &size);
+        getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size, 0);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id);
-        auto rmvRet2 = remove_key(id3);
-        auto rmvRet3 = remove_key(id4);
+        auto rmvRet1 = remove_key(id, "dummy");
+        auto rmvRet2 = remove_key(id3, "dummy");
+        auto rmvRet3 = remove_key(id4, "dummy");
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
@@ -5395,7 +5394,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
-    auto ret_init = write_key(key_init, (const size_t)30, &id_init, 0);
+    auto ret_init = write_key(key_init, "dummy", (const size_t)30, &id_init);
     BOOST_CHECK_EQUAL(ret_init, 0);
 
     for(int i = 0; i < 200; i++) {
@@ -5403,21 +5402,21 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)30, &id, 0);
+        auto ret1 = write_key(key, "dummy", (const size_t)30, &id);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooooooooooooooooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)33, &id2, 0);
+        auto ret2 = write_key(key2, "dummy", (const size_t)33, &id2);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccccccccccccccccccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)36, &id3, 0);
+        auto ret3 = write_key(key3, "dummy", (const size_t)36, &id3);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2);
+        auto rmvRet = remove_key(id2, "dummy");
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5426,39 +5425,39 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttttttttttttttttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)30, &id4, 0);
+        auto ret4 = write_key(key4, "dummy", (const size_t)30, &id4);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 4);
       
         // reading 3 keys by get size
-        getSizeRet = get_key_size(id, &size);
+        getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size, 0);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
 
-        getSizeRet = get_key_size(id3, &size);
+        getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size, 0);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
 
-        getSizeRet = get_key_size(id4, &size);
+        getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size, 0);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id);
-        auto rmvRet2 = remove_key(id3);
-        auto rmvRet3 = remove_key(id4);
+        auto rmvRet1 = remove_key(id, "dummy");
+        auto rmvRet2 = remove_key(id3, "dummy");
+        auto rmvRet3 = remove_key(id4, "dummy");
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
