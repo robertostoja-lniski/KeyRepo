@@ -34,6 +34,14 @@
 #define REDUCTION_PARAM 2
 #define READ_MASK       4
 #define WRITE_MASK      2
+#define LOOKUP_MAP_SIZE_POW 7
+#define LOOKUP_SLOTS_NUM 128
+
+#define KEY_TYPE_CUSTOM 0
+
+#define KEY_TYPE_RSA 1
+#define RSA_BEGIN_LABEL "-----BEGIN RSA PRIVATE KEY-----\n"
+#define RSA_END_LABEL "-----END RSA PRIVATE KEY-----"
 
 #define REMOVE_FRAGMENTATION 1
 #define MAP_UNUSED_ROW_OPTIMISATION 1
@@ -58,25 +66,30 @@ enum {
 
 struct map_node {
     uint64_t id;
-    uint64_t offset;
-    uint64_t size;
+    uint8_t type;
+    uint16_t size;
     uint32_t mode;
-    int      uid;
-    int      gid;
+    uint16_t uid;
+    uint64_t gid;
 };
+
+struct lookup_slot {
+    uint8_t cnt;
+};
+
+typedef struct lookup_slot lookup_slot;
 typedef struct map_node map_node;
 
 struct partition_info {
     uint64_t magic;
-    uint64_t number_of_keys;
-    uint64_t file_content_size;
-    uint64_t free_slot;
-    uint64_t map_size;
+    uint16_t number_of_keys;
+    uint16_t map_size;
 };
 typedef struct partition_info partition_info;
 
 #if __APPLE__
-const static char* partition = "/Users/robertostoja-lniski/.keyPartition";
+const static char* partition = "/Users/robertostoja-lniski/.keyPartitionV2/meta";
+const static char* partition_base = "/Users/robertostoja-lniski/.keyPartitionV2/";
 #else
 const static char* partition = "/home/robert/.keyPartition";
 #endif
@@ -91,10 +104,10 @@ typedef struct access_rights access_rights;
 
 
 int init_file_if_not_defined();
-int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, access_rights);
+int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, access_rights, uint8_t type);
 void print_partition(const void* mapped_partition);
-int add_key_by_partition_pointer(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights);
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, access_rights);
+int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights, uint8_t type);
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, access_rights, uint8_t type);
 int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_rights);
 int remove_private_key_by_id(uint64_t id, access_rights);
 uint64_t remove_fragmentation(partition_info*);
@@ -104,8 +117,8 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int m
 int can_read(int mode, access_rights mapped, access_rights effective);
 int can_write(int mode, access_rights mapped, access_rights effective);
 
-int do_write_key(const char* key, const uint64_t keyLen, uint64_t* id, int uid, int gid);
-int do_read_key(const uint64_t id, char* key, uint64_t keyLen, int uid, int gid);
+int do_write_key(const char* key, const uint64_t keyLen, uint64_t* id, int uid, int gid, uint8_t type);
+int do_read_key(const uint64_t id, char* key, uint64_t keyLen, int uid, int gid, uint8_t type);
 int do_remove_key(const uint64_t id, int uid, int gid);
 int do_get_key_size(const uint64_t id, uint64_t* size, int uid, int gid);
 // MODE HANDLING

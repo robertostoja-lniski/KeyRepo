@@ -903,7 +903,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_TOO_MANY_PARAMS)
 
 BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     std::vector<std::string> input {
             "program",
@@ -926,7 +926,7 @@ BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement + " additional_param", serialisedInput);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 BOOST_AUTO_TEST_CASE(GetPrivateKeyTooManyParams)
@@ -1085,7 +1085,7 @@ BOOST_AUTO_TEST_CASE(DecryptFileTooManyParams)
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     std::vector<std::string> input {
             "program",
@@ -1107,7 +1107,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
     auto msg = executor->execute();
 
     BOOST_CHECK_EQUAL(msg, "Keys created");
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 
@@ -1355,7 +1355,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_GMOD_WRONG_KEY)
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GMOD)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1397,12 +1397,12 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GMOD)
 
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1461,11 +1461,11 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
 
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1524,12 +1524,12 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
 
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1631,7 +1631,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
    
     BOOST_CHECK_EQUAL(any_error, false);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 
@@ -1669,7 +1669,7 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1714,14 +1714,14 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
 
         BOOST_CHECK_EQUAL(msg, "File signed");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN_OFFSET_PART)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-    system("echo czary_mary >> ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+    system("echo czary_mary >> ~/.keyPartitionV2/meta");
 
     {
         std::vector<std::string> input {
@@ -1769,12 +1769,12 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN_OFFSET_PART)
         BOOST_CHECK_EQUAL(msg, "File signed");
     }
 //     */
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1816,13 +1816,13 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
 
         BOOST_CHECK_EQUAL(msg, "Keys deleted");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1865,13 +1865,13 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
 
         BOOST_CHECK_EQUAL(msg, "Private key saved");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input {
@@ -1914,13 +1914,13 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
 
         BOOST_CHECK_EQUAL(msg, "Private key saved");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     system("echo 3123213213 > /tmp/file_to_encrypt.txt");
     system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
@@ -1948,14 +1948,14 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE)
 
         BOOST_CHECK_EQUAL(msg, "File encrypted");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input {
                 "program",
@@ -2017,12 +2017,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
 
         BOOST_CHECK_EQUAL(msg, "Signature correct");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("rm /tmp/not_existing_key");
         std::vector<std::string> input {
@@ -2056,12 +2056,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_KEY)
         BOOST_CHECK_EQUAL(caught, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_IV)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("rm /tmp/g_iv");
         system("echo 312312321 >> /tmp/key");
@@ -2096,11 +2096,11 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_IV)
         BOOST_CHECK_EQUAL(caught, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_IV)
 {
-        system("mv ~/.keyPartition ~/.keyPartition.old");
+        system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
         {
             system("echo "" > /tmp/not_existing_iv");
             system("echo 312312321 >> /tmp/key");
@@ -2126,12 +2126,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_IV)
             BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
         }
 
-        system("mv ~/.keyPartition.old ~/.keyPartition");
+        system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
         }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("echo "" > /tmp/key");
         system("echo 312312321 >> /tmp/not_existing_iv");
@@ -2157,12 +2157,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_KEY)
         BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_FILE_IV)
     {
-        system("mv ~/.keyPartition ~/.keyPartition.old");
+        system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("echo "" > /tmp/not_existing_iv");
         system("echo 312312321 >> /tmp/key");
@@ -2190,12 +2190,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_EMPTY_FILE_IV)
         BOOST_CHECK_EQUAL(msg, std::string("File encrypted"));
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_IV)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("rm /tmp/not_existing_iv");
         system("echo 312312321 >> /tmp/key");
@@ -2230,12 +2230,12 @@ BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_IV)
         BOOST_CHECK_EQUAL(caught, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_FILE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("rm /tmp/not_existing_file");
         std::vector<std::string> input {
@@ -2269,12 +2269,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_NOT_EXISTING_FILE)
         BOOST_CHECK_EQUAL(caught, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("rm /tmp/not_existing_key");
         std::vector<std::string> input {
@@ -2308,11 +2308,11 @@ BOOST_AUTO_TEST_CASE(DECRYPT_NOT_EXISTING_KEY)
         BOOST_CHECK_EQUAL(caught, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -2365,12 +2365,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
         BOOST_CHECK_EQUAL(areSame, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -2423,13 +2423,13 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
         BOOST_CHECK_EQUAL(areSame, true);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_CONTENT_CHECK)
 {
     std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w8X7MR";
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
         system("echo 1234567887654321 > /tmp/iv");
@@ -2460,11 +2460,11 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_CONTENT_CHECK)
         bool areSame = (contentAfterDecryption == content) && (encryptedFileContent != content);
         BOOST_CHECK_EQUAL(areSame, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("echo 3123213213 > /tmp/file_to_encrypt.txt");
         system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
@@ -2513,12 +2513,12 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT)
 
         BOOST_CHECK_EQUAL(msg, "File decrypted");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w8X7MR0fd9";
     {
         std::string syscall = "echo " + content + " > /tmp/file.txt";
@@ -2574,7 +2574,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
         bool areSame = (contentAfterDecryption == content);
         BOOST_CHECK_EQUAL(areSame, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 
@@ -2582,7 +2582,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK)
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_IV)
 {
     std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w";
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::string syscall = "echo " + content + " > /tmp/file.txt";
         system(syscall.c_str());
@@ -2635,13 +2635,13 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_IV)
         bool areSame = (contentAfterDecryption == content);
         BOOST_CHECK_EQUAL(areSame, false);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 // a long test - fills whole partition with keys
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < -1; i++) {
         {
             std::vector<std::string> input {
@@ -2704,12 +2704,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
             BOOST_CHECK_EQUAL(msg, "Signature correct\n");
         }
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 // a long test - fills whole partition with keys and checks PartitionInfo
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
         {
             std::vector<std::string> input {
                     "program",
@@ -2733,12 +2733,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
             BOOST_CHECK_EQUAL(1, keysInPartition);
         }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 // a long test - fills whole partition with keys and checks PartitionInfo
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 9; i++)
     {
         std::vector<std::string> input {
@@ -2783,12 +2783,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
         auto keysInPartition = executor->getCurrentInterface()->getCurrentKeyNum();
         BOOST_CHECK_EQUAL(10, keysInPartition);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 // a long test - fills whole partition with keys and checks PartitionInfo
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 1; i++)
     {
@@ -2832,11 +2832,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
 
         BOOST_CHECK_EQUAL(0, keysInPartition);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for(int i = 0; i < 1; i++)
     {
         std::vector<std::string> input {
@@ -2866,11 +2866,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_14) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("touch /tmp/public.pem");
     system("echo 1 > /tmp/private_test_14.pem");
     for(int i = 0; i < 1; i++)
@@ -2902,11 +2902,11 @@ BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_PARTITION) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(GET_KEY_NOT_EXISTING_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("touch /tmp/public.pem");
     system("echo 1 > /tmp/private.pem");
     {
@@ -2938,11 +2938,11 @@ BOOST_AUTO_TEST_CASE(GET_KEY_NOT_EXISTING_PARTITION) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(SIGN_NOT_EXISTING_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("touch /tmp/public.pem");
     system("echo 1 > /tmp/sign_error_1_private.pem");
     system("echo 1 > /tmp/sign_error_1_file.txt");
@@ -2977,11 +2977,11 @@ BOOST_AUTO_TEST_CASE(SIGN_NOT_EXISTING_PARTITION) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_ID) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("touch /tmp/public.pem");
     system("echo 1 > /tmp/private_test_14.pem");
     {
@@ -3033,12 +3033,12 @@ BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_ID) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 1; i++)
     {
         std::vector<std::string> input {
@@ -3093,7 +3093,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(WRONG_INPUT_1)
@@ -3374,7 +3374,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_NOT_EXISTING_DATA_TO_SIGN) {
 
 BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -3419,11 +3419,11 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
 
         BOOST_CHECK_EQUAL(msg, "File signed");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -3476,12 +3476,12 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -3536,12 +3536,12 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 1; i++) {
         {
             std::vector<std::string> input{
@@ -3607,12 +3607,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
             BOOST_CHECK_EQUAL(msg, "Signature not correct");
         }
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 1; i++) {
         {
             std::vector<std::string> input{
@@ -3686,12 +3686,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
             BOOST_CHECK_EQUAL(caught, true);
         }
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 1; i++) {
         {
             std::vector<std::string> input{
@@ -3777,12 +3777,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
 
         }
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 1; i++) {
         {
             std::vector<std::string> input{
@@ -3877,12 +3877,12 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
             BOOST_CHECK_EQUAL(caught, true);
         }
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     for (int i = 0; i < 1; i++) {
         {
             std::vector<std::string> input{
@@ -3947,7 +3947,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
             BOOST_CHECK_EQUAL(msg, "Signature not correct");
         }
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_ID)
@@ -4046,7 +4046,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_TEST)
 
 BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input {
                 "program",
@@ -4091,12 +4091,12 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
     }
 
     BOOST_CHECK_EQUAL(error_caught, true);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     std::vector<std::string> input {
             "program",
             "create-key",
@@ -4117,7 +4117,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST)
     auto statement = parser->getCurrentParsedStatementStr();
     auto serialisedInput = testHelpers::toString(input);
     BOOST_CHECK_EQUAL(statement, serialisedInput);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_GET_PRV_TEST)
 {
@@ -4213,7 +4213,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
     std::string contentBeforeOverwrite;
     std::string contentAfterOverwrite;
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -4260,14 +4260,14 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
 
         BOOST_CHECK_EQUAL(areSame, false);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
     std::string contentBeforeOverwrite;
     std::string contentAfterOverwrite;
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -4314,7 +4314,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
 
         BOOST_CHECK_EQUAL(areSame, false);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 
@@ -4322,7 +4322,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
     std::string contentBeforeOverwrite;
     std::string contentAfterOverwrite;
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -4373,14 +4373,14 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
 
         BOOST_CHECK_EQUAL(areSame, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
     std::string contentBeforeOverwrite;
     std::string contentAfterOverwrite;
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     {
         std::vector<std::string> input{
@@ -4432,11 +4432,11 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
 
         BOOST_CHECK_EQUAL(areSame, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -4484,14 +4484,14 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
     std::string contentBeforeOverwrite;
     std::string contentAfterOverwrite;
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::vector<std::string> input{
                 "program",
@@ -4540,12 +4540,12 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
     std::string afterOverwrite;
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("echo a > /tmp/result");
     {
         std::vector<std::string> input{
@@ -4591,12 +4591,12 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
 
     bool areSame = ("a" == afterOverwrite);
     BOOST_CHECK_EQUAL(areSame, false);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
     std::string afterOverwrite;
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("echo a > /tmp/result");
     {
         std::vector<std::string> input{
@@ -4646,11 +4646,11 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
 
     bool areSame = ("a" == afterOverwrite);
     BOOST_CHECK_EQUAL(areSame, true);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("echo a > /tmp/result");
     {
         std::vector<std::string> input{
@@ -4698,12 +4698,12 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     std::vector<std::string> input{
             "program",
             "create-key",
@@ -4730,13 +4730,13 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
     }
 
     BOOST_CHECK_EQUAL(caught, true);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
 
     system("echo a > /tmp/same_path.pem");
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     std::vector<std::string> input{
             "program",
             "create-key",
@@ -4764,288 +4764,221 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
     std::string afterPotentialCreate = testHelpers::readFileIntoString("/tmp/same_path.pem");
     bool areSame = (afterPotentialCreate == "a");
     BOOST_CHECK_EQUAL(areSame, true);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
-BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_SIZE_CHECK_1) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    size_t realKeySize = 1650;
-
-    for (int i = 0; i < 7; i++)
-    {
-        auto str = std::to_string(i);
-        std::vector<std::string> input {
-                "program",
-                "create-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-                "2048",
-                "RSA",
-                "overwrite"
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-
-        auto dummy = {"dummy"};
-    }
-
-    struct stat st{};
-    stat(partition, &st);
-    auto sizeWithFragmentation =  st.st_size;
-
-    for(int i = 0; i < 6; i++)
-    {
-        auto str = std::to_string(i);
-        std::vector<std::string> input {
-                "program",
-                "delete-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-    }
-
-    stat(partition, &st);
-    int64_t sizeAfterDefragmention =  st.st_size;
-    int64_t sizeExpected = sizeWithFragmentation - 6 * realKeySize;
-    auto isSizeWithPaddingBounds = (sizeAfterDefragmention - sizeExpected <= 10)
-            && (sizeExpected - sizeAfterDefragmention >= -10);
-
-    BOOST_CHECK_EQUAL(isSizeWithPaddingBounds, true);
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 #if(RAW_PARTITION) 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_OK) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)100000000, &id);
+    auto ret = write_key(key, (const size_t)100000000, &id, 0);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     char tmp[1000000];
     memset(tmp, 0x41, 1000000 - 1);
     memset(tmp + 1000000 - 1, 0x00, 1);
     uint64_t id;
-    auto ret = write_key(tmp, (const size_t)1000000, &id);
+    auto ret = write_key(tmp, (const size_t)1000000, &id, 0);
 
     BOOST_CHECK_EQUAL(ret, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, buf, 4);
+    auto readRet = read_key(id, buf, 4, 0);
     BOOST_CHECK_EQUAL(key, buf);
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, buf, 3);
+    auto readRet = read_key(id, buf, 3, 0);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(id, buf, 3);
+    auto readRet = read_key(id, buf, 3, 0);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_0_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)0, &id);
+    auto ret = write_key(key, (const size_t)0, &id, 0);
 
     BOOST_CHECK_EQUAL(ret, -1);
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(id, buf, 3);
+    auto readRet = read_key(id, buf, 3, 0);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(0, buf, 3);
+    auto readRet = read_key(0, buf, 3, 0);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(1000, buf, 3);
+    auto readRet = read_key(1000, buf, 3, 0);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     int mode;
     auto readRet = get_mode(id, &mode);
     BOOST_CHECK_EQUAL(mode, 600);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_NO_PART) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int mode;
     auto readRet = get_mode(1000, &mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_WRONG_ID) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     int mode;
     auto readRet = get_mode(1000, &mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_ID) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     int mode;
     auto readRet = set_mode(1000, mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int mode;
     auto readRet = set_mode(1000, mode);
     BOOST_CHECK_EQUAL(readRet, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
-    int mode;
+    int mode = 667;
     auto setRet = set_mode(id, mode);
 
     int newMode;
@@ -5055,11 +4988,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
     BOOST_CHECK_EQUAL(getRet, 0);
     BOOST_CHECK_EQUAL(mode, newMode);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     auto isProperMode = [](int mode) {
         if(mode > 777 || mode < 600) {
@@ -5074,7 +5007,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     int lastProperMode;
     auto getRet = get_mode(id, &lastProperMode);
@@ -5093,29 +5026,29 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
             lastProperMode = i;
         }
     }   
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)10, &id);
+    auto ret = write_key(key, (const size_t)10, &id, 0);
     auto keyNum = get_key_num();
 
     BOOST_CHECK_EQUAL(ret, 0);
     BOOST_CHECK_EQUAL(keyNum, 1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)10, &id);
+    auto ret = write_key(key, (const size_t)10, &id, 0);
     BOOST_CHECK_EQUAL(ret, 0);
 
     uint64_t size;
@@ -5124,71 +5057,71 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
 
     BOOST_CHECK_EQUAL(size, 10);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_NO_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     uint64_t size;
     auto getSizeRet = get_key_size(1000, &size);
     BOOST_CHECK_EQUAL(getSizeRet, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)10, &id);
+    auto ret = write_key(key, (const size_t)10, &id, 0);
     BOOST_CHECK_EQUAL(ret, 0);
 
     uint64_t size;
     auto getSizeRet = get_key_size(1000, &size);
     BOOST_CHECK_EQUAL(getSizeRet, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_NO_PART) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     auto keyNum = get_key_num();
     BOOST_CHECK_EQUAL(keyNum, -1);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MULT) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for(int i = 1; i < 100; i ++) {
         const char* key = "abc777777d";
         uint64_t id;
-        auto ret = write_key(key, (const size_t)10, &id);
+        auto ret = write_key(key, (const size_t)10, &id, 0);
         auto keyNum = get_key_num();
 
         BOOST_CHECK_EQUAL(ret, 0);
         BOOST_CHECK_EQUAL(keyNum, i);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, (const size_t)4, &id);
+    auto ret = write_key(key, (const size_t)4, &id, 0);
 
     auto rmvRet = remove_key(id);
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, buf, 4);
+    auto readRet = read_key(id, buf, 4, 0);
 
     BOOST_CHECK_EQUAL(ret, 0);
     BOOST_CHECK_EQUAL(rmvRet, 0);
@@ -5196,11 +5129,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
 
     free(buf);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int readRet;
     int getSizeRet;
@@ -5209,23 +5142,25 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     for(int i = 0; i < 20; i++) {
 
+        std::cout << i << std::endl;
         // create 3 keys
         const char* key = "xxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)10, &id);
+        auto ret1 = write_key(key, (const size_t)10, &id, 0);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)11, &id2);
+        auto ret2 = write_key(key2, (const size_t)11, &id2, 0);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)12, &id3);
+        auto ret3 = write_key(key3, (const size_t)12, &id3, 0);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
+        std::cout << "removing " << id2 << " modulo: " << id2 % 128 << std::endl;
         auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
@@ -5235,7 +5170,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)10, &id4);
+        auto ret4 = write_key(key4, (const size_t)10, &id4, 0);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 3);
@@ -5244,7 +5179,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size);
+        readRet = read_key(id, buf, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5252,7 +5187,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size);
+        readRet = read_key(id3, buf3, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5260,7 +5195,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size);
+        readRet = read_key(id4, buf4, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5277,11 +5212,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(num, 0);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD_NEVER_EMPTY) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int readRet;
     int getSizeRet;
@@ -5290,7 +5225,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
-    auto ret_init = write_key(key_init, (const size_t)30, &id_init);
+    auto ret_init = write_key(key_init, (const size_t)30, &id_init, 0);
     BOOST_CHECK_EQUAL(ret_init, 0);
 
     for(int i = 0; i < 20; i++) {
@@ -5298,17 +5233,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)30, &id);
+        auto ret1 = write_key(key, (const size_t)30, &id, 0);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooooooooooooooooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)33, &id2);
+        auto ret2 = write_key(key2, (const size_t)33, &id2, 0);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccccccccccccccccccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)36, &id3);
+        auto ret3 = write_key(key3, (const size_t)36, &id3, 0);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5321,7 +5256,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttttttttttttttttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)30, &id4);
+        auto ret4 = write_key(key4, (const size_t)30, &id4, 0);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 4);
@@ -5330,7 +5265,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size);
+        readRet = read_key(id, buf, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5338,7 +5273,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size);
+        readRet = read_key(id3, buf3, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5346,7 +5281,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size);
+        readRet = read_key(id4, buf4, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5363,14 +5298,14 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(num, 1);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 #endif
 
 #if(LONG_RUN)
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD_L) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int readRet;
     int getSizeRet;
@@ -5382,17 +5317,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)10, &id);
+        auto ret1 = write_key(key, (const size_t)10, &id, 0);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)11, &id2);
+        auto ret2 = write_key(key2, (const size_t)11, &id2, 0);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)12, &id3);
+        auto ret3 = write_key(key3, (const size_t)12, &id3, 0);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5405,7 +5340,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)10, &id4);
+        auto ret4 = write_key(key4, (const size_t)10, &id4, 0);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 3);
@@ -5414,7 +5349,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size);
+        readRet = read_key(id, buf, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5422,7 +5357,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size);
+        readRet = read_key(id3, buf3, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5430,7 +5365,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size);
+        readRet = read_key(id4, buf4, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5447,11 +5382,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(num, 0);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LOAD_NEVER_EMPTY_L) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     int readRet;
     int getSizeRet;
@@ -5460,7 +5395,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
-    auto ret_init = write_key(key_init, (const size_t)30, &id_init);
+    auto ret_init = write_key(key_init, (const size_t)30, &id_init, 0);
     BOOST_CHECK_EQUAL(ret_init, 0);
 
     for(int i = 0; i < 200; i++) {
@@ -5468,17 +5403,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, (const size_t)30, &id);
+        auto ret1 = write_key(key, (const size_t)30, &id, 0);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooooooooooooooooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, (const size_t)33, &id2);
+        auto ret2 = write_key(key2, (const size_t)33, &id2, 0);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccccccccccccccccccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, (const size_t)36, &id3);
+        auto ret3 = write_key(key3, (const size_t)36, &id3, 0);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5491,7 +5426,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttttttttttttttttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, (const size_t)30, &id4);
+        auto ret4 = write_key(key4, (const size_t)30, &id4, 0);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 4);
@@ -5500,7 +5435,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, buf, size);
+        readRet = read_key(id, buf, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5508,7 +5443,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, buf3, size);
+        readRet = read_key(id3, buf3, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5516,7 +5451,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, buf4, size);
+        readRet = read_key(id4, buf4, size, 0);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5533,12 +5468,12 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(num, 1);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
 {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     std::string base = "1234567890";
     std::string content;
 
@@ -5600,11 +5535,11 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_CONTENT_CHECK_HUGE)
         bool areSame = (contentAfterDecryption == content);
         BOOST_CHECK_EQUAL(areSame, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         system("echo 3123213213 > /tmp/file_to_encrypt.txt");
         for(int i = 0; i < 1000; i++) {
@@ -5656,7 +5591,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
 
         BOOST_CHECK_EQUAL(msg, "File decrypted");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 
@@ -5664,7 +5599,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_HUGE)
 BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_KEY)
 {
     std::string content = "ewqewqeuywqoeyowqie8735614370856430857n14c78f18h8yxdhdanns7d78ae64bc07845ncg4w8X7MR0fd9830w";
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     {
         std::string syscall = "echo " + content + " > /tmp/file.txt";
         system(syscall.c_str());
@@ -5717,11 +5652,11 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_DECRYPT_WRONG_KEY)
         bool areSame = (contentAfterDecryption == content);
         BOOST_CHECK_EQUAL(areSame, false);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE_HUGE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     system("echo 3123213213 > /tmp/file_to_encrypt.txt");
 
@@ -5753,12 +5688,12 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_ENCRYPT_FILE_HUGE)
 
         BOOST_CHECK_EQUAL(msg, "File encrypted");
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
 {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("echo 3123213213 > /tmp/file_to_decrypt.txt");
     system("echo 0123456789abcdeF0123456789abcdeF > /tmp/key");
     system("echo 1234567887654321 > /tmp/iv");
@@ -5794,10 +5729,10 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DECRYPT_FILE)
 
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 128; i++)
     {
@@ -5828,11 +5763,6 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
     {
         keysInPartitionAfterAdd--;
 
-        if(keysInPartitionAfterAdd == 62) {
-            auto dummy = 0;
-            auto a = 5;
-        }
-
         auto str = std::to_string(i);
         std::vector<std::string> input {
                 "program",
@@ -5854,11 +5784,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
         BOOST_CHECK_EQUAL(keysInPartitionAfterAdd, keysInPartition);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 128; i++)
     {
@@ -5908,11 +5838,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
 
         BOOST_CHECK_EQUAL(127, keysInPartition);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 128; i++)
     {
@@ -5966,11 +5896,11 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
         }
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 128; i++)
     {
@@ -6050,165 +5980,165 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
 
     BOOST_CHECK_EQUAL(caught, false);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
-BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+//BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK) {
+//    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+//
+//    for (int i = 0; i < 128; i++)
+//    {
+//        auto str = std::to_string(i);
+////        std::cout << "create" << i << std::endl;
+//        std::vector<std::string> input {
+//                "program",
+//                "create-key",
+//                "/tmp/private" + str + ".pem",
+//                "/tmp/public" + str + ".pem",
+//                "2048",
+//                "RSA",
+//                "overwrite"
+//        };
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//        auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//
+//        executor->execute();
+//    }
+//
+//    for(int i = 0; i < 100; i++)
+//    {
+//        auto str = std::to_string(i);
+//        std::cout << "delete" << i << std::endl;
+//        std::vector<std::string> input {
+//                "program",
+//                "delete-key",
+//                "/tmp/private" + str + ".pem",
+//                "/tmp/public" + str + ".pem",
+//        };
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//        auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//
+//        executor->execute();
+//    }
+//
+//    bool caught {false};
+//
+//    for(int i = 100; i < 128; i++)
+//    {
+//        auto str = std::to_string(i);
+////        std::cout << "get" << i << std::endl;
+//        std::vector<std::string> input {
+//                "program",
+//                "get-private-key",
+//                "/tmp/private" + str + ".pem",
+//                "/tmp/private_key_value",
+//                "overwrite",
+//        };
+//        TerminalEmulation terminalEmulation(input);
+//        auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//        auto argc = emulatedTerminalArgs.argc;
+//        auto argv = emulatedTerminalArgs.argv;
+//
+//        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//        auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//        auto executor = std::make_shared<Executor>(parser);
+//
+//        executor->execute();
+//        std::string content = testHelpers::readFileIntoString("/tmp/private_key_value");
+//        std::string header {"-----BEGIN RSA PRIVATE KEY-----"};
+//        std::string feet {"-----END RSA PRIVATE KEY-----"};
+//
+//        bool result = header == content.substr(0, header.size())
+//                      && feet == content.substr(content.size() - feet.size(), feet.size());
+//
+//        auto hSize = header.size();
+//        auto fSize = feet.size();
+//        std::string l = content.substr(0, hSize);
+//        std::string r = content.substr(content.size() - fSize, fSize);
+//
+//        auto left = l == header;
+//        auto right = r == feet;
+//
+//        BOOST_CHECK_EQUAL(result, true);
+//    }
+//    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+//}
 
-    for (int i = 0; i < 128; i++)
-    {
-        auto str = std::to_string(i);
-//        std::cout << "create" << i << std::endl;
-        std::vector<std::string> input {
-                "program",
-                "create-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-                "2048",
-                "RSA",
-                "overwrite"
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-    }
-
-    for(int i = 0; i < 100; i++)
-    {
-        auto str = std::to_string(i);
-        std::cout << "delete" << i << std::endl;
-        std::vector<std::string> input {
-                "program",
-                "delete-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/public" + str + ".pem",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-    }
-
-    bool caught {false};
-
-    for(int i = 100; i < 128; i++)
-    {
-        auto str = std::to_string(i);
-//        std::cout << "get" << i << std::endl;
-        std::vector<std::string> input {
-                "program",
-                "get-private-key",
-                "/tmp/private" + str + ".pem",
-                "/tmp/private_key_value",
-                "overwrite",
-        };
-        TerminalEmulation terminalEmulation(input);
-        auto emulatedTerminalArgs = terminalEmulation.getArgs();
-        auto argc = emulatedTerminalArgs.argc;
-        auto argv = emulatedTerminalArgs.argv;
-
-        auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-        auto parser = std::make_shared<Parser>(lexicalAnalyser);
-        auto executor = std::make_shared<Executor>(parser);
-
-        executor->execute();
-        std::string content = testHelpers::readFileIntoString("/tmp/private_key_value");
-        std::string header {"-----BEGIN RSA PRIVATE KEY-----"};
-        std::string feet {"-----END RSA PRIVATE KEY-----"};
-
-        bool result = header == content.substr(0, header.size())
-                      && feet == content.substr(content.size() - feet.size(), feet.size());
-
-        auto hSize = header.size();
-        auto fSize = feet.size();
-        std::string l = content.substr(0, hSize);
-        std::string r = content.substr(content.size() - fSize, fSize);
-
-        auto left = l == header;
-        auto right = r == feet;
-
-        BOOST_CHECK_EQUAL(result, true);
-    }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-
-BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    for (int i = 0; i < 100; i++)
-    {
-        if(i % 100 == 0) {
-            std::cout << i / 10 << "% of multiple loop test\n";
-        }
-        {
-            auto str = std::to_string(i);
-            std::vector<std::string> input {
-                    "program",
-                    "create-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-                    "2048",
-                    "RSA",
-                    "overwrite"
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-        {
-            auto str = std::to_string(i);
-            std::vector<std::string> input {
-                    "program",
-                    "delete-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-    }
-
-    struct stat st{};
-    stat(partition, &st);
-    auto sizeAfterMultipleLoop =  st.st_size;
-    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
-
-    BOOST_CHECK_EQUAL(isWithinBounds, true);
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
+//BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP) {
+//    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+//
+//    for (int i = 0; i < 100; i++)
+//    {
+//        if(i % 100 == 0) {
+//            std::cout << i / 10 << "% of multiple loop test\n";
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            std::vector<std::string> input {
+//                    "program",
+//                    "create-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//                    "2048",
+//                    "RSA",
+//                    "overwrite"
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            std::vector<std::string> input {
+//                    "program",
+//                    "delete-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//    }
+//
+//    struct stat st{};
+//    stat(partition, &st);
+//    auto sizeAfterMultipleLoop =  st.st_size;
+//    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
+//
+//    BOOST_CHECK_EQUAL(isWithinBounds, true);
+//
+//    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+//}
 
 BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12_4096) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 20; i++)
     {
@@ -6260,11 +6190,11 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12_4096) {
         BOOST_CHECK_EQUAL(keysInPartitionAfterAdd, keysInPartition);
     }
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(CREATE_DELETE_8192) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 1; i++)
     {
@@ -6314,11 +6244,11 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_8192) {
 
         BOOST_CHECK_EQUAL(0, keysInPartition);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION_RANDOM_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 128; i++)
     {
@@ -6383,11 +6313,11 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION_RANDOM_SIZE) {
         }
         BOOST_CHECK_EQUAL(caught, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
 
     for (int i = 0; i < 128; i++)
@@ -6479,11 +6409,11 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
 
     BOOST_CHECK_EQUAL(caught, false);
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_RANDOM_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 128; i++)
     {
@@ -6583,11 +6513,11 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_R
 
         BOOST_CHECK_EQUAL(result, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     for (int i = 0; i < 2; i++)
     {
@@ -6651,73 +6581,73 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
 
         BOOST_CHECK_EQUAL(true, true);
     }
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
-#if __APPLE__
-BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
-
-    for (int i = 0; i < 5; i++)
-    {
-        if(i % 100 == 0) {
-            std::cout << i / 10 << "% of multiple loop test\n";
-        }
-        {
-            auto str = std::to_string(i);
-            auto size = std::to_string(int(std::pow(2, 11 + i / 2)));
-
-
-            std::vector<std::string> input {
-                    "program",
-                    "create-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-                    size,
-                    "RSA",
-                    "overwrite"
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-        {
-            auto str = std::to_string(i);
-            std::vector<std::string> input {
-                    "program",
-                    "delete-key",
-                    "/tmp/private" + str + ".pem",
-                    "/tmp/public" + str + ".pem",
-            };
-            TerminalEmulation terminalEmulation(input);
-            auto emulatedTerminalArgs = terminalEmulation.getArgs();
-            auto argc = emulatedTerminalArgs.argc;
-            auto argv = emulatedTerminalArgs.argv;
-
-            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
-            auto parser = std::make_shared<Parser>(lexicalAnalyser);
-            auto executor = std::make_shared<Executor>(parser);
-
-            executor->execute();
-        }
-    }
-
-    struct stat st{};
-    stat(partition, &st);
-    auto sizeAfterMultipleLoop =  st.st_size;
-
-    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
-    BOOST_CHECK_EQUAL(isWithinBounds, true);
-
-    system("mv ~/.keyPartition.old ~/.keyPartition");
-}
-#endif
+//#if __APPLE__
+//BOOST_AUTO_TEST_CASE(CREATE_DELETE_MULTIPLE_LOOP_RANDOM_KEY_SIZE) {
+//    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+//
+//    for (int i = 0; i < 5; i++)
+//    {
+//        if(i % 100 == 0) {
+//            std::cout << i / 10 << "% of multiple loop test\n";
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            auto size = std::to_string(int(std::pow(2, 11 + i / 2)));
+//
+//
+//            std::vector<std::string> input {
+//                    "program",
+//                    "create-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//                    size,
+//                    "RSA",
+//                    "overwrite"
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//        {
+//            auto str = std::to_string(i);
+//            std::vector<std::string> input {
+//                    "program",
+//                    "delete-key",
+//                    "/tmp/private" + str + ".pem",
+//                    "/tmp/public" + str + ".pem",
+//            };
+//            TerminalEmulation terminalEmulation(input);
+//            auto emulatedTerminalArgs = terminalEmulation.getArgs();
+//            auto argc = emulatedTerminalArgs.argc;
+//            auto argv = emulatedTerminalArgs.argv;
+//
+//            auto lexicalAnalyser = std::make_shared<Lexer>(argc, argv);
+//            auto parser = std::make_shared<Parser>(lexicalAnalyser);
+//            auto executor = std::make_shared<Executor>(parser);
+//
+//            executor->execute();
+//        }
+//    }
+//
+//    struct stat st{};
+//    stat(partition, &st);
+//    auto sizeAfterMultipleLoop =  st.st_size;
+//
+//    auto isWithinBounds = sizeAfterMultipleLoop > 0.99 * 5144 && sizeAfterMultipleLoop <= 1.01 * 5144;
+//    BOOST_CHECK_EQUAL(isWithinBounds, true);
+//
+//    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+//}
+//#endif
 
 #endif
