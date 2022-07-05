@@ -105,8 +105,8 @@ void EmulationTimeCalc::readKeyTime(unsigned int trials) {
 }
 void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
 
-    if(trials < 128) {
-        throw std::runtime_error("Use at least 128 trials");
+    if(trials < 64) {
+        throw std::runtime_error("Use at least 64 trials");
     }
 
     if(trials >= 254) {
@@ -496,6 +496,17 @@ void EmulationTimeCalc::setKeyModeTime(unsigned int trials) {
     std::cout << "Set key mode time (" << testedSize << ") " << setKeyModTime / trials << " microseconds" << std::endl;
 
     system("mv ~/.keyPartition.old ~/.keyPartition");
+}
+
+void EmulationTimeCalc::test(unsigned int trials) {
+
+    writeKeyTime(trials);
+    readKeyTime(trials);
+    removeKeyTime(trials);
+    getKeySizeTime(trials);
+    getKeyModeTime(trials);
+    setKeyModeTime(trials);
+    getKeyNumTime(trials);
 }
 
 int dummy(int newMode) {
