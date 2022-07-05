@@ -8,12 +8,12 @@ TimeCalc::~TimeCalc() {}
 
 void EmulationTimeCalc::writeKeyTime(unsigned int trials) {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     uint64_t write_keyTime = 0;
     for(int i = 1; i <= trials; i++) {
 
         if(i % 127 == 0) {
-            system("rm ~/.keyPartition");
+            system("rm -rf ~/.keyPartitionV2/*");
             uint64_t dummy;
             std::string initStr = "null";
             auto initRet = write_key(initStr.c_str(), "dummy", initStr.size(), &dummy);
@@ -47,17 +47,17 @@ void EmulationTimeCalc::writeKeyTime(unsigned int trials) {
 
     std::cout << "Write key avg time (" << testedSize << ") " << write_keyTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 void EmulationTimeCalc::readKeyTime(unsigned int trials) {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     uint64_t read_keyTime = 0;
     for(int i = 1; i <= trials; i++) {
 
         if(i % 127 == 0) {
-            system("rm ~/.keyPartition");
+            system("rm -rf ~/.keyPartitionV2/*");
             uint64_t dummy;
             std::string initStr = "null";
             auto initRet = write_key(initStr.c_str(), "dummy", initStr.size(), &dummy);
@@ -100,7 +100,7 @@ void EmulationTimeCalc::readKeyTime(unsigned int trials) {
 
     std::cout << "Read key avg time (" << testedSize << ") " << read_keyTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
@@ -114,7 +114,7 @@ void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
     }
     // create 1/2 trials of keys of 4096
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     uint64_t remove_keyTime = 0;
     uint64_t ids[200];
     for(int i = 1; i <= trials; i++) {
@@ -155,19 +155,19 @@ void EmulationTimeCalc::removeKeyTime(unsigned int trials) {
 
     std::cout << "Remove key avg time (" << testedSize << ") " << remove_keyTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 
 }
 void EmulationTimeCalc::getKeySizeTime(unsigned int trials) {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     uint64_t id;
     uint64_t getKeySizeTime = 0;
     for(int i = 0; i < trials; i++) {
 
         if(i != 0 && i % 100 == 0) {
-            system("rm ~/.keyPartition");
+            system("rm -rf ~/.keyPartitionV2/* ");
         }
 
         auto randomLetter = []() -> char
@@ -196,19 +196,19 @@ void EmulationTimeCalc::getKeySizeTime(unsigned int trials) {
 
     std::cout << "Get key size time (" << testedSize << ") " << getKeySizeTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 void EmulationTimeCalc::getKeyNumTime(unsigned int trials) {
 
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     uint64_t id;
     uint64_t getKeySizeTime = 0;
     for(int i = 0; i < trials; i++) {
 
         if(i != 0 && i % 100 == 0) {
-            system("rm ~/.keyPartition");
+            system("rm -rf ~/.keyPartitionV2/* ");
         }
 
         auto randomLetter = []() -> char
@@ -237,7 +237,7 @@ void EmulationTimeCalc::getKeyNumTime(unsigned int trials) {
 
     std::cout << "Get key num size time (" << testedSize << ") " << getKeySizeTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
@@ -255,7 +255,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
 
 
 
-        system("mv ~/.keyPartition ~/.keyPartition.old");
+        system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
         uint64_t ids[200];
         for (int i = 1; i <= 127; i++) {
 
@@ -303,7 +303,7 @@ uint64_t EmulationTimeCalc::unusedMapRowOptimisation(unsigned int trials) {
             free(buf);
             optimisationTime += std::chrono::duration_cast<std::chrono::microseconds>(singleWrite).count();
         }
-        system("mv ~/.keyPartition.old ~/.keyPartition");
+        system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 //        std::cout << "... " << (j + 1) * 100 / trials << "%" << std::endl;
     }
     std::cout << "Map free slot optimisation (" << testedSize << ") " << (optimisationTime / (30 * trials)) << " microseconds" << std::endl;
@@ -316,7 +316,7 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
 
     for(int i = 0; i < trials; i ++) {
 
-        system("mv ~/.keyPartition ~/.keyPartition.old");
+        system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
         uint64_t ids[200];
         for (int j = 0; j < 126; j++) {
 
@@ -401,7 +401,7 @@ void EmulationTimeCalc::defragmentationOptimisation(unsigned int trials, unsigne
 
     std::cout << "Defragmentation optimisation " << scenario_id << " trial: " << trials << " (" << testedSize << ") " << time / (27 * (uint64_t)trials) << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 void EmulationTimeCalc::setTestedSize(uint64_t size) {
@@ -409,14 +409,14 @@ void EmulationTimeCalc::setTestedSize(uint64_t size) {
 }
 
 void EmulationTimeCalc::getKeyModeTime(unsigned int trials) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     uint64_t id;
     uint64_t getKeyModTime = 0;
     for(int i = 0; i < trials; i++) {
 
         if(i != 0 && i % 100 == 0) {
-            system("rm ~/.keyPartition");
+            system("rm -rf ~/.keyPartitionV2/* ");
         }
 
         auto randomLetter = []() -> char
@@ -445,20 +445,20 @@ void EmulationTimeCalc::getKeyModeTime(unsigned int trials) {
 
     std::cout << "Get key mode time (" << testedSize << ") " << getKeyModTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
 int dummy(int);
 
 void EmulationTimeCalc::setKeyModeTime(unsigned int trials) {
-    system("mv ~/.keyPartition ~/.keyPartition.old");
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     uint64_t id;
     uint64_t setKeyModTime = 0;
     for(int i = 0; i < trials; i++) {
 
         if(i != 0 && i % 100 == 0) {
-            system("rm ~/.keyPartition");
+            system("rm -rf ~/.keyPartitionV2/* ");
         }
 
         auto randomLetter = []() -> char
@@ -495,7 +495,18 @@ void EmulationTimeCalc::setKeyModeTime(unsigned int trials) {
 
     std::cout << "Set key mode time (" << testedSize << ") " << setKeyModTime / trials << " microseconds" << std::endl;
 
-    system("mv ~/.keyPartition.old ~/.keyPartition");
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+void EmulationTimeCalc::test(unsigned int trials) {
+
+    writeKeyTime(trials);
+    readKeyTime(trials);
+    removeKeyTime(trials);
+    getKeySizeTime(trials);
+    getKeyModeTime(trials);
+    setKeyModeTime(trials);
+    getKeyNumTime(trials);
 }
 
 void EmulationTimeCalc::test(unsigned int trials) {
