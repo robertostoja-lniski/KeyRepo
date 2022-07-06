@@ -1250,7 +1250,7 @@ SYSCALL_DEFINE0(get_key_num) {
 }
 
 #if EMULATION == 1
-int do_write_key(const char* key, const char* password, uint64_t key_len, uint64_t* id, int uid, int gid) {
+int do_write_key(const char* key, const char* password, uint64_t key_len, uint64_t* id, int uid, int gid, int type) {
 #else
 SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t __user *, id, int __user, uid, int __user, gid) {
 #endif
@@ -1302,7 +1302,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 }
 
 #if EMULATION == 1
-int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key_len, int uid, int gid) {
+int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key_len, int uid, int gid, int type) {
 #else
 SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
 #endif

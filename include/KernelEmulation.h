@@ -40,6 +40,8 @@
 #define KEY_TYPE_CUSTOM 0
 
 #define KEY_TYPE_RSA 1
+
+#define KEY_TYPE_UNKNOWN -1
 #define RSA_BEGIN_LABEL "-----BEGIN RSA PRIVATE KEY-----\n"
 #define RSA_END_LABEL "-----END RSA PRIVATE KEY-----"
 
@@ -117,8 +119,8 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int m
 int can_read(int mode, access_rights mapped, access_rights effective);
 int can_write(int mode, access_rights mapped, access_rights effective);
 
-int do_write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id, int uid, int gid);
-int do_read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int uid, int gid);
+int do_write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id, int uid, int gid, int type);
+int do_read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int uid, int gid, int type);
 int do_remove_key(const uint64_t id, const char* password, int uid, int gid);
 int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int uid, int gid);
 // MODE HANDLING
