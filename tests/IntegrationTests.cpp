@@ -4978,7 +4978,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
     uint64_t id;
     auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
 
-    int mode;
+    int mode = 600;
     auto setRet = set_mode(id, "dummy", mode);
 
     int newMode;
