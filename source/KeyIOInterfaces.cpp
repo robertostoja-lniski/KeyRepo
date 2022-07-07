@@ -104,7 +104,7 @@ std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKe
     }
 
 //    TODO in devel mode
-    auto ret = read_key(id, "dummy", prvKey, keyLen, KEY_TYPE_RSA);
+    auto ret = read_key(id, "dummy", prvKey, keyLen);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
@@ -195,7 +195,7 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
     }
 
 //    TODO in devel mode
-    if(read_key(id, "dummy", prvKey, keyLen, KEY_TYPE_RSA) < 0) {
+    if(read_key(id, "dummy", prvKey, keyLen) < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 //    std::cout << prvKey;

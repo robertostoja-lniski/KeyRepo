@@ -4812,7 +4812,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, "dummy", buf, 4, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(id, "dummy", buf, 4);
     BOOST_CHECK_EQUAL(key, buf);
 
     free(buf);
@@ -4828,7 +4828,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, "dummy", buf, 3, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(id, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
@@ -4844,7 +4844,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(id, "dummy", buf, 3, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(id, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
@@ -4870,7 +4870,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_PARTITION) {
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(id, "dummy", buf, 3, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(id, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
 
     free(buf);
@@ -4886,7 +4886,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(0, "dummy", buf, 3, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(0, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     free(buf);
@@ -4902,7 +4902,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
 
     char *buf;
     buf = (char* )malloc(3);
-    auto readRet = read_key(1000, "dummy", buf, 3, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(1000, "dummy", buf, 3);
     BOOST_CHECK_EQUAL(readRet, -1);
 
     free(buf);
@@ -5121,7 +5121,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
 
     char *buf;
     buf = (char* )malloc(5);
-    auto readRet = read_key(id, "dummy", buf, 4, KEY_TYPE_CUSTOM);
+    auto readRet = read_key(id, "dummy", buf, 4);
 
     BOOST_CHECK_EQUAL(ret, 0);
     BOOST_CHECK_EQUAL(rmvRet, 0);
@@ -5178,7 +5178,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, "dummy", buf, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5186,7 +5186,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, "dummy", buf3, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5194,7 +5194,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, "dummy", buf4, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5264,7 +5264,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, "dummy", buf, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5272,7 +5272,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, "dummy", buf3, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5280,7 +5280,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, "dummy", buf4, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5348,7 +5348,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, "dummy", buf, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5356,7 +5356,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, "dummy", buf3, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5364,7 +5364,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, "dummy", buf4, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
@@ -5434,7 +5434,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf = (char* )malloc(size + 1);
-        readRet = read_key(id, "dummy", buf, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id, "dummy", buf, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf, key);
         free(buf);
@@ -5442,7 +5442,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id3, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf3 = (char* )malloc(size + 1);
-        readRet = read_key(id3, "dummy", buf3, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id3, "dummy", buf3, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf3, key3);
         free(buf3);
@@ -5450,7 +5450,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         getSizeRet = get_key_size(id4, "dummy", &size);
         BOOST_CHECK_EQUAL(getSizeRet, 0);
         char* buf4 = (char* )malloc(size + 1);
-        readRet = read_key(id4, "dummy", buf4, size, KEY_TYPE_CUSTOM);
+        readRet = read_key(id4, "dummy", buf4, size);
         BOOST_CHECK_EQUAL(readRet, 0);
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
