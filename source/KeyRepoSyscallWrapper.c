@@ -131,13 +131,13 @@ int write_key(const char* key, const char* password, const uint64_t keyLen, uint
 
     return do_write_key(key, password, keyLen, id, ids.uid, ids.gid, type);
 }
-int read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int type) {
+int read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_read_key(id, password, key, keyLen, ids.uid, ids.gid, type);
+    return do_read_key(id, password, key, keyLen, ids.uid, ids.gid);
 }
 int remove_key(const uint64_t id, const char* password) {
     original_uids ids = get_original_uids();

@@ -772,7 +772,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     return help_counter;
 }
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, access_rights proc_rights, uint8_t type) {
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, access_rights proc_rights, uint8_t* type) {
 
     int                 help_counter;
     partition_info*     partition_metadata;
@@ -819,11 +819,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
 
             mapped_rights.uid = current_elem_in_map->uid;
             mapped_rights.gid = current_elem_in_map->gid;
-
-            if (current_elem_in_map->type != type) {
-                printk("Wrong type");
-                return -2;
-            }
+            *type = current_elem_in_map->type;
 
             if(!can_read(current_elem_in_map->mode, mapped_rights, proc_rights)) {
                 printk("Cannot read");
@@ -1103,7 +1099,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
 }
 
 #if EMULATION == 1
-int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, access_rights proc_rights, uint8_t type) {
+int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, access_rights proc_rights) {
 #else
 int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, access_rights proc_rights) {
 #endif
@@ -1123,7 +1119,8 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
     printk("Next action: get key val by pp\n");
 
     print_partition(mapped_partition);
-    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prvKey, key_len, proc_rights, type);
+    uint8_t type;
+    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prvKey, key_len, proc_rights, &type);
     print_partition(mapped_partition);
 
 #if EMULATION == 1
@@ -1302,7 +1299,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 }
 
 #if EMULATION == 1
-int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key_len, int uid, int gid, int type) {
+int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key_len, int uid, int gid) {
 #else
 SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
 #endif
@@ -1320,7 +1317,7 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
     proc_rights.uid = uid;
     proc_rights.gid = gid;
 
-    ret = get_prv_key_by_id(id, key, key_len, proc_rights, type);
+    ret = get_prv_key_by_id(id, key, key_len, proc_rights);
     if(ret != 0) {
         return ret;
     }

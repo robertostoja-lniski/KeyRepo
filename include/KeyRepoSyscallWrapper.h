@@ -37,7 +37,7 @@ int set_mode(const uint64_t id, int new_mode);
 #include "KernelEmulation.h"
 
 int write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id, int type);
-int read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int type);
+int read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen);
 int remove_key(const uint64_t id, const char* password);
 int get_key_size(const uint64_t id, const char* password, uint64_t* size);
 int get_mode(const uint64_t id, const char* password, int* output);
