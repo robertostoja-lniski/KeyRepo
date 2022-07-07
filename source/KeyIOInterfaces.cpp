@@ -67,7 +67,7 @@ void KeyPartitionIOInterface::removePrivateKey(std::string privateKeyPath) {
 
     // TODO in devel mode
     auto result = remove_key(id, "dummy");
-    if(result == -1) {
+    if(result < 0) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
 }
@@ -94,7 +94,7 @@ std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKe
     uint64_t keyLen;
 //    TODO in devel mode
     auto getSizeRet = get_key_size(id, "dummy", &keyLen);
-    if(getSizeRet !=0 ) {
+    if(getSizeRet != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
@@ -195,7 +195,8 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
     }
 
 //    TODO in devel mode
-    if(read_key(id, "dummy", prvKey, keyLen) < 0) {
+    auto readKeyRet = read_key(id, "dummy", prvKey, keyLen);
+    if(readKeyRet < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 //    std::cout << prvKey;
@@ -203,7 +204,7 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
     if(bo == nullptr) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
-    if(BIO_write( bo, prvKey,strlen(prvKey)) <=0) {
+    if(BIO_write( bo, prvKey,strlen(prvKey)) <= 0) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
@@ -261,7 +262,7 @@ void KeyPartitionIOInterface::protectedWritePrivateKeyToFile(std::string filepat
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
     }
 
-    if(result == -2) {
+    if(result == -5) {
         throw std::runtime_error("KeyIOInterface: Partition full");
     }
 

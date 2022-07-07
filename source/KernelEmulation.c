@@ -805,7 +805,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
-        return RES_CACHE_ERROR;
+        return RES_NOT_FOUND;
     }
 
     found = 0;
@@ -872,7 +872,7 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
     lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
-        return RES_CACHE_ERROR;
+        return RES_NOT_FOUND;
     }
 
     found = 0;
@@ -938,7 +938,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
     lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
-        return RES_CACHE_ERROR;
+        return RES_NOT_FOUND;
     }
 
     map_size = partition_metadata->map_size;
@@ -1010,7 +1010,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     lookup = ((lookup_slot * )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
-        return RES_CACHE_ERROR;
+        return RES_NOT_FOUND;
     }
 
     map_size = partition_metadata->map_size;
@@ -1068,7 +1068,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
 
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
-        return RES_CACHE_ERROR;
+        return RES_NOT_FOUND;
     }
 
     for(i = 0; i < map_size; i++) {
@@ -1279,7 +1279,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 #endif
 
     ret = add_key_to_partition(key, used_len, id, proc_rights, type);
-    if(ret == -1 || ret == -2) {
+    if(ret < 0) {
 #if EMULATION == 0
         down(&sem);
 #endif
@@ -1390,7 +1390,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 #endif
 
     if(get_key_ret < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return get_key_ret;
     }
 
     printk("Exiting: get mode\n");
@@ -1446,7 +1446,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
 
     printk("Next action: set key mode by pp\n");
     get_key_ret = set_key_mode_by_partition_pointer(mapped_partition, id, new_mode, proc_rights);
-    if(get_key_ret == -1) {
+    if(get_key_ret < 0) {
 
 #if EMULATION == 1
     free(mapped_partition);
@@ -1454,7 +1454,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
     kfree(mapped_partition);
     down(&sem);
 #endif
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return get_key_ret;
     }
 
     printk("Next action: set buffered file\n");
@@ -1526,8 +1526,8 @@ int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int
     proc_rights.gid = gid;
 
     ret = get_prv_key_size_by_id(id, size, proc_rights);
-    if(ret == -1) {
-        return RES_NON_INTEGRAL_PARTITION;
+    if(ret < 0) {
+        return ret;
     }
 
     printk("Exiting: get key size\n");
