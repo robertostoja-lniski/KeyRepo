@@ -57,6 +57,25 @@ enum {
     VERBOSE_HIGH = 2,
 };
 
+enum {
+    RES_OK = 0,
+    RES_INPUT_ERR = -1,
+
+    RES_CANNOT_OPEN_PARTITION = -2,
+    RES_CANNOT_WRITE_TO_PARTITION = -3,
+    RES_CANNOT_DELETE_RESOURCE = -4,
+
+    RES_PARTITION_FULL = -5,
+    RES_CANNOT_INITIALIZE_PARTITION = -6,
+    RES_NON_INTEGRAL_PARTITION = -7,
+
+    RES_UNKNOWN_KEY_TYPE = -8,
+    RES_UNAUTHORIZED = -9,
+    RES_NOT_FOUND = -10,
+
+    RES_CANNOT_ALLOCATE = -11,
+};
+
 // VERBOSE_NO for no prints
 // VERBOSE_LOW for the most important info
 
