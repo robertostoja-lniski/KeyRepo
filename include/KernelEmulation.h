@@ -87,14 +87,30 @@ enum {
 #define MAGIC 312312312312
 #define AVG_KEY_LEN 4096
 
-struct map_node {
-    uint64_t id;
+#define KEY_FILE_NAME_LEN 32
+
+struct user_info {
+    int uid;
+    int gid;
+};
+typedef struct user_info user_info;
+
+struct key_info {
+    char key_file[KEY_FILE_NAME_LEN];
     uint8_t type;
     uint16_t size;
-    uint32_t mode;
-    uint16_t uid;
-    uint64_t gid;
+    uint32_t access_control_list;
+    user_info owner_info;
 };
+
+typedef struct key_info key_info;
+
+struct map_node {
+    uint64_t id;
+    key_info key_info;
+};
+
+
 
 struct lookup_slot {
     uint8_t cnt;
@@ -106,7 +122,7 @@ typedef struct map_node map_node;
 struct partition_info {
     uint64_t magic;
     uint16_t number_of_keys;
-    uint16_t map_size;
+    uint16_t capacity;
 };
 typedef struct partition_info partition_info;
 
@@ -119,26 +135,22 @@ const static char* partition = "/home/robert/.keyPartition";
 
 static struct semaphore *sem;
 
-struct access_rights {
-    int uid;
-    int gid;
-};
-typedef struct access_rights access_rights;
+
 
 
 int init_file_if_not_defined();
-int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, access_rights, uint8_t type);
+int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
 void print_partition(const void* mapped_partition);
-int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights, uint8_t type);
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, access_rights, uint8_t* type);
-int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_rights);
-int remove_private_key_by_id(uint64_t id, access_rights);
+int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, user_info, uint8_t* type);
+int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_info);
+int remove_private_key_by_id(uint64_t id, user_info);
 uint64_t remove_fragmentation(partition_info*);
 // PUBLIC
-int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output, access_rights);
-int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode, access_rights);
-int can_read(int mode, access_rights mapped, access_rights effective);
-int can_write(int mode, access_rights mapped, access_rights effective);
+int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output, user_info);
+int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode, user_info);
+int can_read(int mode, user_info owner_info, user_info effective_user_info);
+int can_write(int mode, user_info owner_info, user_info effective_user_info);
 
 int do_write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id, int uid, int gid, int type);
 int do_read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int uid, int gid);

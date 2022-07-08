@@ -296,7 +296,7 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
 
     generateTrials = 10;
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + offset);
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
 
     foundSameId = 0;
     while(generateTrials--) {
@@ -575,15 +575,15 @@ int init_file_if_not_defined(void) {
 
     partition_metadata = (partition_info* )partition_start;
     partition_metadata->magic = MAGIC;
-    partition_metadata->map_size = DEFAULT_MAP_SIZE;
+    partition_metadata->capacity = DEFAULT_MAP_SIZE;
     partition_metadata->number_of_keys = 0;
 
     map_position = (map_node* )((partition_info* )partition_start + 1);
-    for(i = 0; i < partition_metadata->map_size; i++) {
+    for(i = 0; i < partition_metadata->capacity; i++) {
 
         map_position -> id = 0;
-        map_position -> size = 0;
-        map_position -> type = KEY_TYPE_CUSTOM;
+        map_position -> key_info.size = 0;
+        map_position -> key_info.type = KEY_TYPE_CUSTOM;
         map_position = map_position + 1;
     }
 
@@ -620,7 +620,7 @@ void print_partition(const void* mapped_partition) {
     magic_offset = get_magic_offset((void*)mapped_partition);
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition);
     keys = partition_metadata->number_of_keys;
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
 
 #if EMULATION == 1
     printf("This partition has: %llu keys.\n", keys);
@@ -634,7 +634,7 @@ void print_partition(const void* mapped_partition) {
     for(i = 0; i < 5; i++) {
 
 #if EMULATION == 1
-        tmp = (char* )malloc(current_elem_in_map->size + 1);
+        tmp = (char* )malloc(current_elem_in_map->key_info.size + 1);
 #else
         printk("%llu %llu %llu", current_elem_in_map->id, current_elem_in_map->offset, current_elem_in_map->size);
         tmp = (char* )kmalloc(current_elem_in_map->size + 1, GFP_KERNEL);
@@ -644,7 +644,7 @@ void print_partition(const void* mapped_partition) {
             return;
         }
 
-        tmp[current_elem_in_map->size] = 0;
+        tmp[current_elem_in_map->key_info.size] = 0;
 
 #if EMULATION == 1
         printf(" %s\n", tmp);
@@ -659,9 +659,9 @@ void print_partition(const void* mapped_partition) {
 }
 
 #if EMULATION == 1
-int add_key_to_partition(const char* key, uint64_t key_len, uint64_t *id, access_rights rights, uint8_t type) {
+int add_key_to_partition(const char* key, uint64_t key_len, uint64_t *id, user_info rights, uint8_t type) {
 #else
-int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __user *id, access_rights rights) {
+int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __user *id, user_info rights) {
 #endif
 
     size_t      file_size;
@@ -726,9 +726,9 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     return RES_OK;
 }
 #if EMULATION == 1
-int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t key_len, uint64_t *id, access_rights proc_rights, uint8_t type) {
+int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
 #else
-int update_metadata_when_writing(void* mapped_partition, const char* __user key, uint64_t key_len, uint64_t __user *id, access_rights proc_rights) {
+int update_metadata_when_writing(void* mapped_partition, const char* __user key, uint64_t key_len, uint64_t __user *id, user_info user_info) {
 #endif
 
     int                 help_counter;
@@ -756,7 +756,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
 
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
     current_elem_in_map = (map_node* )(partition_metadata + 1);
 
     printk("Moving to first map node succeeded\n");
@@ -780,23 +780,25 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     printk("Copied and exiting map iteration.\n");
 #endif
 
+    key_info key_info;
+    key_info.type = type;
+    key_info.size = key_len;
+    key_info.owner_info = effective_user_info;
+
     current_elem_in_map->id = next_id;
-    current_elem_in_map->type = type;
-    current_elem_in_map->size = key_len;
-    current_elem_in_map->uid = proc_rights.uid;
-    current_elem_in_map->gid = proc_rights.gid;
+    current_elem_in_map->key_info = key_info;
 
 #if EMULATION == 1
-    current_elem_in_map->mode = 600;
+    current_elem_in_map->key_info.access_control_list = 600;
 #else
-    current_elem_in_map->mode = 600;
+    current_elem_in_map->key_info.access_control_list = 600;
 #endif
 
     printk("New item values:\n");
     printk("id: %llu\n", current_elem_in_map->id);
-    printk("size: %llu\n", current_elem_in_map->size);
-    printk("uid: %llu\n", current_elem_in_map->uid);
-    printk("gid: %llu\n", current_elem_in_map->gid);
+    printk("size: %llu\n", current_elem_in_map->key_info.size);
+    printk("uid: %llu\n", current_elem_in_map->key_info.owner_info.uid);
+    printk("gid: %llu\n", current_elem_in_map->key_info.owner_info.gid);
 
     partition_metadata->number_of_keys += 1;
 
@@ -805,7 +807,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     return help_counter;
 }
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, access_rights proc_rights, uint8_t* type) {
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, user_info effective_user_info, uint8_t* type) {
 
     int                 help_counter;
     partition_info*     partition_metadata;
@@ -815,7 +817,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     uint64_t            offset;
     int                 found;
     int                 i;
-    access_rights       mapped_rights;
+    user_info           owner_info;
     uint64_t            allocation_size;
     uint64_t            current_id;
 
@@ -834,7 +836,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
 
     current_elem_in_map = (map_node* )(partition_metadata + 1);
     lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
@@ -850,17 +852,16 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
 
             printk("Read rights to be checked");
 
-            mapped_rights.uid = current_elem_in_map->uid;
-            mapped_rights.gid = current_elem_in_map->gid;
-            *type = current_elem_in_map->type;
+            owner_info = current_elem_in_map->key_info.owner_info;
+            *type = current_elem_in_map->key_info.type;
 
-            if(!can_read(current_elem_in_map->mode, mapped_rights, proc_rights)) {
+            if(!can_read(current_elem_in_map->key_info.access_control_list, owner_info, effective_user_info)) {
                 printk("Cannot read");
                 return RES_UNAUTHORIZED;
             }
 
             printk("ID FOUND: %llu\n", current_id);
-            printk("SIZE FOUND: %llu\n", current_elem_in_map->size);
+            printk("SIZE FOUND: %llu\n", current_elem_in_map->key_info.size);
 
             found = 1;
             break;
@@ -872,7 +873,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
         return RES_NOT_FOUND;
     }
     printk("Found\n");
-    allocation_size = current_elem_in_map->size;
+    allocation_size = current_elem_in_map->key_info.size;
 
     if(key_len < allocation_size) {
         printk("Allocation size: %llu is shortened to key len of %llu\n", allocation_size, key_len);
@@ -882,7 +883,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     printk("Exiting: CHANGED get key val by pp");
     return RES_OK;
 }
-int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint64_t* key_len, access_rights proc_rights) {
+int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint64_t* key_len, user_info effective_user_info) {
 
     int                 help_counter;
     partition_info*     partition_metadata;
@@ -890,7 +891,7 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
     lookup_slot*        lookup;
     int                 found;
     uint64_t            i;
-    access_rights       mapped_rights;
+    user_info           owner_info;
     uint64_t            size;
 
     printk("Entering: get key size by pp\n");
@@ -912,13 +913,12 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
 
     found = 0;
     i = 0;
-    while(i++ < partition_metadata->map_size) {
+    while(i++ < partition_metadata->capacity) {
         if (current_elem_in_map->id == id) {
             printk("Read rights to be checked\n");
 
-            mapped_rights.uid = current_elem_in_map->uid;
-            mapped_rights.gid = current_elem_in_map->gid;
-            if(!can_read(current_elem_in_map->mode, mapped_rights, proc_rights)) {
+            owner_info = current_elem_in_map->key_info.owner_info;
+            if(!can_read(current_elem_in_map->key_info.access_control_list, owner_info, effective_user_info)) {
                 printk("Cannot read");
                 return RES_UNAUTHORIZED;
             }
@@ -934,7 +934,7 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
         return RES_NOT_FOUND;
     }
 
-    size = current_elem_in_map->size;
+    size = current_elem_in_map->key_info.size;
 #if EMULATION == 1
     memcpy(key_len, &size, sizeof(*key_len));
 #else
@@ -945,7 +945,7 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
     return RES_OK;
 }
 
-int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* key_mode, access_rights proc_rights) {
+int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* key_mode, user_info effective_user_info) {
 
     partition_info*     partition_metadata;
     uint64_t            map_size;
@@ -953,7 +953,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
     lookup_slot*        lookup;
     int                 found;
     uint64_t            i;
-    access_rights       mapped_rights;
+    user_info           owner_info;
     int                 help_counter;
 
 #if EMULATION == 0
@@ -976,7 +976,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
         return RES_NOT_FOUND;
     }
 
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
 
     found = 0;
     for(i = 0; i < map_size; i++) {
@@ -984,9 +984,8 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
         if(current_id == id) {
 
             printk("Read rights to be checked\n");
-            mapped_rights.uid = current_elem_in_map->uid;
-            mapped_rights.gid = current_elem_in_map->gid;
-            if(!can_read(current_elem_in_map->mode, mapped_rights, proc_rights)) {
+            owner_info = current_elem_in_map->key_info.owner_info;
+            if(!can_read(current_elem_in_map->key_info.access_control_list, owner_info, effective_user_info)) {
                 printk("Cannot read");
                 return RES_UNAUTHORIZED;
             }
@@ -1002,7 +1001,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
     }
 
 #if EMULATION == 1
-    memcpy(key_mode, &current_elem_in_map->mode, sizeof(*key_mode));
+    memcpy(key_mode, &current_elem_in_map->key_info.access_control_list, sizeof(*key_mode));
 #else
 
     printk("Next action: get fs\n");
@@ -1011,8 +1010,8 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
     set_fs(KERNEL_DS);
 
     printk("cpy to usr\n");
-    copy_to_user(key_mode, &current_elem_in_map->mode, sizeof(*key_mode));
-    printk("Copied mode %d\n", current_elem_in_map->mode);
+    copy_to_user(key_mode, &current_elem_in_map->key_info.access_control_list, sizeof(*key_mode));
+    printk("Copied mode %d\n", current_elem_in_map->key_info.access_control_list);
 
     set_fs(fs);
 #endif
@@ -1020,7 +1019,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
     printk("Exiting: get key mode by pp\n");
     return RES_OK;
 }
-int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int key_mode, access_rights proc_rights) {
+int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int key_mode, user_info effective_user_info) {
 
     int                 help_counter;
     partition_info*     partition_metadata;
@@ -1029,7 +1028,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     lookup_slot*        lookup;
     int                 found;
     int                 i;
-    access_rights       mapped_rights;
+    user_info           owner_info;
 
 
     printk("Entering: set key mode by pp\n");
@@ -1048,16 +1047,15 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
         return RES_NOT_FOUND;
     }
 
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
     found = 0;
     for(i = 0; i < map_size; i++) {
         uint64_t current_id = current_elem_in_map->id;
         if(current_id == id) {
             found = 1;
 
-            mapped_rights.uid = current_elem_in_map->uid;
-            mapped_rights.gid = current_elem_in_map->gid;
-            if(!can_write(current_elem_in_map->mode, mapped_rights, proc_rights)) {
+            owner_info = current_elem_in_map->key_info.owner_info;
+            if(!can_write(current_elem_in_map->key_info.access_control_list, owner_info, effective_user_info)) {
                 printk("Cannot read");
                 return RES_UNAUTHORIZED;
             }
@@ -1070,11 +1068,11 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
         return RES_NOT_FOUND;
     }
 
-    current_elem_in_map->mode = key_mode;
+    current_elem_in_map->key_info.access_control_list = key_mode;
     printk("Exiting: set key mode by pp\n");
     return help_counter;
 }
-int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_rights proc_rights) {
+int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_info effective_user_info) {
 
     int                 help_counter;
     partition_info*     partition_metadata;
@@ -1082,7 +1080,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
     map_node*           current_elem_in_map;
     lookup_slot*        lookup;
     int                 i;
-    access_rights       mapped_rights;
+    user_info           owner_info;
 
     print_partition(mapped_partition);
     printk("Entering: key val by pp\n");
@@ -1094,7 +1092,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
 
-    map_size = partition_metadata->map_size;
+    map_size = partition_metadata->capacity;
     current_elem_in_map = (map_node* )(partition_metadata + 1);
 
     lookup = ((lookup_slot * )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
@@ -1111,9 +1109,8 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
         if(current_elem_in_map->id == id) {
 
             printk("Checking rights");
-            mapped_rights.uid = current_elem_in_map->uid;
-            mapped_rights.gid = current_elem_in_map->gid;
-            if(!can_write(current_elem_in_map->mode, mapped_rights, proc_rights)) {
+            owner_info = current_elem_in_map->key_info.owner_info;
+            if(!can_write(current_elem_in_map->key_info.access_control_list, owner_info, effective_user_info)) {
                 printk("Cannot read");
                 return RES_UNAUTHORIZED;
             }
@@ -1132,9 +1129,9 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_
 }
 
 #if EMULATION == 1
-int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, access_rights proc_rights) {
+int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, user_info proc_rights) {
 #else
-int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, access_rights proc_rights) {
+int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, user_info proc_rights) {
 #endif
 
     size_t          file_size;
@@ -1174,7 +1171,7 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
     printk("Exiting: get prv key by id\n");
     return RES_OK;
 }
-int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, access_rights proc_rights) {
+int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, user_info proc_rights) {
 
     size_t          file_size;
     void*           mapped_partition;
@@ -1203,7 +1200,7 @@ int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, access_rights proc
     printk("Exiting: get prv key size by id\n");
     return RES_OK;
 }
-int remove_private_key_by_id(uint64_t id, access_rights proc_rights) {
+int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
 
     partition_info*     partition_metadata;
     size_t              file_size;
@@ -1287,7 +1284,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 #endif
 
     uint64_t            used_len;
-    access_rights       proc_rights;
+    user_info       proc_rights;
     int                 ret;
 
     printk("\n");
@@ -1338,7 +1335,7 @@ int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key
 SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
 #endif
 
-    access_rights       proc_rights;
+    user_info       proc_rights;
     int                 ret;
 
     printk("\n");
@@ -1370,7 +1367,7 @@ int do_remove_key(const uint64_t id, const char* password, int uid, int gid) {
 SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __user, gid) {
 #endif
 
-    access_rights proc_rights;
+    user_info proc_rights;
     int           ret;
 
     if(id == 0) {
@@ -1408,7 +1405,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 
     size_t              file_size;
     void*               mapped_partition;
-    access_rights       proc_rights;
+    user_info       proc_rights;
     int                 get_key_ret;
 
     printk("\n");
@@ -1457,7 +1454,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
     int             digit;
     size_t          file_size;
     void*           mapped_partition;
-    access_rights   proc_rights;
+    user_info   proc_rights;
     int             get_key_ret;
 
     if(new_mode > 777 || new_mode < 0) {
@@ -1526,7 +1523,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
     return RES_OK;
 }
 
-int can_read(int mode, access_rights mapped, access_rights proc) {
+int can_read(int mode, user_info mapped, user_info proc) {
 
     int         user_read;
     int         group_read;
@@ -1542,7 +1539,7 @@ int can_read(int mode, access_rights mapped, access_rights proc) {
 
     return (user_read && (mapped.uid == proc.uid)) || (group_read && (mapped.gid == proc.gid)) || (others_read && (mapped.uid != proc.uid));
 }
-int can_write(int mode, access_rights mapped, access_rights proc) {
+int can_write(int mode, user_info mapped, user_info proc) {
 
     int         user_write;
     int         group_write;
@@ -1564,7 +1561,7 @@ int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int
     SYSCALL_DEFINE4(get_key_size, const uint64_t __user, id, uint64_t*, size, int __user, uid, int __user, gid) {
 #endif
 
-    access_rights       proc_rights;
+    user_info       proc_rights;
     int                 ret;
 
     printk("\n");
