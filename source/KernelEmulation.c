@@ -436,6 +436,27 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
     return RES_OK;
 }
 
+int is_repo_initialized() {
+
+    FILE *file;
+    int part_size = 0;
+    if ((file = fopen(partition, "r")))
+    {
+        fseek(file, 0L, SEEK_END);
+        part_size = (int)ftell(file);
+        if(part_size > DEFAULT_MAP_SIZE * sizeof(map_node)) {
+            fclose(file);
+            return 1;
+        }
+    }
+
+    if(file != NULL) {
+        fclose(file);
+    }
+
+    return 0;
+}
+
 int init_file_if_not_defined(void) {
 
     uint64_t        file_size;
@@ -1235,6 +1256,10 @@ SYSCALL_DEFINE0(get_key_num) {
     partition_info*     partition_metadata;
     uint64_t            key_num;
 
+    if (!is_repo_initialized()) {
+        return 0;
+    }
+
     printk("Entering: get current key num\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if(mapped_partition == NULL) {
@@ -1322,6 +1347,10 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
        return RES_INPUT_ERR;
     }
 
+    if (!is_repo_initialized()) {
+        return RES_NOT_FOUND;
+    }
+
     printk("Next action: get prv key by id\n");
     proc_rights.uid = uid;
     proc_rights.gid = gid;
@@ -1343,8 +1372,13 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
 
     access_rights proc_rights;
     int           ret;
+
     if(id == 0) {
         return RES_INPUT_ERR;
+    }
+
+    if (!is_repo_initialized()) {
+        return RES_NOT_FOUND;
     }
 
     printk("Entering and soon exiting remove key\n");
@@ -1381,6 +1415,10 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
     printk("Entering: get mode\n");
     if(id == 0) {
         return RES_INPUT_ERR;
+    }
+
+    if (!is_repo_initialized()) {
+        return RES_NOT_FOUND;
     }
 
     printk("Next action: get buffered file\n");
@@ -1441,6 +1479,10 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
 #if EMULATION == 0
     up(&sem);
 #endif
+
+    if (!is_repo_initialized()) {
+        return RES_NOT_FOUND;
+    }
 
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
@@ -1529,6 +1571,10 @@ int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int
     printk("Entering: get key size\n");
     if(id == 0) {
         return RES_INPUT_ERR;
+    }
+
+    if (!is_repo_initialized()) {
+        return RES_NOT_FOUND;
     }
 
     printk("Next action: get prv key size by id\n");
