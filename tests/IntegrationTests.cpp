@@ -43,6 +43,11 @@ namespace testHelpers {
 
 };
 
+BOOST_AUTO_TEST_CASE(PRETEST)
+{
+    system("rm -rf ~/.keyPartitionV2/*");
+}
+
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_1)
 {
     auto modHandler = std::make_unique<ModHandler>();

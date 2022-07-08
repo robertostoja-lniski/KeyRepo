@@ -8,6 +8,7 @@
     #include "KeyRepoHeaders.h"
 #endif
 
+// temporary function
 // changes are done to buffer in place for optimization purposes
 int encrypt_data_at_rest(char* buf, size_t len, const char* password) {
 
@@ -20,12 +21,16 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* password) {
     }
 
     for (size_t i = 0; i < len; i++) {
+        uint8_t a = buf[i];
         buf[i] -= 30;
+        uint8_t b = buf[i];
+        uint8_t c = 3;
     }
 
     return RES_OK;
 }
 
+// temporary function
 // changes are done to buffer in place for optimization purposes
 int decrypt_data_at_rest(char* buf, size_t len, const char* password) {
 
@@ -56,23 +61,21 @@ int fast_modulo(uint64_t num, uint32_t pow_of_2) {
 
 int get_magic_offset(void* mapped_partition) {
     uint64_t*           first_byte;
-    int                 help_counter;
-    partition_info      *part_info;
+    int                 current_offset;
 
     first_byte = (uint64_t* )mapped_partition;
-    help_counter = 0;
+    current_offset = 0;
 
-    while(*first_byte != MAGIC || help_counter > MAX_PARTITION_SIZE) {
+    while(*first_byte != MAGIC || current_offset > MAX_PARTITION_SIZE) {
 
-        part_info = (partition_info *) mapped_partition;
         first_byte = (uint64_t *) ((uint8_t *) first_byte + 1);
-        help_counter++;
+        current_offset++;
     }
 
-    if(help_counter > MAX_PARTITION_SIZE) {
+    if(current_offset > MAX_PARTITION_SIZE) {
         return RES_PARTITION_FULL;
     }
-    return help_counter;
+    return current_offset;
 }
 
 // kernel functions signatures defined for user space
@@ -82,11 +85,12 @@ int get_magic_offset(void* mapped_partition) {
     }
     void get_random_bytes(uint64_t* n, size_t size) {
         assert(size == sizeof(*n));
-        uint64_t r = 0;
-        for (int i=0; i<64; i++) {
-            r = r*2 + rand()%2;
+        uint64_t random_seq = 0;
+        for (int i = 0; i < 64; i++) {
+
+            random_seq = (random_seq << 1) + (rand() & 1);
         }
-        *n = r;
+        *n = random_seq;
     }
 #endif
 
@@ -102,7 +106,6 @@ size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc
 
     fseek(fd, offset, SEEK_SET);
 
-    encrypt_data_at_rest(*buf, bufsize, "dummy");
     size_t ret = fwrite(*buf , sizeof(char) , bufsize, fd);
 
     fclose(fd);
@@ -162,8 +165,6 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
         return NULL;
     }
 
-    uint8_t* buf = NULL;
-
     char* source;
     long bufsize;
 
@@ -187,18 +188,21 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
             return NULL;
         }
 
-        size_t newLen = fread(source, sizeof(char), bufsize, fp);
-        if (ferror(fp) != 0) {
+        // intended, fread call needed
+        size_t new_len = fread(source, sizeof(char), bufsize, fp);
+        if (ferror(fp) != 0 || new_len != bufsize) {
             fclose(fp);
             return NULL;
         }
+        
+    }
 
+    fclose(fp);
+    if (bufsize == 0) {
+        return NULL;
     }
 
     *size = bufsize;
-    fclose(fp);
-
-    decrypt_data_at_rest(source, *size, "dummy");
     return (void* )source;
 #else
 
@@ -279,7 +283,7 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
     int                 generateTrials;
     partition_info*     partition_metadata;
     int64_t             map_size;
-    uint64_t            newId;
+    uint64_t            new_id;
     int                 foundSameId;
     map_node*           current_elem_in_map;
     lookup_slot*        lookup;
@@ -297,24 +301,24 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
     foundSameId = 0;
     while(generateTrials--) {
 
-        get_random_bytes(&newId, sizeof(newId));
-        printk("New id is %llu\n", newId);
+        get_random_bytes(&new_id, sizeof(new_id));
+        printk("New id is %llu\n", new_id);
 
-        modulo = fast_modulo(newId, LOOKUP_MAP_SIZE_POW);
+        modulo = fast_modulo(new_id, LOOKUP_MAP_SIZE_POW);
         *mod = modulo;
 
         current_elem_in_map = (map_node* )(partition_metadata + 1);
 
         lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + modulo;
         if (lookup -> cnt == 0) {
-            return newId;
+            return new_id;
         }
 
         for(i = 0; i < map_size; i++) {
 
             // 0 and 1 are reserved for error codes (and give
             id = current_elem_in_map->id;
-            if(id == newId || id == 1) {
+            if(id == new_id || id == 1) {
                 foundSameId = 1;
                 printk("Matched tested id is: %llu\n", id);
                 break;
@@ -330,14 +334,14 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
         printk("NEXT TRIAL!\n");
     }
 
-    return newId;
+    return new_id;
 }
 
 int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uint8_t type) {
 
     FILE *file;
 
-    char filename[128];
+    char filename[MAX_FILENAME_LEN];
     snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
 
     file = fopen(filename, "w");
@@ -345,16 +349,27 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
         return RES_CANNOT_OPEN_PARTITION;
     }
 
-    uint64_t ajdusted_len = 0;
+    uint64_t adjusted_len = 0;
     size_t ret = 0;
 
+    char* key_to_encrypt = (char* )malloc(key_len);
+    if (key == NULL) {
+        return RES_CANNOT_ALLOCATE;
+    }
+
     if (type == KEY_TYPE_RSA) {
-        ajdusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
-        ret = fwrite(key + strlen(RSA_BEGIN_LABEL), sizeof(char) , ajdusted_len, file);
+
+        memcpy(key_to_encrypt, key, key_len);
+        encrypt_data_at_rest(key_to_encrypt, key_len, "dummy");
+        adjusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
+        ret = fwrite(key_to_encrypt + strlen(RSA_BEGIN_LABEL), sizeof(char) , adjusted_len, file);
 
     } else if (type == KEY_TYPE_CUSTOM) {
-        ajdusted_len = key_len;
-        ret = fwrite(key, sizeof(char) , ajdusted_len, file);
+
+        memcpy(key_to_encrypt, key, key_len);
+        encrypt_data_at_rest(key_to_encrypt, key_len, "dummy");
+        adjusted_len = key_len;
+        ret = fwrite(key_to_encrypt, sizeof(char) , adjusted_len, file);
 
     } else {
         return RES_UNKNOWN_KEY_TYPE;
@@ -362,7 +377,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
 
     fclose(file);
 
-    if(ret != ajdusted_len) {
+    if(ret != adjusted_len) {
         printk("Writing key to file failed\n");
         return RES_CANNOT_WRITE_TO_PARTITION;
     }
@@ -371,7 +386,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
 }
 
 int delete_custom_file(uint64_t id) {
-    char filename[128];
+    char filename[MAX_FILENAME_LEN];
     snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
     return remove(filename);
 }
@@ -380,7 +395,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 
     FILE *file;
 
-    char filename[128];
+    char filename[MAX_FILENAME_LEN];
     snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
 
     file = fopen(filename, "r");
@@ -390,20 +405,22 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 
     memset(key + key_len, 0x00, sizeof(char));
     
-    uint64_t ajdusted_len = 0;
+    uint64_t adjusted_len = 0;
     uint64_t ret = 0;
     
     if (type == KEY_TYPE_RSA) {
-        ajdusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
+        adjusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
 
         strcpy(key, RSA_BEGIN_LABEL);
-        ret = fread(key + strlen(RSA_BEGIN_LABEL), sizeof(char), ajdusted_len, file);
+        ret = fread(key + strlen(RSA_BEGIN_LABEL), sizeof(char), adjusted_len, file);
+        decrypt_data_at_rest(key + strlen(RSA_BEGIN_LABEL), adjusted_len, "dummy");
         strcpy(key + key_len - strlen(RSA_END_LABEL) - 1, RSA_END_LABEL);
         
     } else if (type == KEY_TYPE_CUSTOM) {
 
-        ajdusted_len = key_len;
-        ret = fread(key, sizeof(char), ajdusted_len, file);
+        adjusted_len = key_len;
+        ret = fread(key, sizeof(char), adjusted_len, file);
+        decrypt_data_at_rest(key, adjusted_len, "dummy");
         
     } else {
         return RES_UNKNOWN_KEY_TYPE;
@@ -411,7 +428,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 
     fclose(file);
 
-    if(ret != ajdusted_len) {
+    if(ret != adjusted_len) {
         printk("Reading key from file failed\n");
         return RES_CANNOT_WRITE_TO_PARTITION;
     }
@@ -422,7 +439,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 int init_file_if_not_defined(void) {
 
     uint64_t        file_size;
-    void*           partitionStart;
+    void*           partition_start;
     map_node*       map_position;
     int             i;
     size_t          ret;
@@ -523,41 +540,38 @@ int init_file_if_not_defined(void) {
     file_size = DEFAULT_MAP_SIZE * sizeof(map_node) + sizeof(partition_info) + LOOKUP_SLOTS_NUM * sizeof(lookup_slot);
 
 #if EMULATION == 1
-    partitionStart = malloc(file_size);
+    partition_start = malloc(file_size);
 #else
-    partitionStart = kmalloc(file_size, GFP_KERNEL);
+    partition_start = kmalloc(file_size, GFP_KERNEL);
 #endif
-    if(!partitionStart) {
+    if(!partition_start) {
         printk("Allocation failed\n");
         return RES_CANNOT_ALLOCATE;
     }
 
-    memset(partitionStart, 0x00, file_size);
+    memset(partition_start, 0x00, file_size);
     printk("Memset ok\n");
 
-    partition_metadata = (partition_info* )partitionStart;
+    partition_metadata = (partition_info* )partition_start;
     partition_metadata->magic = MAGIC;
     partition_metadata->map_size = DEFAULT_MAP_SIZE;
     partition_metadata->number_of_keys = 0;
 
-    printk("Memcpy ok\n");
-
-    map_position = (map_node* )((partition_info* )partitionStart + 1);
+    map_position = (map_node* )((partition_info* )partition_start + 1);
     for(i = 0; i < partition_metadata->map_size; i++) {
 
         map_position -> id = 0;
         map_position -> size = 0;
         map_position -> type = KEY_TYPE_CUSTOM;
-        // printk("Memcpy ok\n");
         map_position = map_position + 1;
     }
 
     memset(map_position, 0x00, LOOKUP_SLOTS_NUM * sizeof(lookup_slot));
 
-    print_partition(partitionStart);
+    print_partition(partition_start);
 
     printk("Set buffered file\n");
-    ret = set_buffered_file(partition, (char** )&partitionStart, file_size, 0, (int)part_size);
+    ret = set_buffered_file(partition, (char** )&partition_start, file_size, 0, (int)part_size);
     printk("After set ret value is %lu\n", ret);
     if(ret != file_size) {
         printk("Set failed\n");
@@ -646,7 +660,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
 
     printk("Loading file to buffer\n");
     partition_metadata = get_buffered_file(partition, &file_size, 0);
-    if(partition_metadata == NULL || file_size == 0) {
+    if(partition_metadata == NULL) {
         return RES_CANNOT_OPEN_PARTITION;
     }
 
@@ -1110,13 +1124,13 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
     printk("Entering: get prv key by id\n");
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if (!mapped_partition || file_size == 0) {
+    if (!mapped_partition) {
         return RES_CANNOT_OPEN_PARTITION;
     }
 
     printk("Next action: get key val by pp\n");
-
     print_partition(mapped_partition);
+
     uint8_t type;
     check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prvKey, key_len, proc_rights, &type);
     print_partition(mapped_partition);
@@ -1148,7 +1162,7 @@ int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, access_rights proc
     printk("Entering: get prv key size by id\n");
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == 0|| file_size == 0) {
+    if(mapped_partition == NULL) {
         return RES_CANNOT_OPEN_PARTITION;
     }
 
@@ -1161,7 +1175,7 @@ int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, access_rights proc
     kfree(mapped_partition);
 #endif
 
-    if(get_key_size_ret < 0 ) {
+    if(get_key_size_ret < 0) {
         return get_key_size_ret;
     }
 
@@ -1178,7 +1192,7 @@ int remove_private_key_by_id(uint64_t id, access_rights proc_rights) {
     printk("Entering: remove prv key by id\n");
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL || file_size == 0) {
+    if(mapped_partition == NULL) {
         return RES_CANNOT_OPEN_PARTITION;
     }
 
@@ -1221,12 +1235,9 @@ SYSCALL_DEFINE0(get_key_num) {
     partition_info*     partition_metadata;
     uint64_t            key_num;
 
-
-    printk("\n");
     printk("Entering: get current key num\n");
-    printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL || file_size == 0) {
+    if(mapped_partition == NULL) {
         printk("Exiting: get current key num\n");
         return RES_CANNOT_OPEN_PARTITION;
     }
@@ -1374,7 +1385,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL || file_size == 0) {
+    if(mapped_partition == NULL) {
         return RES_CANNOT_OPEN_PARTITION;
     }
 
@@ -1433,7 +1444,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
 
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL || file_size == 0) {
+    if(mapped_partition == NULL) {
 
 #if EMULATION == 0
         down(&sem);
