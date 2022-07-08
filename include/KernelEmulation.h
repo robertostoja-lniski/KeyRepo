@@ -41,6 +41,8 @@
 
 #define KEY_TYPE_RSA 1
 
+#define MAX_FILENAME_LEN 128
+
 #define KEY_TYPE_UNKNOWN -1
 #define RSA_BEGIN_LABEL "-----BEGIN RSA PRIVATE KEY-----\n"
 #define RSA_END_LABEL "-----END RSA PRIVATE KEY-----"
