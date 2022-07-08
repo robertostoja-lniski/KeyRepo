@@ -577,6 +577,7 @@ int init_file_if_not_defined(void) {
     partition_metadata->magic = MAGIC;
     partition_metadata->capacity = DEFAULT_MAP_SIZE;
     partition_metadata->number_of_keys = 0;
+    partition_metadata->free_slot = -1;
 
     map_position = (map_node* )((partition_info* )partition_start + 1);
     for(i = 0; i < partition_metadata->capacity; i++) {
@@ -742,6 +743,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
 #if EMULATION == 0
     mm_segment_t        fs;
+    mm_segment_t        fs;
 #endif
 
     printk("Entering add key node to partition\n");
@@ -761,9 +763,12 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     printk("Moving to first map node succeeded\n");
     i = 0;
-    while(i++ < map_size && current_elem_in_map->id != 0) {
+    while(i < map_size && current_elem_in_map->id != 0) {
         current_elem_in_map = current_elem_in_map + 1;
+        i++;
     }
+
+    partition_metadata->free_slot = -1;
 
     printk("Id is\n");
     next_id = generate_random_id(mapped_partition, help_counter, &mod);
@@ -1096,9 +1101,6 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_in
     current_elem_in_map = (map_node* )(partition_metadata + 1);
 
     lookup = ((lookup_slot * )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
-
-    int diff = ((uint8_t* )lookup - (uint8_t* )((map_node* )partition_metadata + DEFAULT_MAP_SIZE)) / 4;
-
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
         return RES_NOT_FOUND;
@@ -1116,7 +1118,9 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_in
             }
 
             current_elem_in_map->id = 0;
+            memset(current_elem_in_map, 0x00, sizeof(*current_elem_in_map));
             partition_metadata->number_of_keys -= 1;
+            partition_metadata->free_slot = i;
             lookup -> cnt --;
             printk("Exiting: key val by pp (with failure)\n");
             print_partition(mapped_partition);

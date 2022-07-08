@@ -123,6 +123,7 @@ struct partition_info {
     uint64_t magic;
     uint16_t number_of_keys;
     uint16_t capacity;
+    int32_t free_slot;
 };
 typedef struct partition_info partition_info;
 
