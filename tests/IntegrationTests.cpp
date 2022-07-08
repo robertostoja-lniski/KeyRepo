@@ -4933,7 +4933,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_NO_PART) {
 
     int mode;
     auto readRet = get_mode(1000, "dummy", &mode);
-    BOOST_CHECK_EQUAL(readRet, -2);
+    BOOST_CHECK_EQUAL(readRet, -10);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
@@ -4971,7 +4971,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_PARTITION) {
 
     int mode = 660;
     auto readRet = set_mode(1000, "dummy", mode);
-    BOOST_CHECK_EQUAL(readRet, -2);
+    BOOST_CHECK_EQUAL(readRet, -10);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
@@ -5070,7 +5070,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_NO_PARTITION) {
 
     uint64_t size;
     auto getSizeRet = get_key_size(1000, "dummy", &size);
-    BOOST_CHECK_EQUAL(getSizeRet, -2);
+    BOOST_CHECK_EQUAL(getSizeRet, -10);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
@@ -5094,7 +5094,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     auto keyNum = get_key_num();
-    BOOST_CHECK_EQUAL(keyNum, -2);
+    BOOST_CHECK_EQUAL(keyNum, -10);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
