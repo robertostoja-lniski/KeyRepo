@@ -256,7 +256,7 @@ void KeyPartitionIOInterface::protectedWritePrivateKeyToFile(std::string filepat
     }
 
     // TODO in devel mode
-    auto result = write_key(pem_key, "dummy", keylen, &id, KEY_TYPE_RSA);
+    auto result = write_key(pem_key, keylen, "dummy", 6, &id, KEY_TYPE_RSA);
 
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");
