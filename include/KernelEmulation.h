@@ -103,6 +103,7 @@ struct key_info {
     user_info owner_info;
 };
 
+
 typedef struct key_info key_info;
 
 struct map_node {
@@ -123,7 +124,8 @@ struct partition_info {
     uint64_t magic;
     uint16_t number_of_keys;
     uint16_t capacity;
-    int32_t free_slot;
+    int32_t freed_slot;
+    uint16_t last_slot;
 };
 typedef struct partition_info partition_info;
 

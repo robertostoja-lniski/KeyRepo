@@ -577,7 +577,7 @@ int init_file_if_not_defined(void) {
     partition_metadata->magic = MAGIC;
     partition_metadata->capacity = DEFAULT_MAP_SIZE;
     partition_metadata->number_of_keys = 0;
-    partition_metadata->free_slot = -1;
+    partition_metadata->freed_slot = -1;
 
     map_position = (map_node* )((partition_info* )partition_start + 1);
     for(i = 0; i < partition_metadata->capacity; i++) {
@@ -726,6 +726,26 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     printk("Exiting add key node to partition\n");
     return RES_OK;
 }
+
+int get_append_slot_if_possible(map_node* map_start, partition_info* partition_metadata, map_node** slot_to_append) {
+
+    uint16_t            slot_after_last_key_offset;
+    map_node*           slot_after_last_key;
+
+    slot_after_last_key_offset = partition_metadata->number_of_keys + 1;
+    if (slot_after_last_key_offset > partition_metadata->capacity) {
+        return 0;
+    }
+
+    slot_after_last_key = map_start + slot_after_last_key_offset;
+    if (slot_after_last_key->id == 0) {
+        *slot_to_append = slot_after_last_key;
+        return 1;
+    }
+
+    return 0;
+}
+
 #if EMULATION == 1
 int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
 #else
@@ -736,6 +756,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
+    map_node*           back_elem_in_map;
     lookup_slot*        lookup;
     uint64_t            next_id;
     uint64_t            i;
@@ -762,13 +783,22 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     current_elem_in_map = (map_node* )(partition_metadata + 1);
 
     printk("Moving to first map node succeeded\n");
-    i = 0;
-    while(i < map_size && current_elem_in_map->id != 0) {
-        current_elem_in_map = current_elem_in_map + 1;
-        i++;
-    }
 
-    partition_metadata->free_slot = -1;
+    // if previously there was something removed at freed_slot
+    if (partition_metadata->freed_slot != -1) {
+        current_elem_in_map += partition_metadata->freed_slot;
+        partition_metadata->freed_slot = -1;
+
+    } else if (get_append_slot_if_possible(current_elem_in_map, partition_metadata, &back_elem_in_map)) {
+        current_elem_in_map = back_elem_in_map;
+
+    } else {
+        i = 0;
+        while(i < map_size && current_elem_in_map->id != 0) {
+            current_elem_in_map = current_elem_in_map + 1;
+            i++;
+        }
+    }
 
     printk("Id is\n");
     next_id = generate_random_id(mapped_partition, help_counter, &mod);
@@ -1120,7 +1150,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_in
             current_elem_in_map->id = 0;
             memset(current_elem_in_map, 0x00, sizeof(*current_elem_in_map));
             partition_metadata->number_of_keys -= 1;
-            partition_metadata->free_slot = i;
+            partition_metadata->freed_slot = i;
             lookup -> cnt --;
             printk("Exiting: key val by pp (with failure)\n");
             print_partition(mapped_partition);
