@@ -364,7 +364,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     size_t ret = 0;
 
     char* key_to_encrypt = (char* )malloc(key_len);
-    if (key == NULL) {
+    if (key_to_encrypt == NULL) {
         return RES_CANNOT_ALLOC;
     }
 
