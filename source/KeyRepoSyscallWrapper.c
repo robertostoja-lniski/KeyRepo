@@ -122,14 +122,14 @@ int set_mode(const uint64_t id, int new_mode) {
 
 #include "../include/KernelEmulation.h"
 
-int write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id, int type) {
+int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_write_key(key, password, keyLen, id, ids.uid, ids.gid, type);
+    return do_write_key(key, key_len, pass, pass_len, id, ids.uid, ids.gid, type);
 }
 int read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen) {
     original_uids ids = get_original_uids();

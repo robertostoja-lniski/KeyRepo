@@ -125,7 +125,6 @@ struct partition_info {
     uint16_t number_of_keys;
     uint16_t capacity;
     int32_t freed_slot;
-    uint16_t last_slot;
 };
 typedef struct partition_info partition_info;
 
@@ -142,9 +141,9 @@ static struct semaphore *sem;
 
 
 int init_file_if_not_defined();
-int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
+int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, user_info, uint8_t type);
 void print_partition(const void* mapped_partition);
-int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
+int update_metadata_when_writing(partition_info* partition_start, const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
 int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, user_info, uint8_t* type);
 int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_info);
 int remove_private_key_by_id(uint64_t id, user_info);
@@ -155,7 +154,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int m
 int can_read(int mode, user_info owner_info, user_info effective_user_info);
 int can_write(int mode, user_info owner_info, user_info effective_user_info);
 
-int do_write_key(const char* key, const char* password, const uint64_t keyLen, uint64_t* id, int uid, int gid, int type);
+int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int uid, int gid, int type);
 int do_read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int uid, int gid);
 int do_remove_key(const uint64_t id, const char* password, int uid, int gid);
 int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int uid, int gid);

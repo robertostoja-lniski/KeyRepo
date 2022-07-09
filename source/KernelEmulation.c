@@ -10,13 +10,13 @@
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int encrypt_data_at_rest(char* buf, size_t len, const char* password) {
+int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
 
     if (buf == NULL) {
         return RES_INPUT_ERR;
     }
 
-    if (password == NULL) {
+    if (pass == NULL) {
         return RES_INPUT_ERR;
     }
 
@@ -278,11 +278,12 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
 }
 
 // private
-uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
+uint64_t generate_random_id(partition_info* partition_metadata, int* mod){
 
     int                 generateTrials;
-    partition_info*     partition_metadata;
     int64_t             map_size;
+    int64_t             number_of_keys;
+    int64_t             keys_checked;
     uint64_t            new_id;
     int                 foundSameId;
     map_node*           current_elem_in_map;
@@ -295,8 +296,9 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
     printk("Entering generate random id\n");
 
     generateTrials = 10;
-    partition_metadata = (partition_info* )((uint8_t* )mapped_partition + offset);
     map_size = partition_metadata->capacity;
+    number_of_keys = partition_metadata->number_of_keys;
+    keys_checked = 0;
 
     foundSameId = 0;
     while(generateTrials--) {
@@ -324,6 +326,15 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
                 break;
             }
 
+            if (id != 0 && id != 1) {
+                keys_checked++;
+            }
+
+            // there is no need to iterate though map if we checked all keys
+            if (keys_checked == number_of_keys) {
+                break;
+            }
+
             current_elem_in_map++;
         }
 
@@ -337,7 +348,7 @@ uint64_t generate_random_id(void* mapped_partition, int offset, int* mod){
     return new_id;
 }
 
-int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uint8_t type) {
+int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
 
     FILE *file;
 
@@ -360,14 +371,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
     if (type == KEY_TYPE_RSA) {
 
         memcpy(key_to_encrypt, key, key_len);
-        encrypt_data_at_rest(key_to_encrypt, key_len, "dummy");
+        encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
         ret = fwrite(key_to_encrypt + strlen(RSA_BEGIN_LABEL), sizeof(char) , adjusted_len, file);
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
         memcpy(key_to_encrypt, key, key_len);
-        encrypt_data_at_rest(key_to_encrypt, key_len, "dummy");
+        encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len;
         ret = fwrite(key_to_encrypt, sizeof(char) , adjusted_len, file);
 
@@ -660,15 +671,16 @@ void print_partition(const void* mapped_partition) {
 }
 
 #if EMULATION == 1
-int add_key_to_partition(const char* key, uint64_t key_len, uint64_t *id, user_info rights, uint8_t type) {
+int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t *id, user_info rights, uint8_t type) {
 #else
 int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __user *id, user_info rights) {
 #endif
 
-    size_t      file_size;
-    void*       partition_metadata;
-    int         magic_offset;
-    uint64_t    key_num;
+    size_t              file_size;
+    void*               partition_metadata;
+    int                 magic_offset;
+    int                 ret;
+    partition_info*     partition_start;
 
     if (key_len > MAX_PARTITION_SIZE) {
         return RES_PARTITION_FULL;
@@ -694,11 +706,11 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
 
     printk("Magic is %d bytes from file start\n", magic_offset);
 
-    key_num = ((partition_info* )((uint8_t* )partition_metadata + magic_offset))->number_of_keys;
-    printk("Key num is %llu\n", key_num);
+    partition_start = (partition_info* )((uint8_t* )partition_metadata + magic_offset);
+    printk("Key num is %llu\n", partition_start->number_of_keys);
 
     // check if max key num is reached
-    if(key_num == DEFAULT_MAP_SIZE) {
+    if(partition_start->number_of_keys == DEFAULT_MAP_SIZE) {
 #if EMULATION == 1
         free(partition_metadata);
 #else
@@ -707,18 +719,20 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
         return RES_PARTITION_FULL;
     }
 
-    if (update_metadata_when_writing(partition_metadata, key, key_len, id, rights, type) < 0) {
+    if (update_metadata_when_writing(partition_start, key, key_len, id, rights, type) < 0) {
         return RES_CANNOT_WRITE;
     }
 
-    if (write_key_to_custom_file(key, key_len, *id, type) != 0) {
-        return RES_CANNOT_WRITE;
+    ret = write_key_to_custom_file(key, key_len, pass, pass_len, *id, type);
+    if (ret < 0) {
+        return ret;
     }
 
     printk("Key to partition added\n");
     printk("Saving buffer with size %lu\n", file_size);
 
     print_partition(partition_metadata);
+    // we overwrite partition only if writing key succeeded
     if(set_buffered_file(partition, (char** )&partition_metadata, file_size, 0, 0) != file_size) {
         return RES_CANNOT_WRITE;
     }
@@ -732,7 +746,7 @@ int get_append_slot_if_possible(map_node* map_start, partition_info* partition_m
     uint16_t            slot_after_last_key_offset;
     map_node*           slot_after_last_key;
 
-    slot_after_last_key_offset = partition_metadata->number_of_keys + 1;
+    slot_after_last_key_offset = partition_metadata->number_of_keys;
     if (slot_after_last_key_offset > partition_metadata->capacity) {
         return 0;
     }
@@ -747,13 +761,12 @@ int get_append_slot_if_possible(map_node* map_start, partition_info* partition_m
 }
 
 #if EMULATION == 1
-int update_metadata_when_writing(void* mapped_partition, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
+int update_metadata_when_writing(partition_info * partition_metadata, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
 #else
 int update_metadata_when_writing(void* mapped_partition, const char* __user key, uint64_t key_len, uint64_t __user *id, user_info user_info) {
 #endif
 
     int                 help_counter;
-    partition_info*     partition_metadata;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
     map_node*           back_elem_in_map;
@@ -770,14 +783,6 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     printk("Entering add key node to partition\n");
     // printk("Key value is: %s\n", key);
     printk("Key len is: %llu\n", key_len);
-
-    help_counter = get_magic_offset(mapped_partition);
-    printk("Help counter is: %d\n", help_counter);
-    if(help_counter < 0) {
-        return RES_NON_INTEGRAL;
-    }
-
-    partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
 
     map_size = partition_metadata->capacity;
     current_elem_in_map = (map_node* )(partition_metadata + 1);
@@ -801,7 +806,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     }
 
     printk("Id is\n");
-    next_id = generate_random_id(mapped_partition, help_counter, &mod);
+    next_id = generate_random_id(partition_metadata, &mod);
 
     lookup = ((lookup_slot* )((map_node* )(partition_metadata + 1) + DEFAULT_MAP_SIZE)) + mod;
     lookup -> cnt ++;
@@ -837,7 +842,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     partition_metadata->number_of_keys += 1;
 
-    print_partition(mapped_partition);
+    print_partition(partition_metadata);
     printk("Exiting add key Node\n");
 
     return help_counter;
@@ -1312,27 +1317,41 @@ SYSCALL_DEFINE0(get_key_num) {
 }
 
 #if EMULATION == 1
-int do_write_key(const char* key, const char* password, uint64_t key_len, uint64_t* id, int uid, int gid, int type) {
+int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len , uint64_t* id, int uid, int gid, int type) {
 #else
 SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t __user *, id, int __user, uid, int __user, gid) {
 #endif
 
-    uint64_t            used_len;
-    user_info       proc_rights;
+    uint64_t            used_key_len;
+    uint64_t            used_pass_len;
+    user_info           proc_rights;
     int                 ret;
 
     printk("\n");
     printk("Entering write key\n");
 
-    if(key_len == 0) {
+    if (type != KEY_TYPE_RSA && type != KEY_TYPE_CUSTOM) {
         return RES_INPUT_ERR;
     }
 
-    used_len = key_len;
+    if (key == NULL || pass == NULL) {
+        return RES_INPUT_ERR;
+    }
+
+    if(key_len == 0 || pass_len == 0) {
+        return RES_INPUT_ERR;
+    }
+
+    used_key_len = key_len;
+    used_pass_len = pass_len;
 
 #if EMULATION == 1
     if(key_len > strlen(key)) {
-        used_len = strlen(key);
+        used_key_len = strlen(key);
+    }
+
+    if(pass_len > strlen(pass)) {
+        used_pass_len = strlen(pass);
     }
 #endif
 
@@ -1345,7 +1364,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
     up(&sem);
 #endif
 
-    ret = add_key_to_partition(key, used_len, id, proc_rights, type);
+    ret = add_key_to_partition(key, used_key_len, pass, used_pass_len, id, proc_rights, type);
     if(ret < 0) {
 #if EMULATION == 0
         down(&sem);

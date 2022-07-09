@@ -4778,18 +4778,96 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_OK) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_NULL) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = NULL;
+    uint64_t id;
+    auto ret = write_key(key, 3, "dummy", 3, &id, KEY_TYPE_CUSTOM);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_PWD_NULL) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "eqwwqeqw";
+    const char* pwd = NULL;
+    uint64_t id;
+    auto ret = write_key(key, 3, pwd, 3, &id, KEY_TYPE_CUSTOM);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_LEN_0) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "eqwwqeqw";
+    const char* pwd = "eqweq";
+    uint64_t id;
+    auto ret = write_key(key, 0, pwd, 0, &id, KEY_TYPE_CUSTOM);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_PASS_LEN_0) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "eqwwqeqw";
+    const char* pwd = "eqweq";
+    uint64_t id;
+    auto ret = write_key(key, 3, pwd, 0, &id, KEY_TYPE_CUSTOM);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_TYPE_NONE) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "eqwwqeqw";
+    const char* pwd = "eqweq";
+    uint64_t id;
+    auto ret = write_key(key, 4, pwd, 123, &id, 123);
+
+    BOOST_CHECK_EQUAL(ret, -1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)100000000, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 100000000, "dummy", 5, &id, KEY_TYPE_CUSTOM);
+
+    BOOST_CHECK_EQUAL(ret, 0);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG_PASS) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = write_key(key, 4, "dummy", 100000000, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
@@ -4802,7 +4880,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE) {
     memset(tmp, 0x41, 1000000 - 1);
     memset(tmp + 1000000 - 1, 0x00, 1);
     uint64_t id;
-    auto ret = write_key(tmp, "dummy", (const size_t)1000000, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(tmp, 1000000, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, -5);
 
@@ -4813,7 +4891,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     char *buf;
     buf = (char* )malloc(5);
@@ -4829,7 +4907,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     char *buf;
     buf = (char* )malloc(5);
@@ -4845,7 +4923,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     char *buf;
     buf = (char* )malloc(3);
@@ -4856,22 +4934,13 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
-BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_0_SIZE) {
-    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
-    const char* key = "abcd";
-    uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)0, &id, KEY_TYPE_CUSTOM);
-
-    BOOST_CHECK_EQUAL(ret, -1);
-    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
-}
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_PARTITION) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 4, &id, KEY_TYPE_CUSTOM);
 
     char *buf;
     buf = (char* )malloc(3);
@@ -4887,7 +4956,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     char *buf;
     buf = (char* )malloc(3);
@@ -4903,7 +4972,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     char *buf;
     buf = (char* )malloc(3);
@@ -4919,7 +4988,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode;
     auto readRet = get_mode(id, "dummy", &mode);
@@ -4943,7 +5012,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_WRONG_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode;
     auto readRet = get_mode(1000, "dummy", &mode);
@@ -4957,7 +5026,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_ID) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode = 600;
     auto readRet = set_mode(1000, "dummy", mode);
@@ -4981,7 +5050,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode = 600;
     auto setRet = set_mode(id, "dummy", mode);
@@ -5012,7 +5081,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int lastProperMode;
     auto getRet = get_mode(id, "dummy", &lastProperMode);
@@ -5039,7 +5108,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)10, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     auto keyNum = get_key_num();
 
     BOOST_CHECK_EQUAL(ret, 0);
@@ -5053,7 +5122,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)10, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     BOOST_CHECK_EQUAL(ret, 0);
 
     uint64_t size;
@@ -5080,7 +5149,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
 
     const char* key = "abc777777d";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)10, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     BOOST_CHECK_EQUAL(ret, 0);
 
     uint64_t size;
@@ -5105,7 +5174,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MULT) {
     for(int i = 1; i < 100; i ++) {
         const char* key = "abc777777d";
         uint64_t id;
-        auto ret = write_key(key, "dummy", (const size_t)10, &id, KEY_TYPE_CUSTOM);
+        auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         auto keyNum = get_key_num();
 
         BOOST_CHECK_EQUAL(ret, 0);
@@ -5120,7 +5189,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
 
     const char* key = "abcd";
     uint64_t id;
-    auto ret = write_key(key, "dummy", (const size_t)4, &id, KEY_TYPE_CUSTOM);
+    auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     auto rmvRet = remove_key(id, "dummy");
 
@@ -5151,17 +5220,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, "dummy", (const size_t)10, &id, KEY_TYPE_CUSTOM);
+        auto ret1 = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, "dummy", (const size_t)11, &id2, KEY_TYPE_CUSTOM);
+        auto ret2 = write_key(key2, 11, "dummy", 5, &id2, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, "dummy", (const size_t)12, &id3, KEY_TYPE_CUSTOM);
+        auto ret3 = write_key(key3, 12, "dummy", 5, &id3, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5174,7 +5243,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, "dummy", (const size_t)10, &id4, KEY_TYPE_CUSTOM);
+        auto ret4 = write_key(key4, 10, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 3);
@@ -5229,7 +5298,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
-    auto ret_init = write_key(key_init, "dummy", (const size_t)30, &id_init, KEY_TYPE_CUSTOM);
+    auto ret_init = write_key(key_init, 30, "dummy", 5, &id_init, KEY_TYPE_CUSTOM);
     BOOST_CHECK_EQUAL(ret_init, 0);
 
     for(int i = 0; i < 20; i++) {
@@ -5237,17 +5306,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, "dummy", (const size_t)30, &id, KEY_TYPE_CUSTOM);
+        auto ret1 = write_key(key, 30, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooooooooooooooooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, "dummy", (const size_t)33, &id2, KEY_TYPE_CUSTOM);
+        auto ret2 = write_key(key2, 33, "dummy", 5, &id2, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccccccccccccccccccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, "dummy", (const size_t)36, &id3, KEY_TYPE_CUSTOM);
+        auto ret3 = write_key(key3, 36, "dummy", 5, &id3, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5260,7 +5329,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttttttttttttttttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, "dummy", (const size_t)30, &id4, KEY_TYPE_CUSTOM);
+        auto ret4 = write_key(key4, 30, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 4);
@@ -5321,17 +5390,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, "dummy", (const size_t)10, &id, KEY_TYPE_CUSTOM);
+        auto ret1 = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, "dummy", (const size_t)11, &id2, KEY_TYPE_CUSTOM);
+        auto ret2 = write_key(key2, 11, "dummy", 5, &id2, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, "dummy", (const size_t)12, &id3, KEY_TYPE_CUSTOM);
+        auto ret3 = write_key(key3, 12, "dummy", 5, &id3, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5344,7 +5413,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, "dummy", (const size_t)10, &id4, KEY_TYPE_CUSTOM);
+        auto ret4 = write_key(key4, 10, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 3);
@@ -5399,7 +5468,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
-    auto ret_init = write_key(key_init, "dummy", (const size_t)30, &id_init, KEY_TYPE_CUSTOM);
+    auto ret_init = write_key(key_init, 30, "dummy", 5, &id_init, KEY_TYPE_CUSTOM);
     BOOST_CHECK_EQUAL(ret_init, 0);
 
     for(int i = 0; i < 200; i++) {
@@ -5407,17 +5476,17 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         uint64_t id;
-        auto ret1 = write_key(key, "dummy", (const size_t)30, &id, KEY_TYPE_CUSTOM);
+        auto ret1 = write_key(key, 30, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooooooooooooooooooooooooo";
         uint64_t id2;
-        auto ret2 = write_key(key2, "dummy", (const size_t)33, &id2, KEY_TYPE_CUSTOM);
+        auto ret2 = write_key(key2, 33, "dummy", 5, &id2, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccccccccccccccccccccccccccc";
         uint64_t id3;
-        auto ret3 = write_key(key3, "dummy", (const size_t)36, &id3, KEY_TYPE_CUSTOM);
+        auto ret3 = write_key(key3, 36, "dummy", 5, &id3, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
@@ -5430,7 +5499,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         // algorithm will add 3rd key between first and last
         const char* key4 = "tttttttttttttttttttttttttttttt";
         uint64_t id4;
-        auto ret4 = write_key(key4, "dummy", (const size_t)30, &id4, KEY_TYPE_CUSTOM);
+        auto ret4 = write_key(key4, 30, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
         num = get_key_num();
         BOOST_CHECK_EQUAL(num, 4);
