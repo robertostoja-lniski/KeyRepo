@@ -101,7 +101,7 @@ size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc
     FILE* fd = fopen(file, "w");
     if(fd == NULL) {
         free(buf);
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     fseek(fd, offset, SEEK_SET);
@@ -138,7 +138,7 @@ size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc
 
     if (IS_ERR(fp)) {
         printk("Cannot open file\n");
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     printk("Next action: kernel write\n");
@@ -346,7 +346,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
 
     file = fopen(filename, "w");
     if(file == NULL) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     uint64_t adjusted_len = 0;
@@ -354,7 +354,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
 
     char* key_to_encrypt = (char* )malloc(key_len);
     if (key == NULL) {
-        return RES_CANNOT_ALLOCATE;
+        return RES_CANNOT_ALLOC;
     }
 
     if (type == KEY_TYPE_RSA) {
@@ -372,14 +372,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, uint64_t id, uin
         ret = fwrite(key_to_encrypt, sizeof(char) , adjusted_len, file);
 
     } else {
-        return RES_UNKNOWN_KEY_TYPE;
+        return RES_NO_KEY_TYPE;
     }
 
     fclose(file);
 
     if(ret != adjusted_len) {
         printk("Writing key to file failed\n");
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     return RES_OK;
@@ -400,7 +400,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 
     file = fopen(filename, "r");
     if(file == NULL) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     memset(key + key_len, 0x00, sizeof(char));
@@ -423,14 +423,14 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
         decrypt_data_at_rest(key, adjusted_len, "dummy");
         
     } else {
-        return RES_UNKNOWN_KEY_TYPE;
+        return RES_NO_KEY_TYPE;
     }
 
     fclose(file);
 
     if(ret != adjusted_len) {
         printk("Reading key from file failed\n");
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     return RES_OK;
@@ -483,7 +483,7 @@ int init_file_if_not_defined(void) {
 
     partition_info* partition_metadata = (partition_info* )malloc(sizeof(partition_info));
     if(!partition_metadata) {
-        return RES_CANNOT_ALLOCATE;
+        return RES_CANNOT_ALLOC;
     }
 
 
@@ -567,7 +567,7 @@ int init_file_if_not_defined(void) {
 #endif
     if(!partition_start) {
         printk("Allocation failed\n");
-        return RES_CANNOT_ALLOCATE;
+        return RES_CANNOT_ALLOC;
     }
 
     memset(partition_start, 0x00, file_size);
@@ -597,7 +597,7 @@ int init_file_if_not_defined(void) {
     printk("After set ret value is %lu\n", ret);
     if(ret != file_size) {
         printk("Set failed\n");
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     printk("Exiting init file if not defined with value 0\n");
@@ -677,19 +677,19 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     printk("Entering add key node to partition\n");
     printk("Key len is %llu\n", key_len);
     if(init_file_if_not_defined() != 0) {
-        return RES_CANNOT_INITIALIZE_PARTITION;
+        return RES_CANNOT_INIT;
     }
 
     printk("Loading file to buffer\n");
     partition_metadata = get_buffered_file(partition, &file_size, 0);
     if(partition_metadata == NULL) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     printk("File loaded to buffer with file size %lu\n", file_size);
     magic_offset = get_magic_offset(partition_metadata);
     if(magic_offset < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
 
     printk("Magic is %d bytes from file start\n", magic_offset);
@@ -708,11 +708,11 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
     }
 
     if (update_metadata_when_writing(partition_metadata, key, key_len, id, rights, type) < 0) {
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     if (write_key_to_custom_file(key, key_len, *id, type) != 0) {
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     printk("Key to partition added\n");
@@ -720,7 +720,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __us
 
     print_partition(partition_metadata);
     if(set_buffered_file(partition, (char** )&partition_metadata, file_size, 0, 0) != file_size) {
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     printk("Exiting add key node to partition\n");
@@ -774,7 +774,7 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
     help_counter = get_magic_offset(mapped_partition);
     printk("Help counter is: %d\n", help_counter);
     if(help_counter < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
@@ -867,7 +867,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     help_counter = get_magic_offset(mapped_partition);
     printk("Help counter is: %d\n", help_counter);
     if(help_counter < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
@@ -934,7 +934,7 @@ int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint6
     help_counter = get_magic_offset(mapped_partition);
     printk("Help counter is: %d\n", help_counter);
     if(help_counter < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
@@ -1000,7 +1000,7 @@ int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* 
 
     help_counter = get_magic_offset(mapped_partition);
     if(help_counter < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
     current_elem_in_map = (map_node* )(partition_metadata + 1);
@@ -1070,7 +1070,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     help_counter = get_magic_offset(mapped_partition);
     printk("Help counter is: %d\n", help_counter);
     if(help_counter < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
@@ -1122,7 +1122,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_in
     help_counter = get_magic_offset(mapped_partition);
     printk("Help counter is: %d\n", help_counter);
     if(help_counter < 0) {
-        return RES_NON_INTEGRAL_PARTITION;
+        return RES_NON_INTEGRAL;
     }
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + help_counter);
@@ -1177,7 +1177,7 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if (!mapped_partition) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     printk("Next action: get key val by pp\n");
@@ -1215,7 +1215,7 @@ int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, user_info proc_rig
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if(mapped_partition == NULL) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     printk("Next action: get key size by pp\n");
@@ -1245,7 +1245,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if(mapped_partition == NULL) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     printk("Next action: remove key val by pp\n");
@@ -1264,11 +1264,11 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
     partition_metadata = (partition_info* )mapped_partition;
     printk("Next action: set bufferd file\n");
     if (set_buffered_file(partition, (char** )&mapped_partition, file_size, 0, 0) != file_size) {
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
     if (delete_custom_file(id) != 0) {
-        return RES_CANNOT_DELETE_RESOURCE;
+        return RES_CANNOT_DELETE;
     }
 
     printk("Entering: remove prv key by id\n");
@@ -1295,7 +1295,7 @@ SYSCALL_DEFINE0(get_key_num) {
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if(mapped_partition == NULL) {
         printk("Exiting: get current key num\n");
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     partition_metadata = (partition_info* )mapped_partition;
@@ -1455,7 +1455,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
     printk("Next action: get buffered file\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
     if(mapped_partition == NULL) {
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     proc_rights.uid = uid;
@@ -1522,7 +1522,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
 #if EMULATION == 0
         down(&sem);
 #endif
-        return RES_CANNOT_OPEN_PARTITION;
+        return RES_CANNOT_OPEN;
     }
 
     proc_rights.uid = uid;
@@ -1547,7 +1547,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
 #if EMULATION == 0
         down(&sem);
 #endif
-        return RES_CANNOT_WRITE_TO_PARTITION;
+        return RES_CANNOT_WRITE;
     }
 
 #if EMULATION == 0
