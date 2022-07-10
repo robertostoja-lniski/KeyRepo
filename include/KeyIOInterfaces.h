@@ -48,9 +48,9 @@ extern "C" {
 class KeyFileIOInterface {
 protected:
     virtual boost::any protectedReadPublicKeyFromFile(std::string ) = 0;
-    virtual boost::any protectedReadPrivateKeyFromFile(std::string ) = 0;
+    virtual boost::any protectedReadPrivateKeyFromFile(std::string, std::string ) = 0;
     virtual void protectedWritePublicKeyToFile(std::string , std::string , boost::any, bool ) = 0;
-    virtual void protectedWritePrivateKeyToFile(std::string , std::string , boost::any, bool ) = 0;
+    virtual void protectedWritePrivateKeyToFile(std::string , std::string , boost::any, std::string password, bool ) = 0;
 
 public:
 
@@ -58,16 +58,16 @@ public:
         return boost::any_cast<T>(protectedReadPublicKeyFromFile(filename));
     }
 
-    template<typename T> T readPrivateKeyFromFile(const std::string& filename) {
-        return boost::any_cast<T>(protectedReadPrivateKeyFromFile(filename));
+    template<typename T> T readPrivateKeyFromFile(const std::string& filename, const std::string password) {
+        return boost::any_cast<T>(protectedReadPrivateKeyFromFile(filename, password));
     }
 
     template<typename T> T writePublicKeyToFile(std::string filepath , std::string modes, T algorithm, bool overwrite) {
         protectedWritePublicKeyToFile(filepath, modes, boost::any_cast<T>(algorithm), overwrite);
     }
 
-    template<typename T> T writePrivateKeyToFile(std::string filepath, std::string modes, T algorithm, bool overwrite) {
-        protectedWritePrivateKeyToFile(filepath, modes, boost::any_cast<T>(algorithm), overwrite);
+    template<typename T> T writePrivateKeyToFile(std::string filepath, std::string modes, T algorithm, std::string password, bool overwrite) {
+        protectedWritePrivateKeyToFile(filepath, modes, boost::any_cast<T>(algorithm), password, overwrite);
     }
 
     virtual std::string readFromFile(std::string ) = 0;
@@ -94,9 +94,9 @@ class KeyPartitionIOInterface : public KeyFileIOInterface {
 protected:
     void printFile(std::string filepath);
     boost::any protectedReadPublicKeyFromFile(std::string );
-    boost::any protectedReadPrivateKeyFromFile(std::string );
+    boost::any protectedReadPrivateKeyFromFile(std::string, std::string );
     void protectedWritePublicKeyToFile(std::string , std::string , boost::any, bool );
-    void protectedWritePrivateKeyToFile(std::string , std::string , boost::any, bool );
+    void protectedWritePrivateKeyToFile(std::string , std::string , boost::any, std::string, bool );
 
 public:
     KeyPartitionIOInterface() = default;
@@ -107,8 +107,8 @@ public:
     }
 
     template<typename T>
-    T readPrivateKeyFromFile(std::string filepath) {
-        return boost::any_cast<T>(protectedReadPrivateKeyFromFile(filepath));
+    T readPrivateKeyFromFile(std::string filepath, std::string password) {
+        return boost::any_cast<T>(protectedReadPrivateKeyFromFile(filepath, password));
     }
 
     template<typename T>
@@ -117,8 +117,8 @@ public:
     }
 
     template<typename T>
-    void writePrivateKeyToFile(std::string filepath, std::string modes, T algorithm, bool overwrite) {
-        protectedWritePrivateKeyToFile(filepath, modes, boost::any_cast<T>(algorithm), overwrite);
+    void writePrivateKeyToFile(std::string filepath, std::string modes, T algorithm, std::string password, bool overwrite) {
+        protectedWritePrivateKeyToFile(filepath, modes, boost::any_cast<T>(algorithm), password, overwrite);
     }
 
     std::string readFromFile(std::string filepath);

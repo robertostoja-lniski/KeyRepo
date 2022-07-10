@@ -679,6 +679,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_0)
             "/tmp/r.ostoja",
             "/tmp/r.ostoja",
             "2048",
+            "pass",
             "SHA",
     };
     TerminalEmulation terminalEmulation(input);
@@ -742,6 +743,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_3)
             "/tmp/private",
             "/tmp/signature",
             "outpath",
+            "pass",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -762,7 +764,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_4)
             "check-signature",
             "/tmp/pubKeyPath",
             "/tmp/signature",
-            "signature_path"
+            "signature_path",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -917,6 +919,7 @@ BOOST_AUTO_TEST_CASE(CreateKeyTooManyParams)
             "/tmp/r.ostoja_public",
             "2048",
             "SHA",
+            "pass",
             "additional_param"
     };
     TerminalEmulation terminalEmulation(input);
@@ -1004,6 +1007,7 @@ BOOST_AUTO_TEST_CASE(SignTooManyParams)
             "sign",
             "/tmp/abc_private",
             "/tmp/abc_public",
+            "pass",
             "output",
     };
     TerminalEmulation terminalEmulation(input);
@@ -1099,6 +1103,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_KEY)
             "/tmp/public.pem",
             "2048",
             "RSA",
+            "pass",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -1370,6 +1375,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GMOD)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1417,6 +1423,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1480,6 +1487,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_CREATE_CH_G_MOD_2)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1544,6 +1552,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_CHMOD_GMOD_ALL_CASES)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1648,6 +1657,7 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_DANGEROUS_LEN) {
             "/tmp/public.pem",
             "1024",
             "RSA",
+            "pass",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -1684,6 +1694,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1704,7 +1715,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN)
                 "/tmp/private.pem",
                 "/tmp/file.txt",
                 "/tmp/signature.txt",
-                "overwrite"
+                "pass",
+                "overwrite",
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -1736,6 +1748,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN_OFFSET_PART)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1758,7 +1771,8 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_SIGN_OFFSET_PART)
                 "/tmp/private.pem",
                 "/tmp/file.txt",
                 "/tmp/signature.txt",
-                "overwrite"
+                "pass",
+                "overwrite",
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -1789,6 +1803,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_DELETE_KEY)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1837,6 +1852,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1886,6 +1902,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1969,6 +1986,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -1988,7 +2006,8 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_7)
                 "/tmp/private.pem",
                 "/tmp/file.txt",
                 "/tmp/signature.txt",
-                "overwrite"
+                "pass",
+                "overwrite",
         };
 
         TerminalEmulation terminalEmulation(input);
@@ -2326,6 +2345,7 @@ BOOST_AUTO_TEST_CASE(ENCRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2384,6 +2404,7 @@ BOOST_AUTO_TEST_CASE(DECRYPT_OVERWRITE_TRIAL_WITHOUT_FLAG)
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2656,6 +2677,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
                     "/tmp/public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -2675,6 +2697,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_8)
                     "/tmp/private.pem",
                     "/tmp/file.txt",
                     "/tmp/signature.txt",
+                    "pass"
             };
 
             TerminalEmulation terminalEmulation(input);
@@ -2723,6 +2746,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_9) {
                     "/tmp/public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite",
             };
             TerminalEmulation terminalEmulation(input);
@@ -2753,6 +2777,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -2774,6 +2799,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_10) {
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -2804,6 +2830,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_11) {
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -2959,7 +2986,8 @@ BOOST_AUTO_TEST_CASE(SIGN_NOT_EXISTING_PARTITION) {
                 "/tmp/sign_error_1_private.pem",
                 "/tmp/sign_error_1_file.txt",
                 "/tmp/sign_error_1_signature.txt",
-                "overwrite"
+                "overwrite",
+                "pass"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -2997,6 +3025,7 @@ BOOST_AUTO_TEST_CASE(DELETE_KEY_NOT_EXISTING_ID) {
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -3053,6 +3082,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_15) {
                 "/tmp/public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -3108,6 +3138,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_1)
             "program",
             "unknown_command",
             "RSA",
+            "pass",
             "2048",
             "/tmp/public.pem",
             "/tmp/private.pem",
@@ -3169,6 +3200,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_3)
             "/tmp/public.pem",
             "-2048",
             "RSA",
+            "pass",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3198,6 +3230,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_4)
             "/tmp/public.pem",
             "0",
             "RSA",
+            "pass",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3226,6 +3259,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_5)
             "/tmp/public.pem",
             "10000000",
             "RSA",
+            "pass",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3254,6 +3288,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_6)
             "/tmp/public.pem",
             "100000000000000000000",
             "RSA",
+            "pass",
     };
     TerminalEmulation terminalEmulation(input);
     auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3283,6 +3318,7 @@ BOOST_AUTO_TEST_CASE(WRONG_INPUT_7)
             "qwertyuio",
             "2W0W1",
             "RSA",
+            "pass",
             "overwrite"
     };
     TerminalEmulation terminalEmulation(input);
@@ -3320,6 +3356,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_1) {
                 "/tmp/sign_error_1_private.pem",
                 "/tmp/sign_error_1_file.txt",
                 "/tmp/sign_error_1_signature.txt",
+                "pass"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3353,7 +3390,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_NOT_EXISTING_DATA_TO_SIGN) {
                 "/tmp/sign_error_1_private.pem",
                 "/tmp/sign_error_not_existing_file.txt",
                 "/tmp/sign_error_1_signature.txt",
-                "overwrite"
+                "overwrite",
+                "pass"
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3388,6 +3426,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
                 "/tmp/sign_error_2_public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -3410,7 +3449,8 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_2)
                 "/tmp/sign_error_2_private.pem",
                 "/tmp/sign_error_2_file.txt",
                 "/tmp/sign_error_2_signature.txt",
-                "overwrite"
+                "pass",
+                "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3437,6 +3477,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
                 "/tmp/sign_error_3_public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -3460,6 +3501,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_3)
                 "/tmp/sign_error_3_private.pem",
                 "/tmp/sign_error_3_file.txt",
                 "/tmp/sign_error_3_signature.txt",
+                "pass",
         };
         TerminalEmulation terminalEmulation(input);
         auto emulatedTerminalArgs = terminalEmulation.getArgs();
@@ -3495,6 +3537,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
                 "/tmp/sign_error_4_public.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -3518,6 +3561,7 @@ BOOST_AUTO_TEST_CASE(SIGN_ERROR_4)
                 "/tmp/sign_error_4_private.pem",
                 "/tmp/sign_error_4_file.txt",
                 "/tmp/sign_error_4_signature.txt",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -3556,6 +3600,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -3576,6 +3621,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_FILE)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_signature.txt",
+                    "pass",
                     "overwrite"
             };
 
@@ -3627,6 +3673,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -3647,6 +3694,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_NOT_EXISTING_FILE)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_signature.txt",
+                    "pass",
                     "overwrite"
             };
 
@@ -3706,6 +3754,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -3726,6 +3775,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_public2.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -3746,6 +3796,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_EXISTING_BUT_WRONG_KEY)
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_FILE_signature.txt",
+                    "pass",
                     "overwrite"
             };
 
@@ -3797,6 +3848,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -3817,6 +3869,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_CONTENT_CHANGE)
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_PUB_signature.txt",
+                    "pass",
                     "overwrite"
             };
 
@@ -3897,6 +3950,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_public.pem",
                     "2048",
                     "RSA",
+                    "pass",
                     "overwrite"
             };
             TerminalEmulation terminalEmulation(input);
@@ -3917,6 +3971,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_WRONG_SIGNATURE)
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_private.pem",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_file.txt",
                     "/tmp/CHECK_SIGNATURE_WRONG_SIGNATURE_signature.txt",
+                    "pass",
                     "overwrite"
             };
 
@@ -4060,6 +4115,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NO_OVERWRITE)
                 "/tmp/pubkey.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4154,6 +4210,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST)
             "outpath",
             "/home/abc",
             "312321",
+            "pass",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -4227,6 +4284,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4248,6 +4306,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_POS) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4281,6 +4340,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4302,6 +4362,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_POS) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4336,6 +4397,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4357,6 +4419,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -4395,6 +4458,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4416,6 +4480,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -4450,6 +4515,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4470,6 +4536,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PRV_NEG_THROW) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -4505,6 +4572,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4526,6 +4594,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_CREATE_KEY_TEST_PUB_NEG_THROW) {
                 "/tmp/to_overwrite.pem",
                 "2048",
                 "RSA",
+                "pass",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -4560,6 +4629,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
                 "/tmp/sign_test.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4580,6 +4650,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_POS) {
                 "/tmp/sign_test_prv.pem",
                 "/tmp/to_check",
                 "/tmp/result",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -4611,6 +4682,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG) {
                 "/tmp/sign_test.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4665,6 +4737,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
                 "/tmp/sign_test.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -4684,6 +4757,7 @@ BOOST_AUTO_TEST_CASE(OVERWRITE_FLAG_SIGN_TEST_PUB_NEG_THROW) {
                 "/tmp/sign_test_prv.pem",
                 "/tmp/to_check",
                 "/tmp/result",
+                "pass",
         };
         TerminalEmulation terminalEmulation(input);
         auto args = terminalEmulation.getArgs();
@@ -4716,6 +4790,7 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS_THROW) {
             "/tmp/same_path.pem",
             "2048",
             "RSA",
+            "pass",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -4749,6 +4824,7 @@ BOOST_AUTO_TEST_CASE(CREATE_KEY_SAME_PATHS) {
             "/tmp/same_path.pem",
             "2048",
             "RSA",
+            "pass",
             "overwrite",
     };
     TerminalEmulation terminalEmulation(input);
@@ -6110,6 +6186,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12) {
                 "/tmp/public" + str + ".pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6167,6 +6244,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_13) {
                 "/tmp/public" + str + ".pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6221,6 +6299,7 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
                 "/tmp/public" + str + ".pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6241,6 +6320,7 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION) {
                 "/tmp/public128.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6279,6 +6359,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
                 "/tmp/public" + str + ".pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6516,6 +6597,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_12_4096) {
                 "/tmp/public" + str + ".pem",
                 "4096",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6573,6 +6655,7 @@ BOOST_AUTO_TEST_CASE(CREATE_DELETE_8192) {
                 "/tmp/public" + str + ".pem",
                 "8192",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6638,6 +6721,7 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION_RANDOM_SIZE) {
                 "/tmp/public" + str + ".pem",
                 size,
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6658,6 +6742,7 @@ BOOST_AUTO_TEST_CASE(TOO_MANY_KEYS_IN_PARTITION_RANDOM_SIZE) {
                 "/tmp/public128.pem",
                 "2048",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6705,6 +6790,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
                 "/tmp/public" + str + ".pem",
                 size,
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6800,6 +6886,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_R
                 "/tmp/public" + str + ".pem",
                 size,
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);
@@ -6895,6 +6982,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
                 "/tmp/public" + str + ".pem",
                 "8192",
                 "RSA",
+                "pass",
                 "overwrite"
         };
         TerminalEmulation terminalEmulation(input);

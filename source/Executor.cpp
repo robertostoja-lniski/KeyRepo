@@ -15,6 +15,7 @@
 #define MIN_KEY_LEN 2048
 
 std::string Executor::execute() {
+
     parser->parse();
     auto statementStr = parser->getCurrentParsedStatementStr();
     if(VERBOSE) {
@@ -24,6 +25,7 @@ std::string Executor::execute() {
     auto statement = parser->getCurrentParsedStatement();
     if(auto createKeyStatement = std::dynamic_pointer_cast<CreateKeyStatement>(statement)) {
         // currently only RSA support implemented
+
         auto algorithm = createKeyStatement->algorithm;
         auto overwrite = createKeyStatement->overwrite;
 
@@ -45,6 +47,11 @@ std::string Executor::execute() {
                     + std::to_string(MAX_KEY_LEN) + " are not supperted");
         }
 
+        auto password = createKeyStatement->password;
+        if(password.empty()) {
+            throw std::runtime_error("Create key: Password is now mandatory for security reasons!");
+        }
+
         auto pubKeyPath = createKeyStatement->pubKeyPath;
         auto prvKeyIdPath = createKeyStatement->privateKeyIdFile;
 
@@ -56,7 +63,7 @@ std::string Executor::execute() {
         interface->throwIfOverwriteForbidden(pubKeyPath, overwrite);
 
         auto r = openSSLHandler->createKey(keyLen);
-        interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), overwrite);
+        interface->writePrivateKeyToFile(prvKeyIdPath, "wb", r.get(), password, overwrite);
         interface->writePublicKeyToFile(pubKeyPath, "wb", r.get(),overwrite);
 
         return {"Keys created"};
@@ -65,13 +72,14 @@ std::string Executor::execute() {
         auto fileToBeSigned = signStatement->filePathToFileToBeSigned;
         auto prvKeyPath = signStatement->filePathToPrvKeyId;
         auto signatureOutput = signStatement->signatureOutput;
+        auto password = signStatement->password;
         auto overwrite = signStatement->overwrite;
 
         interface->throwIfOverwriteForbidden(signatureOutput, overwrite);
 
         auto messageToSign = interface->readFromFile(fileToBeSigned);
 
-        RSA* rsaPrv = interface->readPrivateKeyFromFile<RSA*>(prvKeyPath);
+        RSA* rsaPrv = interface->readPrivateKeyFromFile<RSA*>(prvKeyPath, password);
 
         auto encryptedMessage = openSSLHandler->sign(rsaPrv, messageToSign);
 
