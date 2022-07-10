@@ -6844,6 +6844,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_RANDOM_SIZE) {
                 "get-private-key",
                 "/tmp/private" + str + ".pem",
                 "/tmp/private_key_value",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -6940,6 +6941,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET_CONTENT_CHECK_R
                 "get-private-key",
                 "/tmp/private" + str + ".pem",
                 "/tmp/private_key_value",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
@@ -7012,6 +7014,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_GET_PRVITATE_KEY_LONG_KEY) {
                 "get-private-key",
                 "/tmp/private" + str + ".pem",
                 "/tmp/private_key_value",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
