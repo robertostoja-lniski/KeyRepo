@@ -175,8 +175,8 @@ int set_mode(const uint64_t id, int new_mode) {
 
     return do_set_mode(id, new_mode, ids.uid, ids.gid);
 }
-int get_key_num() {
-    return do_get_key_num();
+int get_key_num(uint64_t* key_num) {
+    return do_get_key_num(key_num);
 }
 
 #endif

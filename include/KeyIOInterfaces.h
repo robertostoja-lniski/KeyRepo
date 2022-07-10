@@ -79,7 +79,7 @@ public:
     virtual int getKeyMode(std::string ) = 0;
     virtual void changeKeyMode(std::string , int ) = 0;
 
-    virtual int getCurrentKeyNum() = 0;
+    virtual uint64_t getCurrentKeyNum() = 0;
 
     virtual void throwIfOverwriteForbidden(std::string , bool ) = 0;
     virtual void throwIfCannotRemoveFile(std::string ) = 0;
@@ -130,8 +130,14 @@ public:
     int getKeyMode(std::string privateKeyPath);
     void changeKeyMode(std::string privateKeyPath, int changedMode);
 
-    int getCurrentKeyNum() {
-        return get_key_num();
+    uint64_t getCurrentKeyNum() {
+
+        uint64_t keyNum;
+        if (get_key_num(&keyNum)) {
+            throw std::runtime_error("Cannot get key num");
+        }
+
+        return keyNum;
     }
 
     void throwIfOverwriteForbidden(std::string filepath, bool overwrite);

@@ -43,7 +43,7 @@ int get_key_size(uint64_t id, uint64_t* size);
 int get_mode(uint64_t id, int* modes);
 int set_mode(uint64_t id, int new_mode);
 // password not needed, because it requires only root priviledges
-int get_key_num();
+int get_key_num(uint64_t* key_num);
 
 #endif
 

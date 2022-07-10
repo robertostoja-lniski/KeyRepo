@@ -5230,10 +5230,12 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
 
     const char* key = "abc777777d";
     uint64_t id;
+    uint64_t keyNum;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
-    auto keyNum = get_key_num();
+    auto keyNumRet = get_key_num(&keyNum);
 
     BOOST_CHECK_EQUAL(ret, 0);
+    BOOST_CHECK_EQUAL(keyNumRet, 0);
     BOOST_CHECK_EQUAL(keyNum, 1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -5245,10 +5247,12 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MAGIC) {
 
     const char* key = "abc777777d";
     uint64_t id;
+    uint64_t keyNum;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
-    auto keyNum = get_key_num();
+    auto keyNumRet = get_key_num(&keyNum);
 
     BOOST_CHECK_EQUAL(ret, 0);
+    BOOST_CHECK_EQUAL(keyNumRet, 0);
     BOOST_CHECK_EQUAL(keyNum, 1);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -5258,9 +5262,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MAGIC_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("echo eqwewqewqeqwewqeqwewqeqwewqeqweqwqweqweqweqweqweqweqw >> ~/.keyPartitionV2/meta");
 
-    auto keyNum = get_key_num();
+    uint64_t keyNum;
+    auto keyNumRet = get_key_num(&keyNum);
 
     BOOST_CHECK_EQUAL(keyNum, 0);
+    BOOST_CHECK_EQUAL(keyNumRet, 0);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
@@ -5310,7 +5316,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
-    auto keyNum = get_key_num();
+    uint64_t keyNum;
+    auto keyNumRet = get_key_num(&keyNum);
+    BOOST_CHECK_EQUAL(keyNumRet, 0);
     BOOST_CHECK_EQUAL(keyNum, 0);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -5323,10 +5331,14 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MULT) {
         const char* key = "abc777777d";
         uint64_t id;
         auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
-        auto keyNum = get_key_num();
+
+        uint64_t keyNum;
+        auto keyNumRet = get_key_num(&keyNum);
 
         BOOST_CHECK_EQUAL(ret, 0);
+        BOOST_CHECK_EQUAL(keyNumRet, 0);
         BOOST_CHECK_EQUAL(keyNum, i);
+        
     }
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
@@ -5422,8 +5434,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     int readRet;
     int getSizeRet;
-    int num;
+    int getKeyNumRet;
     uint64_t size;
+    uint64_t num;
 
     for(int i = 0; i < 20; i++) {
 
@@ -5448,7 +5461,8 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
+        BOOST_CHECK_EQUAL(getKeyNumRet, 0);
         BOOST_CHECK_EQUAL(num, 2);
 
         // algorithm will add 3rd key between first and last
@@ -5456,7 +5470,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         uint64_t id4;
         auto ret4 = write_key(key4, 10, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
-        num = get_key_num();
+
+        getKeyNumRet = get_key_num(&num);
+        BOOST_CHECK_EQUAL(getKeyNumRet, 0);
         BOOST_CHECK_EQUAL(num, 3);
       
         // reading 3 keys by get size
@@ -5492,7 +5508,8 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(rmvRet2, 0);
         BOOST_CHECK_EQUAL(rmvRet3, 0);
 
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
+        BOOST_CHECK_EQUAL(getKeyNumRet, 0);
         BOOST_CHECK_EQUAL(num, 0);
     }
 
@@ -5504,8 +5521,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     int readRet;
     int getSizeRet;
-    int num;
+    int getKeyNumRet;
     uint64_t size;
+    uint64_t num;
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
@@ -5534,7 +5552,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 3);
 
         // algorithm will add 3rd key between first and last
@@ -5542,7 +5560,8 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         uint64_t id4;
         auto ret4 = write_key(key4, 30, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
-        num = get_key_num();
+
+        getKeyNumRet = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 4);
       
         // reading 3 keys by get size
@@ -5578,7 +5597,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(rmvRet2, 0);
         BOOST_CHECK_EQUAL(rmvRet3, 0);
 
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 1);
     }
 
@@ -5593,8 +5612,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     int readRet;
     int getSizeRet;
-    int num;
+    int getKeyNum;
     uint64_t size;
+    uint64_t num;
 
     for(int i = 0; i < 200; i++) {
 
@@ -5618,7 +5638,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
-        num = get_key_num();
+        getKeyNum = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 2);
 
         // algorithm will add 3rd key between first and last
@@ -5626,7 +5646,8 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         uint64_t id4;
         auto ret4 = write_key(key4, 10, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
-        num = get_key_num();
+
+        getKeyNum = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 3);
       
         // reading 3 keys by get size
@@ -5662,7 +5683,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(rmvRet2, 0);
         BOOST_CHECK_EQUAL(rmvRet3, 0);
 
-        num = get_key_num();
+        getKeyNum = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 0);
     }
 
@@ -5674,8 +5695,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
     int readRet;
     int getSizeRet;
-    int num;
+    int getKeyNumRet;
     uint64_t size;
+    uint64_t num;
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
     uint64_t id_init;
@@ -5704,7 +5726,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 3);
 
         // algorithm will add 3rd key between first and last
@@ -5712,7 +5734,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         uint64_t id4;
         auto ret4 = write_key(key4, 30, "dummy", 5, &id4, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret4, 0);
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 4);
       
         // reading 3 keys by get size
@@ -5748,7 +5770,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(rmvRet2, 0);
         BOOST_CHECK_EQUAL(rmvRet3, 0);
 
-        num = get_key_num();
+        getKeyNumRet = get_key_num(&num);
         BOOST_CHECK_EQUAL(num, 1);
     }
 

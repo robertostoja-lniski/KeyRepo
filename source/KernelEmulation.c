@@ -1293,7 +1293,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
 
 // public
 #if EMULATION == 1
-int do_get_key_num() {
+int do_get_key_num(uint64_t* key_num) {
 #else
 SYSCALL_DEFINE0(get_key_num) {
 #endif
@@ -1301,11 +1301,11 @@ SYSCALL_DEFINE0(get_key_num) {
     size_t              file_size;
     void*               mapped_partition;
     partition_info*     partition_metadata;
-    uint64_t            key_num;
     int                 magic_offset;
 
     if (!is_repo_initialized()) {
-        return 0;
+        *key_num = 0;
+        return RES_OK;
     }
 
     printk("Entering: get current key num\n");
@@ -1323,7 +1323,7 @@ SYSCALL_DEFINE0(get_key_num) {
     printk("Magic is %d bytes from file start\n", magic_offset);
 
     partition_metadata = (partition_info* )((uint8_t* )mapped_partition + magic_offset);
-    key_num = (partition_metadata->number_of_keys) % INT_MAX;
+    *key_num = (partition_metadata->number_of_keys);
 
 #if EMULATION == 1
     free(mapped_partition);
@@ -1332,7 +1332,7 @@ SYSCALL_DEFINE0(get_key_num) {
 #endif
 
     printk("Exiting: get current key num\n");
-    return key_num;
+    return RES_OK;
 }
 
 #if EMULATION == 1
