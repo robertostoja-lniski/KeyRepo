@@ -5239,6 +5239,32 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
 
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MAGIC) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+    system("echo eqwewqewqeqwewqeqwewqeqwewqeqweqwqweqweqweqweqweqweqw >> ~/.keyPartitionV2/meta");
+
+    const char* key = "abc777777d";
+    uint64_t id;
+    auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
+    auto keyNum = get_key_num();
+
+    BOOST_CHECK_EQUAL(ret, 0);
+    BOOST_CHECK_EQUAL(keyNum, 1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MAGIC_NO_PART) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+    system("echo eqwewqewqeqwewqeqwewqeqwewqeqweqwqweqweqweqweqweqweqw >> ~/.keyPartitionV2/meta");
+
+    auto keyNum = get_key_num();
+
+    BOOST_CHECK_EQUAL(keyNum, 0);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
@@ -5285,7 +5311,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     auto keyNum = get_key_num();
-    BOOST_CHECK_EQUAL(keyNum, -10);
+    BOOST_CHECK_EQUAL(keyNum, 0);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
