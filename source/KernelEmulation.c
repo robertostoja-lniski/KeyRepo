@@ -1437,13 +1437,17 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
 }
 
 #if EMULATION == 1
-int do_remove_key(const uint64_t id, const char* password, int uid, int gid) {
+int do_remove_key(uint64_t id, int uid, int gid) {
 #else
 SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __user, gid) {
 #endif
 
-    user_info proc_rights;
-    int           ret;
+#if EMULATION == 0
+    up(&sem);
+#endif
+
+    user_info       proc_rights;
+    int             ret;
 
     if(id == 0) {
         return RES_INPUT_ERR;
@@ -1456,10 +1460,6 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
     printk("Entering and soon exiting remove key\n");
     proc_rights.uid = uid;
     proc_rights.gid = gid;
-
-#if EMULATION == 0
-    up(&sem);
-#endif
 
     ret = remove_private_key_by_id(id, proc_rights);
 

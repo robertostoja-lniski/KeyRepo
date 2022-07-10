@@ -139,13 +139,13 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
 
     return do_read_key(key, id, pass, pass_len, key_len, ids.uid, ids.gid);
 }
-int remove_key(const uint64_t id, const char* password) {
+int remove_key(uint64_t id) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_remove_key(id, password, ids.uid, ids.gid);
+    return do_remove_key(id, ids.uid, ids.gid);
 }
 int get_key_size(const uint64_t id, const char* password, uint64_t* size) {
 

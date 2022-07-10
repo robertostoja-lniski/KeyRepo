@@ -5313,7 +5313,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
     uint64_t id;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    auto rmvRet = remove_key(id, "dummy");
+    auto rmvRet = remove_key(id);
 
     char *buf;
     buf = (char* )malloc(5);
@@ -5356,7 +5356,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2, "dummy");
+        auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5395,9 +5395,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id, "dummy");
-        auto rmvRet2 = remove_key(id3, "dummy");
-        auto rmvRet3 = remove_key(id4, "dummy");
+        auto rmvRet1 = remove_key(id);
+        auto rmvRet2 = remove_key(id3);
+        auto rmvRet3 = remove_key(id4);
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
@@ -5442,7 +5442,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2, "dummy");
+        auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5481,9 +5481,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id, "dummy");
-        auto rmvRet2 = remove_key(id3, "dummy");
-        auto rmvRet3 = remove_key(id4, "dummy");
+        auto rmvRet1 = remove_key(id);
+        auto rmvRet2 = remove_key(id3);
+        auto rmvRet3 = remove_key(id4);
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
@@ -5526,7 +5526,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2, "dummy");
+        auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5565,9 +5565,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id, "dummy");
-        auto rmvRet2 = remove_key(id3, "dummy");
-        auto rmvRet3 = remove_key(id4, "dummy");
+        auto rmvRet1 = remove_key(id);
+        auto rmvRet2 = remove_key(id3);
+        auto rmvRet3 = remove_key(id4);
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);
@@ -5612,7 +5612,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(ret3, 0);
 
         // remove middles
-        auto rmvRet = remove_key(id2, "dummy");
+        auto rmvRet = remove_key(id2);
         BOOST_CHECK_EQUAL(rmvRet, 0);
 
         num = get_key_num();
@@ -5651,9 +5651,9 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(buf4, key4);
         free(buf4);
 
-        auto rmvRet1 = remove_key(id, "dummy");
-        auto rmvRet2 = remove_key(id3, "dummy");
-        auto rmvRet3 = remove_key(id4, "dummy");
+        auto rmvRet1 = remove_key(id);
+        auto rmvRet2 = remove_key(id3);
+        auto rmvRet3 = remove_key(id4);
 
         BOOST_CHECK_EQUAL(rmvRet1, 0);
         BOOST_CHECK_EQUAL(rmvRet2, 0);

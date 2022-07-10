@@ -66,7 +66,7 @@ void KeyPartitionIOInterface::removePrivateKey(std::string privateKeyPath) {
     iss >> id;
 
     // TODO in devel mode
-    auto result = remove_key(id, "dummy");
+    auto result = remove_key(id);
     if(result < 0) {
         throw std::runtime_error("KeyIOInterface: Failed to remove private key");
     }
