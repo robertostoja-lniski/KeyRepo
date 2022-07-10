@@ -173,7 +173,7 @@ boost::any KeyPartitionIOInterface::protectedReadPublicKeyFromFile(std::string f
     return rsa;
 }
 
-boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string filepath) {
+boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string filepath, std::string password) {
 
     auto keyId = readFromFile(filepath.c_str());
 
@@ -185,7 +185,7 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
 
 //    TODO in devel mode
     auto getSizeRet = get_key_size(id, &keyLen);
-    if(getSizeRet !=0 ) {
+    if(getSizeRet < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
 
@@ -195,16 +195,15 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
     }
 
 //    TODO in devel mode
-    auto readKeyRet = read_key(prvKey, id, "dummy", 5, keyLen);
+    auto readKeyRet = read_key(prvKey, id, password.c_str(), password.size(), keyLen);
     if(readKeyRet < 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }
-//    std::cout << prvKey;
     BIO* bo = BIO_new( BIO_s_mem() );
     if(bo == nullptr) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
-    if(BIO_write( bo, prvKey,strlen(prvKey)) <= 0) {
+    if(BIO_write( bo, prvKey, strlen(prvKey)) <= 0) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 
@@ -231,9 +230,10 @@ void KeyPartitionIOInterface::protectedWritePublicKeyToFile(std::string filepath
     if(!success) {
         throw std::runtime_error("KeyIOInterface: Failed to write public key");
     }
+
 }
 
-void KeyPartitionIOInterface::protectedWritePrivateKeyToFile(std::string filepath, std::string mode, boost::any r, bool overwrite) {
+void KeyPartitionIOInterface::protectedWritePrivateKeyToFile(std::string filepath, std::string mode, boost::any r, std::string password, bool overwrite) {
     uint64_t id;
 
     std::shared_ptr<BIO> bio(BIO_new(BIO_s_mem()), BIO_free);
@@ -256,7 +256,7 @@ void KeyPartitionIOInterface::protectedWritePrivateKeyToFile(std::string filepat
     }
 
     // TODO in devel mode
-    auto result = write_key(pem_key, keylen, "dummy", 6, &id, KEY_TYPE_RSA);
+    auto result = write_key(pem_key, keylen, password.c_str(), password.size(), &id, KEY_TYPE_RSA);
 
     if(result == -1) {
         throw std::runtime_error("KeyIOInterface: Write key to partition failed");

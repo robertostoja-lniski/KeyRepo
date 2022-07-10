@@ -16,10 +16,12 @@ void Parser::parse() {
 }
 
 void Parser::generateCreateKeyOption() {
+
     auto privateKeyIdFile = syntaxAnalyser->getNextToken().value;
     auto pubKeyPath = syntaxAnalyser->getNextToken().value;
     auto keySize = syntaxAnalyser->getNextToken().value;
     auto algorithm = syntaxAnalyser->getNextToken().value;
+    auto password = syntaxAnalyser->getNextToken().value;
     int numericKeySize;
 
     if(keySize.length() > 9) {
@@ -37,7 +39,7 @@ void Parser::generateCreateKeyOption() {
         throw std::runtime_error("Parser: Negative size or id");
     }
 
-    CreateKeyStatement createKeyStatement(privateKeyIdFile, pubKeyPath, numericKeySize, algorithm);
+    CreateKeyStatement createKeyStatement(privateKeyIdFile, pubKeyPath, numericKeySize, algorithm, password);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
@@ -75,8 +77,9 @@ void Parser::generateSignOption() {
     auto privateKeyFilePath = syntaxAnalyser->getNextToken().value;
     auto fileToBeSigned = syntaxAnalyser->getNextToken().value;
     auto signatureOutput = syntaxAnalyser->getNextToken().value;
+    auto password = syntaxAnalyser->getNextToken().value;
 
-    SignStatement signStatement(privateKeyFilePath, fileToBeSigned, signatureOutput);
+    SignStatement signStatement(privateKeyFilePath, fileToBeSigned, signatureOutput, password);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;

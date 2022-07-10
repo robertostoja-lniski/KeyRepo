@@ -16,15 +16,16 @@ struct CreateKeyStatement : Statement {
     std::string pubKeyPath;
     int keyLen;
     std::string algorithm;
+    std::string password;
     bool overwrite {false};
 
-    CreateKeyStatement(std::string privateKeyIdFile, std::string pubKeyPath, int keyLen, std::string algorithm) :
-            privateKeyIdFile(privateKeyIdFile), pubKeyPath(pubKeyPath), keyLen(keyLen), algorithm(algorithm) {}
+    CreateKeyStatement(std::string privateKeyIdFile, std::string pubKeyPath, int keyLen, std::string algorithm, std::string password) :
+            privateKeyIdFile(privateKeyIdFile), pubKeyPath(pubKeyPath), keyLen(keyLen), algorithm(algorithm), password(password) {}
 
     friend std::ostream& operator<<(std::ostream& os, const CreateKeyStatement& dt);
     std::string toString() override {
         auto ret =  "create-key " + privateKeyIdFile + " " + pubKeyPath
-                 + " " + std::to_string(keyLen) + " " + algorithm;
+                 + " " + std::to_string(keyLen) + " " + algorithm + " " + password;
         return overwrite ? ret + " overwrite" : ret;
     }
     void enableOverwrite() {
@@ -66,17 +67,21 @@ struct SignStatement : Statement {
     std::string filePathToPrvKeyId;
     std::string filePathToFileToBeSigned;
     std::string signatureOutput;
+    std::string password;
     bool overwrite {false};
 
     SignStatement(std::string filePathToPrvKeyId, std::string filePathToFileToBeSigned,
-            std::string signatureOutput) :
-            filePathToPrvKeyId(filePathToPrvKeyId), filePathToFileToBeSigned(filePathToFileToBeSigned),
-            signatureOutput(signatureOutput) {}
+            std::string signatureOutput, std::string password) :
+            filePathToPrvKeyId(filePathToPrvKeyId),
+            filePathToFileToBeSigned(filePathToFileToBeSigned),
+            signatureOutput(signatureOutput),
+            password(password)
+            {}
 
     friend std::ostream& operator<<(std::ostream& os, const SignStatement& dt);
     std::string toString() override {
         auto ret = "sign " + filePathToPrvKeyId + " " + filePathToFileToBeSigned
-             + " " + signatureOutput;
+             + " " + signatureOutput + " " + password;
         return overwrite ? ret + " overwrite" : ret;
     }
     void enableOverwrite() {

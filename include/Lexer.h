@@ -25,7 +25,7 @@ private:
         InputIterator(int endIdx, char** argv) : endIdx(endIdx), currentArgs(argv) {}
         std::string operator*() {
             if(currentIdx >= endIdx) {
-                throw std::runtime_error("Tried to access end value");
+                throw std::runtime_error("Not enough args.");
             }
             return currentArgs[currentIdx];
         }
