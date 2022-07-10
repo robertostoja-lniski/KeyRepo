@@ -83,7 +83,7 @@ void KeyPartitionIOInterface::removePublicKey(std::string publicKeyPath) {
     }
 }
 
-std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKeyId) {
+std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKeyId, std::string password) {
 
     auto keyId = readFromFile(std::move(filepathWithPrvKeyId));
 
@@ -104,7 +104,7 @@ std::string KeyPartitionIOInterface::getPrivateKey(std::string filepathWithPrvKe
     }
 
 //    TODO in devel mode
-    auto ret = read_key(prvKey, id, "dummy", 5, keyLen);
+    auto ret = read_key(prvKey, id, password.c_str(), password.size(), keyLen);
     if(ret != 0) {
         throw std::runtime_error("KeyIOInterface: Cannot get private key");
     }

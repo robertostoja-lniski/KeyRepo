@@ -134,10 +134,11 @@ std::string Executor::execute() {
 
         auto filePathWithPrvKeyId = getPrivateKeyStatement->filePathWithPrivateKeyId;
         auto filePathToStoreKey = getPrivateKeyStatement->filePathToStorePrivateKey;
+        auto password = getPrivateKeyStatement->password;
         auto overwrite = getPrivateKeyStatement->overwrite;
 
         interface->throwIfOverwriteForbidden(filePathToStoreKey, overwrite);
-        auto prvKey = interface->getPrivateKey(filePathWithPrvKeyId);
+        auto prvKey = interface->getPrivateKey(filePathWithPrvKeyId, password);
         auto keySize = prvKey.size();
         interface->writeToFile(filePathToStoreKey, prvKey, overwrite);
         return {"Private key saved"};

@@ -84,7 +84,7 @@ public:
     virtual void throwIfOverwriteForbidden(std::string , bool ) = 0;
     virtual void throwIfCannotRemoveFile(std::string ) = 0;
 
-    virtual std::string getPrivateKey(std::string ) = 0;
+    virtual std::string getPrivateKey(std::string, std::string) = 0;
 
     virtual FILE* getFileStructFromPath(std::string, std::string) = 0;
 
@@ -143,7 +143,7 @@ public:
     void throwIfOverwriteForbidden(std::string filepath, bool overwrite);
     void throwIfCannotRemoveFile(std::string filepath);
 
-    std::string getPrivateKey(std::string filepathWithPrvKeyId);
+    std::string getPrivateKey(std::string filepathWithPrvKeyId, std::string password);
 
     FILE* getFileStructFromPath(std::string, std::string);
 };

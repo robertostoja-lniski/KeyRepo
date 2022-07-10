@@ -35,15 +35,16 @@ struct CreateKeyStatement : Statement {
 struct GetPrivateKeyStatement : Statement {
     std::string filePathWithPrivateKeyId;
     std::string filePathToStorePrivateKey;
+    std::string password;
     bool overwrite {false};
 
-    GetPrivateKeyStatement(std::string filePathWithPrivateKeyId, std::string filePathToStorePrivateKey) :
-            filePathWithPrivateKeyId(filePathWithPrivateKeyId), filePathToStorePrivateKey(filePathToStorePrivateKey) {}
+    GetPrivateKeyStatement(std::string filePathWithPrivateKeyId, std::string filePathToStorePrivateKey, std::string password) :
+            filePathWithPrivateKeyId(filePathWithPrivateKeyId), filePathToStorePrivateKey(filePathToStorePrivateKey), password(password) {}
 
     friend std::ostream& operator<<(std::ostream& os, const GetPrivateKeyStatement& dt);
     std::string toString() override {
         auto ret =  "get-private-key "+ filePathWithPrivateKeyId + " "
-            + filePathToStorePrivateKey;
+            + filePathToStorePrivateKey + " " + password;
         return overwrite ? ret + " overwrite" : ret;
     }
     void enableOverwrite() {

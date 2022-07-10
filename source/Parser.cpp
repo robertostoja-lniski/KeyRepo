@@ -54,8 +54,9 @@ void Parser::generateCreateKeyOption() {
 void Parser::generateGetPrivateKeyOption() {
     auto pathToFileWithPrivateKeyId = syntaxAnalyser->getNextToken().value;
     auto pathToStorePrivateKey = syntaxAnalyser->getNextToken().value;
+    auto password = syntaxAnalyser->getNextToken().value;
 
-    GetPrivateKeyStatement getPrivateKeyStatement(pathToFileWithPrivateKeyId, pathToStorePrivateKey);
+    GetPrivateKeyStatement getPrivateKeyStatement(pathToFileWithPrivateKeyId, pathToStorePrivateKey, password);
 
     try {
         auto overwrite = syntaxAnalyser->getNextToken().value;
