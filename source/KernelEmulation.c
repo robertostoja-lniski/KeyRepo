@@ -1412,11 +1412,16 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
     uint64_t            used_pass_len;
 
     printk("Entering: readKey recompiled\n");
-    if(id == 0 || key_len == 0 || pass_len == 0) {
+    // id = 0 is reserved for empty record in key map
+    if (id == 0) {
+        return RES_NOT_FOUND;
+    }
+
+    if (key_len == 0 || pass_len == 0) {
        return RES_INPUT_ERR;
     }
 
-    if(pass == NULL || key == NULL) {
+    if (pass == NULL || key == NULL) {
         return RES_INPUT_ERR;
     }
 
@@ -1457,8 +1462,9 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
     user_info       proc_rights;
     int             ret;
 
-    if(id == 0) {
-        return RES_INPUT_ERR;
+    // id = 0 is reserved for empty record in key map
+    if (id == 0) {
+        return RES_NOT_FOUND;
     }
 
     if (!is_repo_initialized()) {
@@ -1493,8 +1499,9 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 
     printk("\n");
     printk("Entering: get mode\n");
-    if(id == 0) {
-        return RES_INPUT_ERR;
+    // id = 0 is reserved for empty record in key map
+    if (id == 0) {
+        return RES_NOT_FOUND;
     }
 
     if (!is_repo_initialized()) {
@@ -1552,8 +1559,9 @@ SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, 
     }
 
     printk("Entering: set mode\n");
-    if(id == 0) {
-        return RES_INPUT_ERR;
+    // id = 0 is reserved for empty record in key map
+    if (id == 0) {
+        return RES_NOT_FOUND;
     }
 
 #if EMULATION == 0
@@ -1649,8 +1657,9 @@ int do_get_key_size(uint64_t id, uint64_t* size, int uid, int gid) {
 
     printk("\n");
     printk("Entering: get key size\n");
-    if(id == 0) {
-        return RES_INPUT_ERR;
+    // id = 0 is reserved for empty record in key map
+    if (id == 0) {
+        return RES_NOT_FOUND;
     }
 
     if (!is_repo_initialized()) {
