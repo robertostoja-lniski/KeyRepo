@@ -702,6 +702,7 @@ BOOST_AUTO_TEST_CASE(INTEGRATION_TEST_1)
             "get-private-key",
             "/tmp/private",
             "/tmp/abc",
+            "pass",
     };
     TerminalEmulation terminalEmulation(input);
     auto args = terminalEmulation.getArgs();
@@ -944,6 +945,7 @@ BOOST_AUTO_TEST_CASE(GetPrivateKeyTooManyParams)
             "get-private-key",
             "/tmp/private",
             "/tmp/abc",
+            "pass",
             "additional_param"
     };
     TerminalEmulation terminalEmulation(input);
@@ -1871,6 +1873,7 @@ BOOST_AUTO_TEST_CASE(POSITIVE_TEST_GET_PRIVATE_KEY)
                 "get-private-key",
                 "/tmp/private.pem",
                 "/tmp/private_key_value",
+                "pass",
                 "overwrite",
         };
 
@@ -1921,6 +1924,7 @@ BOOST_AUTO_TEST_CASE(CHECK_SIGNATURE_INTEGRATION_TEST_6)
                 "get-private-key",
                 "/tmp/private.pem",
                 "/tmp/private_key_value",
+                "pass",
                 "overwrite",
         };
 
@@ -4049,6 +4053,7 @@ BOOST_AUTO_TEST_CASE(GET_PRIVATE_KEY_NOT_EXISTING_FILE)
             "get-private-key",
             "not_existing_file",
             "/tmp/key",
+            "pass",
             "overwrite"
     };
     TerminalEmulation terminalEmulation(input);
@@ -6407,6 +6412,7 @@ BOOST_AUTO_TEST_CASE(PARTITION_DEFRAGMENTATION_CREATE_DELETE_GET) {
                 "get-private-key",
                 "/tmp/private" + str + ".pem",
                 "/tmp/private_key_value",
+                "pass",
                 "overwrite",
         };
         TerminalEmulation terminalEmulation(input);
