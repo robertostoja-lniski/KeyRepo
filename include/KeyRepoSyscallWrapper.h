@@ -38,7 +38,7 @@ int set_mode(const uint64_t id, int new_mode);
 
 int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type);
 int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len);
-int remove_key(uint64_t id);
+int remove_key(const uint64_t id);
 int get_key_size(const uint64_t id, const char* password, uint64_t* size);
 int get_mode(const uint64_t id, const char* password, int* output);
 int set_mode(const uint64_t id, const char* password, int new_mode);
