@@ -5083,12 +5083,72 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
     char *buf;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, 0, "dummy", 5, 3);
-    BOOST_CHECK_EQUAL(readRet, -1);
+    BOOST_CHECK_EQUAL(readRet, -10);
 
     free(buf);
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_GET_SIZE_0_ID) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
+
+    uint64_t keySize;
+    auto readRet = get_key_size(0, &keySize);
+    BOOST_CHECK_EQUAL(readRet, -10);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_REMOVE_0_ID) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
+
+    auto removeRet = remove_key(0);
+    BOOST_CHECK_EQUAL(removeRet, -10);
+
+    uint64_t keyNum;
+    auto getKeyNumRet = get_key_num(&keyNum);
+    BOOST_CHECK_EQUAL(removeRet, -10);
+    BOOST_CHECK_EQUAL(keyNum, 1);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_GET_MODE_0_ID) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
+
+    int mode = 123123123;
+    int inititalMode = mode;
+    auto getModesRet = get_mode(0, &mode);
+    BOOST_CHECK_EQUAL(getModesRet, -10);
+    BOOST_CHECK_EQUAL(mode, inititalMode);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_SET_MODE_0_ID) {
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+
+    const char* key = "abcd";
+    uint64_t id;
+    auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
+
+    int mode = 660;
+    auto setModeRet = set_mode(0, mode);
+    BOOST_CHECK_EQUAL(setModeRet, -10);
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}
+
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
