@@ -18,26 +18,33 @@ std::ostream &operator<<(std::ostream &os, const GetPrivateKeyStatement &dt) {
 std::ostream &operator<<(std::ostream &os, const DeleteKeyStatement &dt) {
     os << "Deleting a pair of keys: " << dt.privateKeyIdPath << " private key and "
         << dt.fileToPublicKey << " public key\n";
+    return os;
 }
 std::ostream &operator<<(std::ostream &os, const SignStatement &dt) {
     os << "Signing file " << dt.filePathToFileToBeSigned << " with key with id stored in "
         << dt.filePathToPrvKeyId << '\n';
+    return os;
 }
 std::ostream &operator<<(std::ostream &os, const CheckSignatureStatement &dt) {
     os << "Checking signature for " << dt.filePathToFileToBeChecked << " by "
         << dt.filePathToPublicKey << " public key\n";
+    return os;
 }
 std::ostream &operator<<(std::ostream &os, const EncryptFileStatement &dt) {
     os << "Encrypting file " << dt.filePathToFileToBeEncrypted << " by "
         << dt.filePathToFileWithKey << " key, " << dt.filePathToFileWithIv <<  " iv and with output " + dt.output + "\n";
+    return os;
 }
 std::ostream &operator<<(std::ostream &os, const DecryptFileStatement &dt) {
     os << "Decrypting file " << dt.filePathToFileToBeDecrypted << " by "
        << dt.filePathToFileWithKey << " key, " << dt.filePathToFileWithIv << " iv and with output " + dt.output + "\n";
+    return os;
 }
 std::ostream &operator<<(std::ostream &os, const GetModStatement &dt) {
     os << "Getting mode for " << dt.filePathToKeyId << "\n";
+    return os;
 }
 std::ostream &operator<<(std::ostream &os, const ChangeModStatement &dt) {
     os << "Changing mode for " << dt.filePathToKeyId << " to " << dt.flags << "\n";
+    return os;
 }
