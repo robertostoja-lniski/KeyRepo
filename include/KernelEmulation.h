@@ -159,6 +159,7 @@ int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t p
 int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t keyLen, int uid, int gid);
 int do_remove_key(const uint64_t id, int uid, int gid);
 int do_get_key_size(const uint64_t id, uint64_t* size, int uid, int gid);
+
 // MODE HANDLING
 int do_get_mode(const uint64_t id, int* output, int uid, int gid);
 int do_set_mode(const uint64_t id, int new_mode, int uid, int gid);

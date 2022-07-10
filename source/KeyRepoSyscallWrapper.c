@@ -139,7 +139,8 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
 
     return do_read_key(key, id, pass, pass_len, key_len, ids.uid, ids.gid);
 }
-int remove_key(const uint64_t id) {
+
+int remove_key(uint64_t id) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
