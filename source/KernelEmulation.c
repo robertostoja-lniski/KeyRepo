@@ -1302,9 +1302,10 @@ SYSCALL_DEFINE0(get_key_num) {
     void*               mapped_partition;
     partition_info*     partition_metadata;
     uint64_t            key_num;
+    int                 magic_offset;
 
     if (!is_repo_initialized()) {
-        return RES_NOT_FOUND;
+        return 0;
     }
 
     printk("Entering: get current key num\n");
@@ -1314,7 +1315,14 @@ SYSCALL_DEFINE0(get_key_num) {
         return RES_CANNOT_OPEN;
     }
 
-    partition_metadata = (partition_info* )mapped_partition;
+    magic_offset = get_magic_offset(mapped_partition);
+    if(magic_offset < 0) {
+        return RES_NON_INTEGRAL;
+    }
+
+    printk("Magic is %d bytes from file start\n", magic_offset);
+
+    partition_metadata = (partition_info* )((uint8_t* )mapped_partition + magic_offset);
     key_num = (partition_metadata->number_of_keys) % INT_MAX;
 
 #if EMULATION == 1
