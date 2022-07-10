@@ -162,6 +162,6 @@ int do_get_key_size(const uint64_t id, uint64_t* size, int uid, int gid);
 // MODE HANDLING
 int do_get_mode(const uint64_t id, int* output, int uid, int gid);
 int do_set_mode(const uint64_t id, int new_mode, int uid, int gid);
-int do_get_key_num();
+int do_get_key_num(uint64_t* key_num);
 
 #endif //KEYREPO_KERNELEMULATION_H
