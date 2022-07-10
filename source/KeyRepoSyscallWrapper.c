@@ -145,7 +145,7 @@ int remove_key(const uint64_t id, const char* password) {
         return -1;
     }
 
-    return do_remove_key(id, password, ids.uid, ids.gid);
+    return do_remove_key(id, ids.uid, ids.gid);
 }
 int get_key_size(const uint64_t id, const char* password, uint64_t* size) {
 

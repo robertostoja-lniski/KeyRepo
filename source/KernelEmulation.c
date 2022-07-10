@@ -1437,7 +1437,7 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
 }
 
 #if EMULATION == 1
-int do_remove_key(const uint64_t id, const char* password, int uid, int gid) {
+int do_remove_key(const uint64_t id, int uid, int gid) {
 #else
 SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __user, gid) {
 #endif
