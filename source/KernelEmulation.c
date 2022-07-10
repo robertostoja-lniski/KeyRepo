@@ -20,11 +20,15 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
         return RES_INPUT_ERR;
     }
 
+    // TODO - just a PoC
+    int key = 0;
+    for (uint64_t i = 0; i < pass_len; i++) {
+        key += pass[i];
+    }
+    key = key % 30;
+
     for (size_t i = 0; i < len; i++) {
-        uint8_t a = buf[i];
-        buf[i] -= 30;
-        uint8_t b = buf[i];
-        uint8_t c = 3;
+        buf[i] -= (char)key;
     }
 
     return RES_OK;
@@ -32,18 +36,25 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int decrypt_data_at_rest(char* buf, size_t len, const char* password) {
+int decrypt_data_at_rest(char* buf, size_t len, const char* pass, uint64_t pass_len) {
 
     if (buf == NULL) {
         return RES_INPUT_ERR;
     }
 
-    if (password == NULL) {
+    if (pass == NULL) {
         return RES_INPUT_ERR;
     }
 
+    // TODO - just a PoC
+    int key = 0;
+    for (uint64_t i = 0; i < pass_len; i++) {
+        key += pass[i];
+    }
+    key = key % 30;
+
     for (size_t i = 0; i < len; i++) {
-        buf[i] += 30;
+        buf[i] += (char)key;
     }
 
     return RES_OK;
@@ -402,7 +413,7 @@ int delete_custom_file(uint64_t id) {
     return remove(filename);
 }
 
-int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t type) {
+int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
 
     FILE *file;
 
@@ -424,14 +435,14 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 
         strcpy(key, RSA_BEGIN_LABEL);
         ret = fread(key + strlen(RSA_BEGIN_LABEL), sizeof(char), adjusted_len, file);
-        decrypt_data_at_rest(key + strlen(RSA_BEGIN_LABEL), adjusted_len, "dummy");
+        decrypt_data_at_rest(key + strlen(RSA_BEGIN_LABEL), adjusted_len, pass, pass_len);
         strcpy(key + key_len - strlen(RSA_END_LABEL) - 1, RSA_END_LABEL);
         
     } else if (type == KEY_TYPE_CUSTOM) {
 
         adjusted_len = key_len;
         ret = fread(key, sizeof(char), adjusted_len, file);
-        decrypt_data_at_rest(key, adjusted_len, "dummy");
+        decrypt_data_at_rest(key, adjusted_len, pass, pass_len);
         
     } else {
         return RES_NO_KEY_TYPE;
@@ -441,7 +452,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, uint64_t id, uint8_t 
 
     if(ret != adjusted_len) {
         printk("Reading key from file failed\n");
-        return RES_CANNOT_WRITE;
+        return RES_CANNOT_OPEN;
     }
 
     return RES_OK;
@@ -1168,9 +1179,9 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_in
 }
 
 #if EMULATION == 1
-int get_prv_key_by_id(const uint64_t id, char* prvKey, uint64_t key_len, user_info proc_rights) {
+int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const char* pass, uint64_t pass_len, user_info proc_rights) {
 #else
-int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, user_info proc_rights) {
+int get_prv_key_by_id(const uint64_t id, char __user *prv_key, uint64_t key_len, user_info proc_rights) {
 #endif
 
     size_t          file_size;
@@ -1189,7 +1200,7 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
     print_partition(mapped_partition);
 
     uint8_t type;
-    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prvKey, key_len, proc_rights, &type);
+    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prv_key, key_len, proc_rights, &type);
     print_partition(mapped_partition);
 
 #if EMULATION == 1
@@ -1202,7 +1213,7 @@ int get_prv_key_by_id(const uint64_t id, char __user *prvKey, uint64_t key_len, 
         return check_key_rights_ret;
     }
 
-    get_key_ret = read_key_from_custom_file(prvKey, key_len, id, type);
+    get_key_ret = read_key_from_custom_file(prv_key, key_len, pass, pass_len, id, type);
     if (get_key_ret != 0) {
         return get_key_ret;
     }
@@ -1383,29 +1394,40 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 }
 
 #if EMULATION == 1
-int do_read_key(const uint64_t id, const char* password, char* key, uint64_t key_len, int uid, int gid) {
+int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
 #else
 SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
 #endif
 
-    user_info       proc_rights;
+    user_info           proc_rights;
     int                 ret;
+    uint64_t            used_pass_len;
 
-    printk("\n");
     printk("Entering: readKey recompiled\n");
-    if(id == 0 || key_len == 0) {
+    if(id == 0 || key_len == 0 || pass_len == 0) {
        return RES_INPUT_ERR;
+    }
+
+    if(pass == NULL || key == NULL) {
+        return RES_INPUT_ERR;
     }
 
     if (!is_repo_initialized()) {
         return RES_NOT_FOUND;
     }
 
+    used_pass_len = pass_len;
+#if EMULATION == 1
+    if(pass_len > strlen(pass)) {
+        used_pass_len = strlen(pass);
+    }
+#endif
+
     printk("Next action: get prv key by id\n");
     proc_rights.uid = uid;
     proc_rights.gid = gid;
 
-    ret = get_prv_key_by_id(id, key, key_len, proc_rights);
+    ret = get_prv_key_by_id(id, key, key_len, pass, used_pass_len, proc_rights);
     if(ret != 0) {
         return ret;
     }
