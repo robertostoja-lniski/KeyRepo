@@ -64,6 +64,7 @@ enum {
     RES_INPUT_ERR = -1,
 
     RES_CANNOT_OPEN = -2,
+    RES_CANNOT_READ = -2,
     RES_CANNOT_WRITE = -3,
     RES_CANNOT_DELETE = -4,
 
@@ -155,7 +156,7 @@ int can_read(int mode, user_info owner_info, user_info effective_user_info);
 int can_write(int mode, user_info owner_info, user_info effective_user_info);
 
 int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int uid, int gid, int type);
-int do_read_key(const uint64_t id, const char* password, char* key, uint64_t keyLen, int uid, int gid);
+int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t keyLen, int uid, int gid);
 int do_remove_key(const uint64_t id, const char* password, int uid, int gid);
 int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int uid, int gid);
 // MODE HANDLING
