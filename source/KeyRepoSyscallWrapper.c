@@ -139,7 +139,7 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
 
     return do_read_key(key, id, pass, pass_len, key_len, ids.uid, ids.gid);
 }
-int remove_key(const uint64_t id, const char* password) {
+int remove_key(const uint64_t id) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
@@ -147,32 +147,32 @@ int remove_key(const uint64_t id, const char* password) {
 
     return do_remove_key(id, ids.uid, ids.gid);
 }
-int get_key_size(const uint64_t id, const char* password, uint64_t* size) {
+int get_key_size(const uint64_t id, uint64_t* size) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_get_key_size(id, password, size, ids.uid, ids.gid);
+    return do_get_key_size(id, size, ids.uid, ids.gid);
 }
-int get_mode(const uint64_t id, const char* password, int* output) {
+int get_mode(const uint64_t id, int* output) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_get_mode(id, password, output, ids.uid, ids.gid);
+    return do_get_mode(id, output, ids.uid, ids.gid);
 }
-int set_mode(const uint64_t id, const char* password, int new_mode) {
+int set_mode(const uint64_t id, int new_mode) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return do_set_mode(id, password, new_mode, ids.uid, ids.gid);
+    return do_set_mode(id, new_mode, ids.uid, ids.gid);
 }
 int get_key_num() {
     return do_get_key_num();

@@ -1473,7 +1473,7 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
 
 // for kernel kuid_t instead of uid
 #if EMULATION == 1
-int do_get_mode(const uint64_t id, const char* password, int* output, int uid, int gid) {
+int do_get_mode(uint64_t id, int* output, int uid, int gid) {
 #else
 SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int __user, uid, int __user, gid) {
 #endif
@@ -1519,7 +1519,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 }
 
 #if EMULATION == 1
-int do_set_mode(const uint64_t id, const char* password, int new_mode, int uid, int gid) {
+int do_set_mode(uint64_t id, int new_mode, int uid, int gid) {
 #else
 SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, uid, int __user, gid) {
 #endif
@@ -1631,7 +1631,7 @@ int can_write(int mode, user_info mapped, user_info proc) {
 }
 
 #if EMULATION == 1
-int do_get_key_size(const uint64_t id, const char* password, uint64_t* size, int uid, int gid) {
+int do_get_key_size(uint64_t id, uint64_t* size, int uid, int gid) {
 #else
     SYSCALL_DEFINE4(get_key_size, const uint64_t __user, id, uint64_t*, size, int __user, uid, int __user, gid) {
 #endif
