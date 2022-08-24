@@ -22,6 +22,8 @@ public:
     virtual void writeKeyTime(unsigned int trials) = 0;
     virtual void readKeyTime(unsigned int trials) = 0;
     virtual void removeKeyTime(unsigned int trials) = 0;
+    virtual void cacheTest(unsigned int trials) = 0;
+    virtual void freedSlotTest(unsigned int trials) = 0;
     virtual void getKeySizeTime(unsigned int trials) = 0;
     virtual void getKeyModeTime(unsigned int trials) = 0;
     virtual void setKeyModeTime(unsigned int trials) = 0;
@@ -41,6 +43,8 @@ public:
     void writeKeyTime(unsigned int trials);
     void readKeyTime(unsigned int trials);
     void removeKeyTime(unsigned int trials);
+    void cacheTest(unsigned int trials);
+    void freedSlotTest(unsigned int trials);
     void getKeySizeTime(unsigned int trials);
     void getKeyModeTime(unsigned int trials);
     void setKeyModeTime(unsigned int trials);

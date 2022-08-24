@@ -549,3 +549,106 @@ int dummy(int newMode) {
 
     return 0;
 }
+
+void EmulationTimeCalc::cacheTest(unsigned int trials) {
+
+    if(trials < 64) {
+        throw std::runtime_error("Use at least 64 trials");
+    }
+
+    // create 1/2 trials of keys of 4096
+
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+    std::vector<uint64_t> ids(trials);
+    for(int i = 0; i < 32; i++) {
+
+        auto randomLetter = []() -> char
+        {
+            std::default_random_engine eng(std::random_device{}());
+            std::uniform_int_distribution<> dist(0, 'z' - 'a');
+
+            return (char)('a' +  dist(eng));
+        };
+        std::string key(testedSize,0);
+        std::generate_n( key.begin(), testedSize, randomLetter);
+
+        std::string pass = "dummydummy123";
+        auto ret = write_key(key.c_str(), key.size(), pass.c_str(), pass.size(), &ids[i], KEY_TYPE_CUSTOM);
+        if(ret != 0) {
+            throw std::runtime_error("Error while testing emulation");
+        }
+    }
+
+    uint64_t remove_keyTime = 0;
+    for (int i = 0; i < trials; i++) {
+        auto start = std::chrono::high_resolution_clock::now();
+        auto volatile removeRet = remove_key(10000000000 + trials);
+        auto singleRemove = std::chrono::high_resolution_clock::now() - start;
+        remove_keyTime += std::chrono::duration_cast<std::chrono::microseconds>(singleRemove).count();;
+    }
+
+    std::cout << "Cache remove (" << testedSize << ") " << remove_keyTime / trials << " microseconds" << std::endl;
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+
+}
+
+void EmulationTimeCalc::freedSlotTest(unsigned int trials) {
+
+    if (trials < 64) {
+        throw std::runtime_error("Use at least 64 trials");
+    }
+
+    // create 1/2 trials of keys of 4096
+
+    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
+    std::vector<uint64_t> ids(trials);
+    int size = 32;
+    for (int i = 0; i < size; i++) {
+
+        auto randomLetter = []() -> char {
+            std::default_random_engine eng(std::random_device{}());
+            std::uniform_int_distribution<> dist(0, 'z' - 'a');
+
+            return (char) ('a' + dist(eng));
+        };
+        std::string key(testedSize, 0);
+        std::generate_n(key.begin(), testedSize, randomLetter);
+
+        std::string pass = "dummydummy123";
+        auto ret = write_key(key.c_str(), key.size(), pass.c_str(), pass.size(), &ids[i], KEY_TYPE_CUSTOM);
+        if (ret != 0) {
+            throw std::runtime_error("Error while testing emulation");
+        }
+
+    }
+
+    uint64_t remove_keyTime = 0;
+    for (int i = 0; i < trials; i++) {
+
+        auto volatile removeRet = remove_key(ids[size - 1]);
+
+        auto randomLetter = []() -> char {
+            std::default_random_engine eng(std::random_device{}());
+            std::uniform_int_distribution<> dist(0, 'z' - 'a');
+
+            return (char) ('a' + dist(eng));
+        };
+        std::string key(testedSize, 0);
+        std::generate_n(key.begin(), testedSize, randomLetter);
+
+        std::string pass = "dummydummy123";
+
+        auto start = std::chrono::high_resolution_clock::now();
+        auto ret = write_key(key.c_str(), key.size(), pass.c_str(), pass.size(), &ids[size - 1], KEY_TYPE_CUSTOM);
+        if (ret != 0) {
+            throw std::runtime_error("Error while testing emulation");
+        }
+        auto singleRemove = std::chrono::high_resolution_clock::now() - start;
+        remove_keyTime += std::chrono::duration_cast<std::chrono::microseconds>(singleRemove).count();;
+    }
+
+    std::cout << "Freed slot (" << testedSize << ") " << remove_keyTime / trials << " microseconds" << std::endl;
+
+    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
+}

@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_KEY_NUM 128
+#define MAX_KEY_NUM 32768
 #define NODE_SIZE 2048
 #define DEFAULT_MAP_SIZE MAX_KEY_NUM
 #define DEFAULT_NUMBER_OF_KEYS 0
@@ -35,7 +35,7 @@
 #define READ_MASK       4
 #define WRITE_MASK      2
 #define LOOKUP_MAP_SIZE_POW 7
-#define LOOKUP_SLOTS_NUM 128
+#define LOOKUP_SLOTS_NUM MAX_KEY_NUM
 
 #define KEY_TYPE_CUSTOM 0
 
@@ -134,6 +134,7 @@ const static char* partition = "/Users/robertostoja-lniski/.keyPartitionV2/meta"
 const static char* partition_base = "/Users/robertostoja-lniski/.keyPartitionV2/";
 #else
 const static char* partition = "/home/robert/.keyPartition";
+const static char* partition_base = "/home/robert/.keyPartitionV2/";
 #endif
 
 static struct semaphore *sem;

@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
     }
 
 //    EmulationTimeCalc timeCalc;
+//    timeCalc.freedSlotTest(1000);
+//    timeCalc.cacheTest(100000);
 //    timeCalc.setTestedSize(2048);
 //    timeCalc.test(200);
 //    timeCalc.setTestedSize(4096);
