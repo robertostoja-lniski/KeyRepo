@@ -5589,12 +5589,12 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         BOOST_CHECK_EQUAL(ret1, 0);
 
         const char* key2 = "ooooooooooo";
-        uint64_t id2;
+        uint64_t id2 = 0;
         auto ret2 = write_key(key2, 11, "dummy", 5, &id2, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret2, 0);
 
         const char* key3 = "cccccccccccc";
-        uint64_t id3;
+        uint64_t id3 = 0;
         auto ret3 = write_key(key3, 12, "dummy", 5, &id3, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret3, 0);
 

@@ -177,7 +177,7 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
     }
 
     char* source;
-    long bufsize;
+    long bufsize = 0;
 
     if (fseek(fp, 0L, SEEK_END) == 0) {
         bufsize = ftell(fp);
@@ -460,7 +460,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
 
 int is_repo_initialized() {
 
-    FILE *file;
+    FILE *file = NULL;
     int part_size = 0;
     if ((file = fopen(partition, "r")))
     {
