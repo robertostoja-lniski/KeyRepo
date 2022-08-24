@@ -1,4 +1,6 @@
 #define EMULATION 1
+#define MAX_KEY_LEN 4096 * 4
+#define MAX_LABEL_LEN 128
 
 #if EMULATION == 1
     #include "../include/KernelEmulation.h"
@@ -383,8 +385,8 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
         memcpy(key_to_encrypt, key, key_len);
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
-        adjusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
-        ret = fwrite(key_to_encrypt + strlen(RSA_BEGIN_LABEL), sizeof(char) , adjusted_len, file);
+        adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
+        ret = fwrite(key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN), sizeof(char) , adjusted_len, file);
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
@@ -431,12 +433,12 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     uint64_t ret = 0;
     
     if (type == KEY_TYPE_RSA) {
-        adjusted_len = key_len - strlen(RSA_BEGIN_LABEL) - strlen(RSA_END_LABEL) - 1;
+        adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
         strcpy(key, RSA_BEGIN_LABEL);
-        ret = fread(key + strlen(RSA_BEGIN_LABEL), sizeof(char), adjusted_len, file);
-        decrypt_data_at_rest(key + strlen(RSA_BEGIN_LABEL), adjusted_len, pass, pass_len);
-        strcpy(key + key_len - strlen(RSA_END_LABEL) - 1, RSA_END_LABEL);
+        ret = fread(key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN), sizeof(char), adjusted_len, file);
+        decrypt_data_at_rest(key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN), adjusted_len, pass, pass_len);
+        strcpy(key + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
         
     } else if (type == KEY_TYPE_CUSTOM) {
 
@@ -1365,12 +1367,12 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
     used_pass_len = pass_len;
 
 #if EMULATION == 1
-    if(key_len > strlen(key)) {
-        used_key_len = strlen(key);
+    if(key_len > strnlen(key, MAX_KEY_LEN)) {
+        used_key_len = strnlen(key, MAX_KEY_LEN);
     }
 
-    if(pass_len > strlen(pass)) {
-        used_pass_len = strlen(pass);
+    if(pass_len > strnlen(pass, MAX_KEY_LEN)) {
+        used_pass_len = strnlen(pass, MAX_KEY_LEN);
     }
 #endif
 
@@ -1431,8 +1433,8 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
 
     used_pass_len = pass_len;
 #if EMULATION == 1
-    if(pass_len > strlen(pass)) {
-        used_pass_len = strlen(pass);
+    if(pass_len > strnlen(pass, MAX_KEY_LEN)) {
+        used_pass_len = strnlen(pass, MAX_KEY_LEN);
     }
 #endif
 

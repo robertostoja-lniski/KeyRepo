@@ -4954,19 +4954,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG_PASS) {
 
     system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
 }
-BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE) {
-    system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
-    char tmp[1000000];
-    memset(tmp, 0x41, 1000000 - 1);
-    memset(tmp + 1000000 - 1, 0x00, 1);
-    uint64_t id = 0;
-    auto ret = write_key(tmp, 1000000, "dummy", 5, &id, KEY_TYPE_CUSTOM);
-
-    BOOST_CHECK_EQUAL(ret, -5);
-
-    system("mv ~/.keyPartitionV2/meta.old ~/.keyPartitionV2/meta");
-}
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
@@ -4993,7 +4981,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
     char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 5, 3);
-    BOOST_CHECK_EQUAL(buf, "abc");
+    BOOST_CHECK_EQUAL(buf, std::string{"abc"]);
 
     free(buf);
 
@@ -5009,7 +4997,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
     char *buf = NULL;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, id, "dummy", 5, 3);
-    BOOST_CHECK_EQUAL(buf, "abc");
+    BOOST_CHECK_EQUAL(buf, std::string{"abc"});
 
     free(buf);
 
@@ -5061,7 +5049,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_TOO_LONG) {
     char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 100000, 4);
-    BOOST_CHECK_EQUAL(buf, "abcd");
+    BOOST_CHECK_EQUAL(buf, std::string{"abcd"});
 
     free(buf);
 
@@ -5078,7 +5066,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_PARTIAL_PASS) {
     char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy_EDEDEDEDED", 5, 4);
-    BOOST_CHECK_EQUAL(buf, "abcd");
+    BOOST_CHECK_EQUAL(buf, std::string{"abcd"});
 
     free(buf);
 
@@ -5113,7 +5101,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_DIFF_PASS) {
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "xxxxx", 5, 4);
     BOOST_CHECK_EQUAL(readRet, 0);
-    BOOST_CHECK_NE(buf, "abcd");
+    BOOST_CHECK_NE(buf, std::string{"abcd"});
 
     free(buf);
 
@@ -5131,7 +5119,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_DIFF_PASS_LEN) {
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 3, 4);
     BOOST_CHECK_EQUAL(readRet, 0);
-    BOOST_CHECK_NE(buf, "abcd");
+    BOOST_CHECK_NE(buf, std::string{"abcd"});
 
     free(buf);
 
@@ -5148,7 +5136,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_CUT) {
     char *buf = NULL;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, id, "dummy", 4, 3);
-    BOOST_CHECK_EQUAL(buf, "abc");
+    BOOST_CHECK_EQUAL(buf, std::string{"abc"});
 
     free(buf);
 
