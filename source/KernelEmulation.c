@@ -800,21 +800,21 @@ int update_metadata_when_writing(void* mapped_partition, const char* __user key,
 
     printk("Moving to first map node succeeded\n");
 
-//     if previously there was something removed at freed_slot
-//    if (partition_metadata->freed_slot != -1) {
-//        current_elem_in_map += partition_metadata->freed_slot;
-//        partition_metadata->freed_slot = -1;
-//
-//    } else if (get_append_slot_if_possible(current_elem_in_map, partition_metadata, &back_elem_in_map)) {
-//        current_elem_in_map = back_elem_in_map;
-//
-//    } else {
+     //if previously there was something removed at freed_slot
+    if (partition_metadata->freed_slot != -1) {
+        current_elem_in_map += partition_metadata->freed_slot;
+        partition_metadata->freed_slot = -1;
+
+    } else if (get_append_slot_if_possible(current_elem_in_map, partition_metadata, &back_elem_in_map)) {
+        current_elem_in_map = back_elem_in_map;
+
+    } else {
         i = 0;
         while(i < map_size && current_elem_in_map->id != 0) {
             current_elem_in_map = current_elem_in_map + 1;
             i++;
         }
-//    }
+    }
 
     printk("Id is\n");
     next_id = generate_random_id(partition_metadata, &mod);

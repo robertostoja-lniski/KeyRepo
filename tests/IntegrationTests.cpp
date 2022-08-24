@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_28)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_1)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_1)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_2)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_2)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_3)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_3)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_4)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_4)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_5)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_5)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_6)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_6)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_7)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_7)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_8)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_8)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_9)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_9)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_10)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_10)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_11)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_11)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_12)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_12)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_13)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_13)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_14)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_14)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_15)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -460,7 +460,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_15)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_16)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_16)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_17)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_17)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_18)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -508,7 +508,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_18)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_19)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -525,7 +525,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_19)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_20)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -541,7 +541,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_20)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_21)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -557,7 +557,7 @@ BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_21)
 BOOST_AUTO_TEST_CASE(FLAGS_UNIT_TEST_NEG_22)
 {
     auto modHandler = std::make_unique<ModHandler>();
-    int flags;
+    int flags = 0;
 
     bool caught {false};
     try {
@@ -4858,7 +4858,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_OK) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, 0);
@@ -4870,7 +4870,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_NULL) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = NULL;
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 3, "dummy", 3, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, -1);
@@ -4883,7 +4883,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_PWD_NULL) {
 
     const char* key = "eqwwqeqw";
     const char* pwd = NULL;
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 3, pwd, 3, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, -1);
@@ -4896,7 +4896,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_LEN_0) {
 
     const char* key = "eqwwqeqw";
     const char* pwd = "eqweq";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 0, pwd, 0, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, -1);
@@ -4909,7 +4909,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_PASS_LEN_0) {
 
     const char* key = "eqwwqeqw";
     const char* pwd = "eqweq";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 3, pwd, 0, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, -1);
@@ -4922,7 +4922,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_KEY_TYPE_NONE) {
 
     const char* key = "eqwwqeqw";
     const char* pwd = "eqweq";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, pwd, 123, &id, 123);
 
     BOOST_CHECK_EQUAL(ret, -1);
@@ -4935,7 +4935,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 100000000, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, 0);
@@ -4947,7 +4947,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_TOO_LONG_PASS) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 100000000, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, 0);
@@ -4960,7 +4960,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE) {
     char tmp[1000000];
     memset(tmp, 0x41, 1000000 - 1);
     memset(tmp + 1000000 - 1, 0x00, 1);
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(tmp, 1000000, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, -5);
@@ -4971,10 +4971,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 5, 4);
     BOOST_CHECK_EQUAL(key, buf);
@@ -4987,10 +4987,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 5, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
@@ -5003,10 +5003,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_3) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, id, "dummy", 5, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
@@ -5020,10 +5020,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_NO_PASS) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, NULL, 5, 4);
     BOOST_CHECK_EQUAL(readRet, -1);
@@ -5037,10 +5037,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_PASS_0) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 0, 4);
     BOOST_CHECK_EQUAL(readRet, -1);
@@ -5055,10 +5055,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_TOO_LONG) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 100000, 4);
     BOOST_CHECK_EQUAL(buf, "abcd");
@@ -5072,10 +5072,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_PARTIAL_PASS) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy_DUDUDUD", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy_EDEDEDEDED", 5, 4);
     BOOST_CHECK_EQUAL(buf, "abcd");
@@ -5089,10 +5089,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_KEY_NULL) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy_DUDUDUD", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(NULL, id, "dummy_EDEDEDEDED", 5, 4);
     BOOST_CHECK_EQUAL(readRet, -1);
@@ -5106,10 +5106,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_DIFF_PASS) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "xxxxx", 5, 4);
     BOOST_CHECK_EQUAL(readRet, 0);
@@ -5124,10 +5124,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_DIFF_PASS_LEN) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 3, 4);
     BOOST_CHECK_EQUAL(readRet, 0);
@@ -5142,10 +5142,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_CUT) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 4, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, id, "dummy", 4, 3);
     BOOST_CHECK_EQUAL(buf, "abc");
@@ -5158,10 +5158,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_0_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, 0, "dummy", 5, 3);
     BOOST_CHECK_EQUAL(readRet, -10);
@@ -5174,10 +5174,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_GET_SIZE_0_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    uint64_t keySize;
+    uint64_t keySize = 0;
     auto readRet = get_key_size(0, &keySize);
     BOOST_CHECK_EQUAL(readRet, -10);
 
@@ -5187,13 +5187,13 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_REMOVE_0_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     auto removeRet = remove_key(0);
     BOOST_CHECK_EQUAL(removeRet, -10);
 
-    uint64_t keyNum;
+    uint64_t keyNum = 0;
     auto getKeyNumRet = get_key_num(&keyNum);
     BOOST_CHECK_EQUAL(removeRet, -10);
     BOOST_CHECK_EQUAL(keyNum, 1);
@@ -5205,7 +5205,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_GET_MODE_0_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode = 123123123;
@@ -5220,7 +5220,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_SET_MODE_0_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode = 660;
@@ -5234,10 +5234,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_READ_NO_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(3);
     auto readRet = read_key(buf, 1000, "dummy", 5, 3);
     BOOST_CHECK_EQUAL(readRet, -10);
@@ -5250,10 +5250,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    int mode;
+    int mode = 0;
     auto readRet = get_mode(id, &mode);
     BOOST_CHECK_EQUAL(mode, 600);
 
@@ -5263,7 +5263,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE) {
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
-    int mode;
+    int mode = 0;
     auto readRet = get_mode(1000, &mode);
     BOOST_CHECK_EQUAL(readRet, -10);
 
@@ -5274,10 +5274,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_GET_MODE_WRONG_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-    int mode;
+    int mode = 0;
     auto readRet = get_mode(1000, &mode);
     BOOST_CHECK_EQUAL(readRet, -10);
 
@@ -5288,7 +5288,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_NO_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode = 600;
@@ -5312,13 +5312,13 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_MODE_GET) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int mode = 600;
     auto setRet = set_mode(id, mode);
 
-    int newMode;
+    int newMode = 0;
     auto getRet = get_mode(id, &newMode);
 
     BOOST_CHECK_EQUAL(setRet, 0);
@@ -5343,7 +5343,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
     };
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 4, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     int lastProperMode;
@@ -5353,7 +5353,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_SET_GET_MODE_MULT) {
 
         auto setRet = set_mode(id, i);
 
-        int newMode;
+        int newMode = 0;
         auto getRet = get_mode(id, &newMode);
 
         if(isProperMode(i)) {
@@ -5370,8 +5370,8 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abc777777d";
-    uint64_t id;
-    uint64_t keyNum;
+    uint64_t id = 0;
+    uint64_t keyNum = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     auto keyNumRet = get_key_num(&keyNum);
 
@@ -5387,8 +5387,8 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MAGIC) {
     system("echo eqwewqewqeqwewqeqwewqeqwewqeqweqwqweqweqweqweqweqweqw >> ~/.keyPartitionV2/meta");
 
     const char* key = "abc777777d";
-    uint64_t id;
-    uint64_t keyNum;
+    uint64_t id = 0;
+    uint64_t keyNum = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     auto keyNumRet = get_key_num(&keyNum);
 
@@ -5403,7 +5403,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MAGIC_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
     system("echo eqwewqewqeqwewqeqwewqeqwewqeqweqwqweqweqweqweqweqweqw >> ~/.keyPartitionV2/meta");
 
-    uint64_t keyNum;
+    uint64_t keyNum = 0;
     auto keyNumRet = get_key_num(&keyNum);
 
     BOOST_CHECK_EQUAL(keyNum, 0);
@@ -5416,11 +5416,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abc777777d";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     BOOST_CHECK_EQUAL(ret, 0);
 
-    uint64_t size;
+    uint64_t size = 0;
     auto getSizeRet = get_key_size(id, &size);
     BOOST_CHECK_EQUAL(getSizeRet, 0);
 
@@ -5432,7 +5432,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE) {
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_NO_PARTITION) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
-    uint64_t size;
+    uint64_t size = 0;
     auto getSizeRet = get_key_size(1000, &size);
     BOOST_CHECK_EQUAL(getSizeRet, -10);
 
@@ -5443,11 +5443,11 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abc777777d";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
     BOOST_CHECK_EQUAL(ret, 0);
 
-    uint64_t size;
+    uint64_t size = 0;
     auto getSizeRet = get_key_size(1000, &size);
     BOOST_CHECK_EQUAL(getSizeRet, -10);
 
@@ -5457,7 +5457,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_SIZE_WRONG_ID) {
 BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_NO_PART) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
-    uint64_t keyNum;
+    uint64_t keyNum = 0;
     auto keyNumRet = get_key_num(&keyNum);
     BOOST_CHECK_EQUAL(keyNumRet, 0);
     BOOST_CHECK_EQUAL(keyNum, 0);
@@ -5470,10 +5470,10 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_KEY_NUM_MULT) {
 
     for(int i = 1; i < 100; i ++) {
         const char* key = "abc777777d";
-        uint64_t id;
+        uint64_t id = 0;
         auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
-        uint64_t keyNum;
+        uint64_t keyNum =0;
         auto keyNumRet = get_key_num(&keyNum);
 
         BOOST_CHECK_EQUAL(ret, 0);
@@ -5489,14 +5489,14 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_READ) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     BOOST_CHECK_EQUAL(ret, 0);
 
     auto rmvRet = remove_key(id);
 
-    char *buf;
+    char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 5, 4);
 
@@ -5513,7 +5513,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_GET_KEY_SIZE) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     auto rmvRet = remove_key(id);
@@ -5534,7 +5534,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_GET_MODE) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     auto rmvRet = remove_key(id);
@@ -5555,7 +5555,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_RMV_SET_MODE) {
     system("mv ~/.keyPartitionV2/meta ~/.keyPartitionV2/meta.old");
 
     const char* key = "abcd";
-    uint64_t id;
+    uint64_t id = 0;
     auto ret = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
 
     auto rmvRet = remove_key(id);
@@ -5576,7 +5576,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
     int readRet;
     int getSizeRet;
     int getKeyNumRet;
-    uint64_t size;
+    uint64_t size = 0;
     uint64_t num;
 
     for(int i = 0; i < 20; i++) {
@@ -5584,7 +5584,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
         std::cout << i << std::endl;
         // create 3 keys
         const char* key = "xxxxxxxxxx";
-        uint64_t id;
+        uint64_t id = 0;
         auto ret1 = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
@@ -5663,7 +5663,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
     int readRet;
     int getSizeRet;
     int getKeyNumRet;
-    uint64_t size;
+    uint64_t size = 0;
     uint64_t num;
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
@@ -5675,7 +5675,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-        uint64_t id;
+        uint64_t id = 0;
         auto ret1 = write_key(key, 30, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
@@ -5754,14 +5754,14 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
     int readRet;
     int getSizeRet;
     int getKeyNum;
-    uint64_t size;
+    uint64_t size = 0;
     uint64_t num;
 
     for(int i = 0; i < 200; i++) {
 
         // create 3 keys
         const char* key = "xxxxxxxxxx";
-        uint64_t id;
+        uint64_t id = 0;
         auto ret1 = write_key(key, 10, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 
@@ -5837,7 +5837,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
     int readRet;
     int getSizeRet;
     int getKeyNumRet;
-    uint64_t size;
+    uint64_t size = 0;
     uint64_t num;
 
     const char* key_init = "initxxxxxxxxxxxxxxxxxxxxxxxkey";
@@ -5849,7 +5849,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_OPTIMISED_KEY_STORAGE_HEAVY_LO
 
         // create 3 keys
         const char* key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-        uint64_t id;
+        uint64_t id = 0;
         auto ret1 = write_key(key, 30, "dummy", 5, &id, KEY_TYPE_CUSTOM);
         BOOST_CHECK_EQUAL(ret1, 0);
 

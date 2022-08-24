@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_KEY_NUM 32768
+#define MAX_KEY_NUM 128
 #define NODE_SIZE 2048
 #define DEFAULT_MAP_SIZE MAX_KEY_NUM
 #define DEFAULT_NUMBER_OF_KEYS 0
