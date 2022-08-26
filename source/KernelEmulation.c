@@ -8,7 +8,10 @@
     uint64_t map_optimisation_on = 1;
 #else
     #include "KeyRepoHeaders.h"
+    static struct semaphore sem;
 #endif
+
+
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
@@ -462,7 +465,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     return RES_OK;
 }
 
-int is_repo_initialized() {
+int is_repo_initialized(void) {
 
     FILE *file = NULL;
     int part_size = 0;
@@ -655,6 +658,7 @@ void print_partition(const void* mapped_partition) {
 #else
     printk("This partition has: %llu keys.\n", keys);
     printk("File content size is: %llu.\n", offsetToAdd);
+    return;
 #endif
 
     current_elem_in_map = (map_node* )(partition_metadata + 1);

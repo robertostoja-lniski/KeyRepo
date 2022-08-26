@@ -40,6 +40,9 @@
 #define LOOKUP_MAP_SIZE_POW 7
 #define LOOKUP_SLOTS_NUM MAX_KEY_NUM
 
+#define RSA_BEGIN_LABEL "-----BEGIN RSA PRIVATE KEY-----\n"
+#define RSA_END_LABEL "-----END RSA PRIVATE KEY-----"
+
 #define KEY_TYPE_CUSTOM 0
 #define KEY_TYPE_RSA 1
 
