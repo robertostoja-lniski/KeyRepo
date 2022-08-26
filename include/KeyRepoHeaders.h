@@ -68,30 +68,46 @@ enum {
 //static kgid_t getgid(void);
 //static kuid_t geteuid(void);
 
+#define KEY_FILE_NAME_LEN 32
+
+struct user_info {
+    int uid;
+    int gid;
+};
+typedef struct user_info user_info;
+
+struct key_info {
+    char key_file[KEY_FILE_NAME_LEN];
+    uint8_t type;
+    uint16_t size;
+    uint32_t access_control_list;
+    user_info owner_info;
+};
+
+
+typedef struct key_info key_info;
+
 struct map_node {
     uint64_t id;
-    uint64_t offset;
-    uint64_t size;
-    uint32_t mode;
-    int      uid;
-    int      gid;
+    key_info key_info;
 };
+
+
+
+struct lookup_slot {
+    uint8_t cnt;
+};
+
+typedef struct lookup_slot lookup_slot;
 typedef struct map_node map_node;
 
 struct partition_info {
     uint64_t magic;
-    uint64_t number_of_keys;
-    uint64_t file_content_size;
-    uint64_t free_slot;
-    uint64_t map_size;
+    uint16_t number_of_keys;
+    uint16_t capacity;
+    int32_t freed_slot;
 };
 typedef struct partition_info partition_info;
-
-struct access_rights {
-    int uid;
-    int gid;
-};
-typedef struct access_rights access_rights;
 
 const static char* partition = "/krepo";
 

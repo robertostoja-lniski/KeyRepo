@@ -24,12 +24,13 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
     // TODO - just a PoC
     int key = 0;
-    for (uint64_t i = 0; i < pass_len; i++) {
+    size_t i;
+    for (i = 0; i < pass_len; i++) {
         key += pass[i];
     }
     key = key % 30;
 
-    for (size_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         buf[i] -= (char)key;
     }
 
@@ -38,7 +39,7 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int decrypt_data_at_rest(char* buf, size_t len, const char* pass, uint64_t pass_len) {
+int decrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
 
     if (buf == NULL) {
         return RES_INPUT_ERR;
@@ -50,12 +51,13 @@ int decrypt_data_at_rest(char* buf, size_t len, const char* pass, uint64_t pass_
 
     // TODO - just a PoC
     int key = 0;
-    for (uint64_t i = 0; i < pass_len; i++) {
+    size_t i;
+    for (i = 0; i < pass_len; i++) {
         key += pass[i];
     }
     key = key % 30;
 
-    for (size_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         buf[i] += (char)key;
     }
 
