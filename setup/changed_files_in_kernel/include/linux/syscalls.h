@@ -1424,7 +1424,7 @@ long ksys_old_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
 long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
 			    unsigned int nsops,
 			    const struct old_timespec32 __user *timeout);
-long get_key_num(void);
+long get_key_num(uint64_t __user* key_num);
 long write_key(const char __user *key, uint64_t key_len, const char __user *pass, uint64_t pass_len, uint64_t __user *id, int uid, int gid, int type);
 long read_key(char __user *key, uint64_t id, const char __user *pass, uint64_t pass_len, uint64_t key_len, int uid, int gid, int type);
 long remove_key(uint64_t id, int uid, int gid);

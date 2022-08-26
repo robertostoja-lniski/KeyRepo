@@ -666,7 +666,7 @@ void print_partition(const void* mapped_partition) {
 #if EMULATION == 1
 int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t *id, user_info rights, uint8_t type) {
 #else
-int add_key_to_partition(const char* __user key, uint64_t key_len, const char* __user pass, uint64_t pass_len, uint64_t __user *id, user_info rights, uint8_t types) {
+int add_key_to_partition(const char* __user key, uint64_t key_len, const char* __user pass, uint64_t pass_len, uint64_t __user *id, user_info rights, uint8_t type) {
 #endif
 
     size_t              file_size;
@@ -768,11 +768,6 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     uint64_t            i;
     int                 mod;
 
-#if EMULATION == 0
-    mm_segment_t        fs;
-    mm_segment_t        fs;
-#endif
-
     printk("Entering add key node to partition\n");
     // printk("Key value is: %s\n", key);
     printk("Key len is: %llu\n", key_len);
@@ -838,7 +833,7 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     print_partition(partition_metadata);
     printk("Exiting add key Node\n");
 
-    return help_counter;
+    return 0;
 }
 int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t key_len, user_info effective_user_info, uint8_t* type) {
 
@@ -1277,7 +1272,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
 #if EMULATION == 1
 int do_get_key_num(uint64_t* key_num) {
 #else
-SYSCALL_DEFINE0(get_key_num) {
+SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
 #endif
 
     size_t              file_size;
@@ -1322,7 +1317,7 @@ SYSCALL_DEFINE0(get_key_num) {
 #if EMULATION == 1
 int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len , uint64_t* id, int uid, int gid, int type) {
 #else
-SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, const char __user *, pass, uint64_t, pass_len, uint64_t __user *, id, int, uid, int, gid, int, type) {
+SYSCALL_DEFINE8(write_key, const char __user *, key, uint64_t, key_len, const char __user *, pass, uint64_t, pass_len, uint64_t __user *, id, int, uid, int, gid, int, type) {
 #endif
 
     uint64_t            used_key_len;
@@ -1388,7 +1383,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, const ch
 #if EMULATION == 1
 int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
 #else
-SYSCALL_DEFINE5(read_key, char __user *, key, uint64_t, id, const char __user *, pass, uint64_t, pass_len, uint64_t, key_len, int, uid, int __user, gid) {
+SYSCALL_DEFINE7(read_key, char __user *, key, uint64_t, id, const char __user *, pass, uint64_t, pass_len, uint64_t, key_len, int, uid, int __user, gid) {
 #endif
 
     user_info           proc_rights;
