@@ -38,6 +38,32 @@
 #define REMOVE_FRAGMENTATION  1
 #endif
 
+enum {
+    VERBOSE_NO = 0,
+    VERBOSE_LOW = 1,
+    VERBOSE_HIGH = 2,
+};
+
+enum {
+    RES_OK = 0,
+    RES_INPUT_ERR = -1,
+
+    RES_CANNOT_OPEN = -2,
+    RES_CANNOT_READ = -2,
+    RES_CANNOT_WRITE = -3,
+    RES_CANNOT_DELETE = -4,
+
+    RES_PARTITION_FULL = -5,
+    RES_CANNOT_INIT = -6,
+    RES_NON_INTEGRAL = -7,
+
+    RES_NO_KEY_TYPE = -8,
+    RES_UNAUTHORIZED = -9,
+    RES_NOT_FOUND = -10,
+
+    RES_CANNOT_ALLOC = -11,
+};
+
 //static kuid_t getuid(void);
 //static kgid_t getgid(void);
 //static kuid_t geteuid(void);

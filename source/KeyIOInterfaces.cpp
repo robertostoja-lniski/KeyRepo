@@ -203,7 +203,7 @@ boost::any KeyPartitionIOInterface::protectedReadPrivateKeyFromFile(std::string 
     if(bo == nullptr) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
-    if(BIO_write( bo, prvKey, strlen(prvKey)) <= 0) {
+    if(BIO_write( bo, prvKey, strnlen(prvKey, 4096 * 4)) <= 0) {
         throw std::runtime_error("KeyIOInterface: Failed to read private key");
     }
 

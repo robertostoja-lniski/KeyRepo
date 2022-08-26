@@ -4981,7 +4981,7 @@ BOOST_AUTO_TEST_CASE(RAW_PARTITION_EMULATION_TEST_WRITE_READ_2) {
     char *buf = NULL;
     buf = (char* )malloc(5);
     auto readRet = read_key(buf, id, "dummy", 5, 3);
-    BOOST_CHECK_EQUAL(buf, std::string{"abc"]);
+    BOOST_CHECK_EQUAL(buf, std::string{"abc"});
 
     free(buf);
 

@@ -57,8 +57,8 @@ int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
 
     printf("Entering write key\n");
     uint64_t usedLen = keyLen;
-    if(keyLen > strlen(key)) {
-        usedLen = strlen(key);
+    if(keyLen > strnlen(key, 4096 * 4)) {
+        usedLen = strnlen(key, 4096 * 4);
     }
 
     original_uids ids = get_original_uids();
