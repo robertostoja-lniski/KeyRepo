@@ -20,7 +20,8 @@
 #include <linux/slab.h>
 #include <linux/stat.h>
 
-#ifndef VERBOSE_LEVEL
+#define LOOKUP_MAP_SIZE_POW 7
+#define MAX_FILENAME_LEN 128
 #define VERBOSE_LEVEL VERBOSE_NO
 #define SU_SECURITY 0
 #define DEFAULT_MODE 600
@@ -36,7 +37,11 @@
 #define MAGIC 112359876543
 #define AVG_KEY_LEN 4096
 #define REMOVE_FRAGMENTATION  1
-#endif
+#define LOOKUP_MAP_SIZE_POW 7
+#define LOOKUP_SLOTS_NUM MAX_KEY_NUM
+
+#define KEY_TYPE_CUSTOM 0
+#define KEY_TYPE_RSA 1
 
 enum {
     VERBOSE_NO = 0,
@@ -111,7 +116,6 @@ typedef struct partition_info partition_info;
 
 const static char* partition = "/krepo";
 
-int init_file_if_not_defined();
 int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, user_info, uint8_t type);
 void print_partition(const void* mapped_partition);
 int update_metadata_when_writing(partition_info* partition_start, const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
