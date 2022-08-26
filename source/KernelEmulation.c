@@ -661,38 +661,12 @@ void print_partition(const void* mapped_partition) {
     return;
 #endif
 
-    current_elem_in_map = (map_node* )(partition_metadata + 1);
-    for(i = 0; i < 5; i++) {
-
-#if EMULATION == 1
-        tmp = (char* )malloc(current_elem_in_map->key_info.size + 1);
-#else
-        printk("%llu %llu %llu", current_elem_in_map->id, current_elem_in_map->offset, current_elem_in_map->size);
-        tmp = (char* )kmalloc(current_elem_in_map->size + 1, GFP_KERNEL);
-#endif
-
-        if(!tmp) {
-            return;
-        }
-
-        tmp[current_elem_in_map->key_info.size] = 0;
-
-#if EMULATION == 1
-        printf(" %s\n", tmp);
-        free(tmp);
-#else
-        kfree(tmp);
-#endif
-
-        current_elem_in_map += 1;
-    }
-
 }
 
 #if EMULATION == 1
 int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t *id, user_info rights, uint8_t type) {
 #else
-int add_key_to_partition(const char* __user key, uint64_t key_len, uint64_t __user *id, user_info rights) {
+int add_key_to_partition(const char* __user key, uint64_t key_len, const char* __user pass, uint64_t pass_len, uint64_t __user *id, user_info rights, uint8_t types) {
 #endif
 
     size_t              file_size;
@@ -1311,10 +1285,12 @@ SYSCALL_DEFINE0(get_key_num) {
     partition_info*     partition_metadata;
     int                 magic_offset;
 
+#if EMULATION == 1
     if (!is_repo_initialized()) {
         *key_num = 0;
         return RES_OK;
     }
+#endif
 
     printk("Entering: get current key num\n");
     mapped_partition = get_buffered_file(partition, &file_size, 0);
