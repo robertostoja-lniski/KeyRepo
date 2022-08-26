@@ -1425,10 +1425,10 @@ long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
 			    unsigned int nsops,
 			    const struct old_timespec32 __user *timeout);
 long get_key_num(void);
-long write_key(const char __user *key, const size_t keyLen, uint64_t __user *id, int __user uid, int __user gid);
-long read_key(const uint64_t id, char __user * key, uint64_t keyLen, int __user uid, int __user gid);
-long remove_key(const uint64_t __user id, int __user uid, int __user gid);
-long get_mode(const uint64_t __user id, int __user * output, int __user uid, int __user gid);
-long set_mode(const uint64_t __user id, int __user newMode, int __user uid, int __user gid);
-long get_key_size(const uint64_t __user id, uint64_t* size, int __user uid, int __user gid);
+long write_key(const char __user *key, uint64_t key_len, const char __user *pass, uint64_t pass_len, uint64_t __user *id, int uid, int gid, int type);
+long read_key(char __user *key, uint64_t id, const char __user *pass, uint64_t pass_len, uint64_t key_len, int uid, int gid, int type);
+long remove_key(uint64_t id, int uid, int gid);
+long get_mode(uint64_t id, int __user * output, int uid, int gid);
+long set_mode(uint64_t id, int new_mode, int uid, int gid);
+long get_key_size(uint64_t id, uint64_t* size, int uid, int gid);
 #endif

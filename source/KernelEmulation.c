@@ -778,7 +778,7 @@ int get_append_slot_if_possible(map_node* map_start, partition_info* partition_m
 #if EMULATION == 1
 int update_metadata_when_writing(partition_info * partition_metadata, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
 #else
-int update_metadata_when_writing(void* mapped_partition, const char* __user key, uint64_t key_len, uint64_t __user *id, user_info user_info) {
+int update_metadata_when_writing(partition_info * partition_metadata, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
 #endif
 
     int                 help_counter;
@@ -1185,7 +1185,7 @@ int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_in
 #if EMULATION == 1
 int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const char* pass, uint64_t pass_len, user_info proc_rights) {
 #else
-int get_prv_key_by_id(const uint64_t id, char __user *prv_key, uint64_t key_len, user_info proc_rights) {
+int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const char* pass, uint64_t pass_len, user_info proc_rights) {
 #endif
 
     size_t          file_size;
@@ -1342,7 +1342,7 @@ SYSCALL_DEFINE0(get_key_num) {
 #if EMULATION == 1
 int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len , uint64_t* id, int uid, int gid, int type) {
 #else
-SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t __user *, id, int __user, uid, int __user, gid) {
+SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, const char __user *, pass, uint64_t, pass_len, uint64_t __user *, id, int, uid, int, gid, int, type) {
 #endif
 
     uint64_t            used_key_len;
@@ -1408,7 +1408,7 @@ SYSCALL_DEFINE5(write_key, const char __user *, key, uint64_t, key_len, uint64_t
 #if EMULATION == 1
 int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
 #else
-SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_len, int __user, uid, int __user, gid) {
+SYSCALL_DEFINE5(read_key, char __user *, key, uint64_t, id, const char __user *, pass, uint64_t, pass_len, uint64_t, key_len, int, uid, int __user, gid) {
 #endif
 
     user_info           proc_rights;
@@ -1456,7 +1456,7 @@ SYSCALL_DEFINE5(read_key, const uint64_t, id, char __user *, key, uint64_t, key_
 #if EMULATION == 1
 int do_remove_key(uint64_t id, int uid, int gid) {
 #else
-SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __user, gid) {
+SYSCALL_DEFINE3(remove_key, uint64_t, id, int, uid, int, gid) {
 #endif
 
 #if EMULATION == 0
@@ -1493,7 +1493,7 @@ SYSCALL_DEFINE3(remove_key, const uint64_t __user, id, int __user, uid, int __us
 #if EMULATION == 1
 int do_get_mode(uint64_t id, int* output, int uid, int gid) {
 #else
-SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int __user, uid, int __user, gid) {
+SYSCALL_DEFINE4(get_mode, uint64_t, id, int __user *, output, int, uid, int, gid) {
 #endif
 
     size_t              file_size;
@@ -1540,7 +1540,7 @@ SYSCALL_DEFINE4(get_mode, const uint64_t __user, id, int __user *, output, int _
 #if EMULATION == 1
 int do_set_mode(uint64_t id, int new_mode, int uid, int gid) {
 #else
-SYSCALL_DEFINE4(set_mode, const uint64_t __user, id, int, new_mode, int __user, uid, int __user, gid) {
+SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid) {
 #endif
 
     int             h_digit;
@@ -1653,7 +1653,7 @@ int can_write(int mode, user_info mapped, user_info proc) {
 #if EMULATION == 1
 int do_get_key_size(uint64_t id, uint64_t* size, int uid, int gid) {
 #else
-    SYSCALL_DEFINE4(get_key_size, const uint64_t __user, id, uint64_t*, size, int __user, uid, int __user, gid) {
+    SYSCALL_DEFINE4(get_key_size, uint64_t, id, uint64_t*, size, int, uid, int, gid) {
 #endif
 
     user_info       proc_rights;

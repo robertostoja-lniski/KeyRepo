@@ -111,18 +111,18 @@ typedef struct partition_info partition_info;
 
 const static char* partition = "/krepo";
 
-int init_file_if_not_defined(void);
-int add_key_to_partition(const char* key, uint64_t keyLen, uint64_t* id, access_rights);
+int init_file_if_not_defined();
+int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, user_info, uint8_t type);
 void print_partition(const void* mapped_partition);
-int add_key_by_partition_pointer(void* mapped_partition, const char* key, uint64_t keyLen, uint64_t* id, access_rights);
-int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, access_rights);
-int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, access_rights);
-int remove_private_key_by_id(uint64_t id, access_rights);
+int update_metadata_when_writing(partition_info* partition_start, const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);
+int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyVal, uint64_t keyLen, user_info, uint8_t* type);
+int remove_key_by_partition_pointer(void* mapped_partition, uint64_t id, user_info);
+int remove_private_key_by_id(uint64_t id, user_info);
 uint64_t remove_fragmentation(partition_info*);
 // PUBLIC
-int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output, access_rights);
-int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode, access_rights);
-int can_read(int mode, access_rights mapped, access_rights effective);
-int can_write(int mode, access_rights mapped, access_rights effective);
+int get_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int* output, user_info);
+int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int mode, user_info);
+int can_read(int mode, user_info owner_info, user_info effective_user_info);
+int can_write(int mode, user_info owner_info, user_info effective_user_info);
 
 #endif //KEYREPO_KEYREPOHEADERS_H
