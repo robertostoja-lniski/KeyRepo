@@ -362,7 +362,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     char filename[MAX_FILENAME_LEN];
     memset(filename, 0x00, MAX_FILENAME_LEN);
-    snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
+    snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
 
     uint64_t adjusted_len = 0;
     size_t ret = 0;
@@ -419,7 +419,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
 int delete_custom_file(uint64_t id) {
     char filename[MAX_FILENAME_LEN];
-    snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
+    snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
     return remove(filename);
 }
 
@@ -428,7 +428,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     FILE *file;
 
     char filename[MAX_FILENAME_LEN];
-    snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
+    snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
 
     file = fopen(filename, "r");
     if(file == NULL) {
