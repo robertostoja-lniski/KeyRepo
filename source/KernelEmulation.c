@@ -8,7 +8,6 @@
     uint64_t map_optimisation_on = 1;
 #else
     #include "KeyRepoHeaders.h"
-    static struct semaphore sem;
 #endif
 
 
@@ -68,7 +67,7 @@ int decrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 }
 
 void* get_buffered_file(const char* filepath, size_t* filesize, size_t extra_size);
-size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc, int offset);
+size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc, int offset, int free_needed);
 
 int fast_modulo(uint64_t num, uint32_t pow_of_2) {
 
@@ -114,7 +113,7 @@ int get_magic_offset(void* mapped_partition) {
 
 // trunc param is used only when called from kernel
 // in emulation ftrunc() function is used
-size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc, int offset) {
+size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc, int offset, int free_needed) {
 #if EMULATION == 1
     FILE* fd = fopen(file, "w");
     if(fd == NULL) {
@@ -123,11 +122,12 @@ size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc
     }
 
     fseek(fd, offset, SEEK_SET);
-
-    size_t ret = fwrite(*buf , sizeof(char) , bufsize, fd);
+    size_t ret = fwrite(buf , sizeof(char), bufsize, fd);
 
     fclose(fd);
-    free(*buf);
+    if (free_needed != 0) {
+        free(buf);
+    }
 
     return ret;
 #else
@@ -161,14 +161,15 @@ size_t set_buffered_file(const char* file, char** buf, size_t bufsize, int trunc
 
     printk("Next action: kernel write\n");
     printk("Buf size is: %lu bufsize\n", bufsize);
-    ret = kernel_write(fp, *buf, bufsize, &pos);
+    ret = kernel_write(fp, buf, bufsize, &pos);
     printk("Bytes written %lu : bytes wanted to be written : %lu\n", ret, bufsize);
 
     printk("Next action: file close\n");
     filp_close(fp, NULL);
     printk("Next action: kfree on *buf\n");
-    kfree(*buf);
-    
+    if (free_needed != 0) {
+        kfree(buf);
+    }
     printk("Next action: set fs\n");
     set_fs(fs);
     printk("Exiting: Set buffered file\n");
@@ -258,17 +259,6 @@ void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
     vfs_stat(partition, stat);
     *size = stat->size + extra_size;
     printk("File size is %lu\n", *size);
-//
-//    if(*size == 0) {
-//
-//        printk("Check if it is separate partition\n");
-//        int fd = open("/dev/sdb2", O_RDONLY);
-//        off_t real_size = lseek(fd, 0, SEEK_END);
-//        close(fd);
-//
-//        printk("Real size is %llu\n", real_size);
-//
-//    }
 
     kfree(stat);
     printk("Next action: buffer\n");
@@ -368,20 +358,21 @@ uint64_t generate_random_id(partition_info* partition_metadata, int* mod){
 
 int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
 
-    FILE *file;
+    char* key_to_encrypt = NULL;
 
     char filename[MAX_FILENAME_LEN];
+    memset(filename, 0x00, MAX_FILENAME_LEN);
     snprintf(filename, sizeof(filename), "%s%"PRIu64, partition_base, id);
-
-    file = fopen(filename, "w");
-    if(file == NULL) {
-        return RES_CANNOT_OPEN;
-    }
 
     uint64_t adjusted_len = 0;
     size_t ret = 0;
 
-    char* key_to_encrypt = (char* )malloc(key_len);
+
+#if EMULATION == 1
+    key_to_encrypt = (char* )malloc(key_len);
+#else
+    key_to_encrypt = (char* )kmalloc(key_len, GFP_KERNEL);
+#endif
     if (key_to_encrypt == NULL) {
         return RES_CANNOT_ALLOC;
     }
@@ -389,22 +380,35 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     if (type == KEY_TYPE_RSA) {
 
         memcpy(key_to_encrypt, key, key_len);
+        printf("Key before encryption is %s\n", key_to_encrypt);
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
-        ret = fwrite(key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN), sizeof(char) , adjusted_len, file);
+
+        char* key_addr;
+        key_addr = key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+        ret = set_buffered_file(filename, key_addr, adjusted_len, 0, 0, 0);
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
         memcpy(key_to_encrypt, key, key_len);
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len;
-        ret = fwrite(key_to_encrypt, sizeof(char) , adjusted_len, file);
+        ret = set_buffered_file(filename, key_to_encrypt, adjusted_len, 0, 0, 0);
 
     } else {
+#if EMULATION == 1
+        free(key_to_encrypt);
+#else
+        kfree(key_to_encrypt);
+#endif
         return RES_NO_KEY_TYPE;
     }
 
-    fclose(file);
+#if EMULATION == 1
+    free(key_to_encrypt);
+#else
+    kfree(key_to_encrypt);
+#endif
 
     if(ret != adjusted_len) {
         printk("Writing key to file failed\n");
@@ -622,7 +626,7 @@ int init_file_if_not_defined(void) {
     print_partition(partition_start);
 
     printk("Set buffered file\n");
-    ret = set_buffered_file(partition, (char** )&partition_start, file_size, 0, (int)part_size);
+    ret = set_buffered_file(partition, (char* )partition_start, file_size, 0, (int)part_size, 1);
     printk("After set ret value is %lu\n", ret);
     if(ret != file_size) {
         printk("Set failed\n");
@@ -726,7 +730,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
 
     print_partition(partition_metadata);
     // we overwrite partition only if writing key succeeded
-    if(set_buffered_file(partition, (char** )&partition_metadata, file_size, 0, 0) != file_size) {
+    if(set_buffered_file(partition, (char* )partition_metadata, file_size, 0, 0, 1) != file_size) {
         return RES_CANNOT_WRITE;
     }
 
@@ -1256,7 +1260,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
 
     partition_metadata = (partition_info* )mapped_partition;
     printk("Next action: set bufferd file\n");
-    if (set_buffered_file(partition, (char** )&mapped_partition, file_size, 0, 0) != file_size) {
+    if (set_buffered_file(partition, (char* )mapped_partition, file_size, 0, 0, 1) != file_size) {
         return RES_CANNOT_WRITE;
     }
 
@@ -1590,7 +1594,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     }
 
     printk("Next action: set buffered file\n");
-    if(set_buffered_file(partition, (char** )&mapped_partition, file_size, 0, 0) != file_size) {
+    if(set_buffered_file(partition, (char* )mapped_partition, file_size, 0, 0, 1) != file_size) {
 
 #if EMULATION == 0
         down(&sem);
