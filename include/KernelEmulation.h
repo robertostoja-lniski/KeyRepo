@@ -139,8 +139,12 @@ const static char* partition_base = "/home/robert/.keyPartitionV2/";
 
 static struct semaphore *sem;
 
+struct metadata {
+    user_info user_info;
+    int type;
+};
 
-
+typedef struct metadata metadata;
 
 int init_file_if_not_defined();
 int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, user_info, uint8_t type);
@@ -156,8 +160,8 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int m
 int can_read(int mode, user_info owner_info, user_info effective_user_info);
 int can_write(int mode, user_info owner_info, user_info effective_user_info);
 
-int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int uid, int gid, int type);
-int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t keyLen, int uid, int gid);
+int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, void* data);
+int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t keyLen, void* user_data);
 int do_remove_key(const uint64_t id, int uid, int gid);
 int do_get_key_size(const uint64_t id, uint64_t* size, int uid, int gid);
 

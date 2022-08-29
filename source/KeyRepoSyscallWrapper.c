@@ -129,7 +129,12 @@ int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass
         return -1;
     }
 
-    return do_write_key(key, key_len, pass, pass_len, id, ids.uid, ids.gid, type);
+    metadata metadata;
+    metadata.user_info.uid = ids.uid;
+    metadata.user_info.gid = ids.gid;
+    metadata.type = type;
+
+    return do_write_key(key, key_len, pass, pass_len, id, (void* )&metadata);
 }
 int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len) {
     original_uids ids = get_original_uids();
@@ -137,7 +142,11 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
         return -1;
     }
 
-    return do_read_key(key, id, pass, pass_len, key_len, ids.uid, ids.gid);
+    user_info user_info;
+    user_info.uid = ids.uid;
+    user_info.gid = ids.gid;
+
+    return do_read_key(key, id, pass, pass_len, key_len, (void* )&user_info);
 }
 
 int remove_key(uint64_t id) {

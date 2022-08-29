@@ -119,6 +119,15 @@ typedef struct partition_info partition_info;
 
 const static char* partition = "/krepo";
 
+static struct semaphore *sem;
+
+struct metadata {
+    user_info user_info;
+    int type;
+};
+
+typedef struct metadata metadata;
+
 int add_key_to_partition(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, user_info, uint8_t type);
 void print_partition(const void* mapped_partition);
 int update_metadata_when_writing(partition_info* partition_start, const char* key, uint64_t keyLen, uint64_t* id, user_info, uint8_t type);

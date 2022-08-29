@@ -1315,15 +1315,22 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
 }
 
 #if EMULATION == 1
-int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len , uint64_t* id, int uid, int gid, int type) {
+int do_write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len , uint64_t* id, void* data) {
 #else
-SYSCALL_DEFINE8(write_key, const char __user *, key, uint64_t, key_len, const char __user *, pass, uint64_t, pass_len, uint64_t __user *, id, int, uid, int, gid, int, type) {
+SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const char __user *, pass, uint64_t, pass_len, uint64_t __user *, id, void __user*, data) {
 #endif
 
     uint64_t            used_key_len;
     uint64_t            used_pass_len;
     user_info           proc_rights;
     int                 ret;
+    int                 type;
+    int                 uid;
+    int                 gid;
+
+    type = ((metadata* )data)->type;
+    uid = ((metadata* )data)->user_info.uid;
+    gid = ((metadata* )data)->user_info.gid;
 
     printk("\n");
     printk("Entering write key\n");
@@ -1381,14 +1388,19 @@ SYSCALL_DEFINE8(write_key, const char __user *, key, uint64_t, key_len, const ch
 }
 
 #if EMULATION == 1
-int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
+int do_read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, void* user_data) {
 #else
-SYSCALL_DEFINE7(read_key, char __user *, key, uint64_t, id, const char __user *, pass, uint64_t, pass_len, uint64_t, key_len, int, uid, int __user, gid) {
+SYSCALL_DEFINE6(read_key, char __user *, key, uint64_t, id, const char __user *, pass, uint64_t, pass_len, uint64_t, key_len, void __user *, user_data) {
 #endif
 
     user_info           proc_rights;
+    int                 uid;
+    int                 gid;
     int                 ret;
     uint64_t            used_pass_len;
+
+    gid = ((user_info* )user_data)->gid;
+    uid = ((user_info* )user_data)->uid;
 
     printk("Entering: readKey recompiled\n");
     // id = 0 is reserved for empty record in key map
