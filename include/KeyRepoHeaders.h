@@ -119,7 +119,7 @@ typedef struct partition_info partition_info;
 
 const static char* partition = "/krepo";
 
-static struct semaphore *sem;
+static struct semaphore sem;
 
 struct metadata {
     user_info user_info;

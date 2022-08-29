@@ -380,7 +380,6 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     if (type == KEY_TYPE_RSA) {
 
         memcpy(key_to_encrypt, key, key_len);
-        printf("Key before encryption is %s\n", key_to_encrypt);
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
