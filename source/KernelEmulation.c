@@ -66,7 +66,7 @@ int decrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     return RES_OK;
 }
 
-void* get_buffered_file(const char* filepath, size_t* filesize, size_t extra_size);
+int get_buffered_file(const char* filepath, char** buf, size_t* filesize, size_t extra_size);
 size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc, int offset, int free_needed);
 
 int fast_modulo(uint64_t num, uint32_t pow_of_2) {
@@ -177,52 +177,51 @@ size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc,
 #endif
 }
 
-void *get_buffered_file(const char* filepath, size_t* size, size_t extra_size) {
+int get_buffered_file(const char* filepath, char** source, size_t* size, size_t extra_size) {
 #if EMULATION == 1
     FILE* fp = fopen(filepath, "r");
     if(fp == NULL) {
-        return NULL;
+        return RES_CANNOT_OPEN;
     }
 
-    char* source;
     long bufsize = 0;
 
     if (fseek(fp, 0L, SEEK_END) == 0) {
         bufsize = ftell(fp);
         if (bufsize == -1) {
             fclose(fp);
-            return NULL;
+            return RES_CANNOT_READ;
         }
 
         bufsize += extra_size;
 
-        source = (char* )(malloc(sizeof(char) * bufsize));
-        if(source == NULL) {
+        *source = (char* )(malloc(sizeof(char) * bufsize));
+        if(*source == NULL) {
             fclose(fp);
-            return NULL;
+            return RES_CANNOT_ALLOC;
         }
 
         if (fseek(fp, 0L, SEEK_SET) != 0) {
             fclose(fp);
-            return NULL;
+            return RES_CANNOT_READ;
         }
 
         // intended, fread call needed
-        size_t new_len = fread(source, sizeof(char), bufsize, fp);
+        size_t new_len = fread(*source, sizeof(char), bufsize, fp);
         if (ferror(fp) != 0 || new_len != bufsize) {
             fclose(fp);
-            return NULL;
+            return RES_CANNOT_READ;
         }
         
     }
 
     fclose(fp);
     if (bufsize == 0) {
-        return NULL;
+        return RES_CANNOT_READ;
     }
 
     *size = bufsize;
-    return (void* )source;
+    return RES_OK;
 #else
 
     struct kstat        *stat;
@@ -673,7 +672,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
 #endif
 
     size_t              file_size;
-    void*               partition_metadata;
+    char*               partition_metadata;
     int                 magic_offset;
     int                 ret;
     partition_info*     partition_start;
@@ -689,9 +688,9 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     }
 
     printk("Loading file to buffer\n");
-    partition_metadata = get_buffered_file(partition, &file_size, 0);
-    if(partition_metadata == NULL) {
-        return RES_CANNOT_OPEN;
+    ret = get_buffered_file(partition, &partition_metadata, &file_size, 0);
+    if(ret != RES_OK) {
+        return ret;
     }
 
     printk("File loaded to buffer with file size %lu\n", file_size);
@@ -1165,22 +1164,21 @@ int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const 
 #endif
 
     size_t          file_size;
-    void*           mapped_partition;
-    int             check_key_rights_ret;
-    int             get_key_ret;
+    char*           mapped_partition;
+    int             ret;
 
     printk("Entering: get prv key by id\n");
     printk("Next action: get buffered file\n");
-    mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if (!mapped_partition) {
-        return RES_CANNOT_OPEN;
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    if (ret != RES_OK) {
+        return ret;
     }
 
     printk("Next action: get key val by pp\n");
     print_partition(mapped_partition);
 
     uint8_t type;
-    check_key_rights_ret = get_key_by_partition_pointer(mapped_partition, id, prv_key, key_len, proc_rights, &type);
+    ret = get_key_by_partition_pointer(mapped_partition, id, prv_key, key_len, proc_rights, &type);
     print_partition(mapped_partition);
 
 #if EMULATION == 1
@@ -1189,13 +1187,13 @@ int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const 
     kfree(mapped_partition);
 #endif
 
-    if (check_key_rights_ret != 0) {
-        return check_key_rights_ret;
+    if (ret != RES_OK) {
+        return ret;
     }
 
-    get_key_ret = read_key_from_custom_file(prv_key, key_len, pass, pass_len, id, type);
-    if (get_key_ret != 0) {
-        return get_key_ret;
+    ret = read_key_from_custom_file(prv_key, key_len, pass, pass_len, id, type);
+    if (ret != RES_OK) {
+        return ret;
     }
 
     printk("Exiting: get prv key by id\n");
@@ -1204,18 +1202,18 @@ int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const 
 int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, user_info proc_rights) {
 
     size_t          file_size;
-    void*           mapped_partition;
-    int             get_key_size_ret;
+    char*           mapped_partition;
+    int             ret;
 
     printk("Entering: get prv key size by id\n");
     printk("Next action: get buffered file\n");
-    mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL) {
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    if(ret != RES_OK) {
         return RES_CANNOT_OPEN;
     }
 
     printk("Next action: get key size by pp\n");
-    get_key_size_ret = get_key_size_by_partition_pointer(mapped_partition, id, size, proc_rights);
+    ret = get_key_size_by_partition_pointer(mapped_partition, id, size, proc_rights);
 
 #if EMULATION == 1
     free(mapped_partition);
@@ -1223,30 +1221,26 @@ int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, user_info proc_rig
     kfree(mapped_partition);
 #endif
 
-    if(get_key_size_ret < 0) {
-        return get_key_size_ret;
-    }
-
     printk("Exiting: get prv key size by id\n");
-    return RES_OK;
+    return ret;
 }
 int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
 
     partition_info*     partition_metadata;
     size_t              file_size;
-    void*               mapped_partition;
-    int                 remove_ret;
+    char*               mapped_partition;
+    int                 ret;
 
     printk("Entering: remove prv key by id\n");
     printk("Next action: get buffered file\n");
-    mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL) {
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    if(ret != RES_OK) {
         return RES_CANNOT_OPEN;
     }
 
     printk("Next action: remove key val by pp\n");
-    remove_ret = remove_key_by_partition_pointer(mapped_partition, id, proc_rights);
-    if(remove_ret != 0) {
+    ret = remove_key_by_partition_pointer(mapped_partition, id, proc_rights);
+    if(ret != 0) {
         
 #if EMULATION == 1
     free(mapped_partition);
@@ -1254,7 +1248,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
     kfree(mapped_partition);
 #endif
 
-        return remove_ret;
+        return ret;
     }
 
     partition_metadata = (partition_info* )mapped_partition;
@@ -1268,7 +1262,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
     }
 
     printk("Entering: remove prv key by id\n");
-    return remove_ret;
+    return ret;
 }
 
 // public
@@ -1279,9 +1273,10 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
 #endif
 
     size_t              file_size;
-    void*               mapped_partition;
+    char*               mapped_partition;
     partition_info*     partition_metadata;
     int                 magic_offset;
+    int                 ret;
 
 #if EMULATION == 1
     if (!is_repo_initialized()) {
@@ -1291,8 +1286,8 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
 #endif
 
     printk("Entering: get current key num\n");
-    mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL) {
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    if(ret != RES_OK) {
         printk("Exiting: get current key num\n");
         return RES_CANNOT_OPEN;
     }
@@ -1487,9 +1482,9 @@ SYSCALL_DEFINE4(get_mode, uint64_t, id, int __user *, output, int, uid, int, gid
 #endif
 
     size_t              file_size;
-    void*               mapped_partition;
-    user_info       proc_rights;
-    int                 get_key_ret;
+    char*               mapped_partition;
+    user_info           proc_rights;
+    int                 ret;
 
     printk("\n");
     printk("Entering: get mode\n");
@@ -1503,15 +1498,15 @@ SYSCALL_DEFINE4(get_mode, uint64_t, id, int __user *, output, int, uid, int, gid
     }
 
     printk("Next action: get buffered file\n");
-    mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL) {
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    if(ret != RES_OK) {
         return RES_CANNOT_OPEN;
     }
 
     proc_rights.uid = uid;
     proc_rights.gid = gid;
     printk("Next action: get key mode by pp\n");
-    get_key_ret = get_key_mode_by_partition_pointer(mapped_partition, id, output, proc_rights);
+    ret = get_key_mode_by_partition_pointer(mapped_partition, id, output, proc_rights);
 
 #if EMULATION == 1
     free(mapped_partition);
@@ -1519,8 +1514,8 @@ SYSCALL_DEFINE4(get_mode, uint64_t, id, int __user *, output, int, uid, int, gid
     kfree(mapped_partition);
 #endif
 
-    if(get_key_ret < 0) {
-        return get_key_ret;
+    if(ret != RES_OK) {
+        return ret;
     }
 
     printk("Exiting: get mode\n");
@@ -1537,9 +1532,9 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     int             d_digit;
     int             digit;
     size_t          file_size;
-    void*           mapped_partition;
-    user_info   proc_rights;
-    int             get_key_ret;
+    char*           mapped_partition;
+    user_info       proc_rights;
+    int             ret;
 
     if(new_mode > 777 || new_mode < 0) {
         return RES_INPUT_ERR;
@@ -1567,8 +1562,8 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     }
 
     printk("Next action: get buffered file\n");
-    mapped_partition = get_buffered_file(partition, &file_size, 0);
-    if(mapped_partition == NULL) {
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    if(ret != RES_OK) {
 
 #if EMULATION == 0
         down(&sem);
@@ -1580,8 +1575,8 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     proc_rights.gid = gid;
 
     printk("Next action: set key mode by pp\n");
-    get_key_ret = set_key_mode_by_partition_pointer(mapped_partition, id, new_mode, proc_rights);
-    if(get_key_ret < 0) {
+    ret = set_key_mode_by_partition_pointer(mapped_partition, id, new_mode, proc_rights);
+    if(ret != RES_OK) {
 
 #if EMULATION == 1
     free(mapped_partition);
@@ -1589,7 +1584,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     kfree(mapped_partition);
     down(&sem);
 #endif
-        return get_key_ret;
+        return ret;
     }
 
     printk("Next action: set buffered file\n");
@@ -1646,7 +1641,7 @@ int do_get_key_size(uint64_t id, uint64_t* size, int uid, int gid) {
     SYSCALL_DEFINE4(get_key_size, uint64_t, id, uint64_t*, size, int, uid, int, gid) {
 #endif
 
-    user_info       proc_rights;
+    user_info           proc_rights;
     int                 ret;
 
     printk("\n");
