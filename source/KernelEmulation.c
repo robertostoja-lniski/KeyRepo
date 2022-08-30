@@ -436,9 +436,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 }
 
 int delete_custom_file(uint64_t id) {
+
+#if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
     return remove(filename);
+#else
+    return 0;
+#endif
 }
 
 int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
@@ -493,6 +498,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
 
 int is_repo_initialized(void) {
 
+#if EMULATION == 1
     FILE *file = NULL;
     int part_size = 0;
     if ((file = fopen(partition, "r")))
@@ -510,6 +516,10 @@ int is_repo_initialized(void) {
     }
 
     return 0;
+#else
+    return 1;
+#endif
+
 }
 
 int init_file_if_not_defined(void) {
