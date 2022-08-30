@@ -41,9 +41,9 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int decrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
+int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_len) {
 
-    if (buf == NULL) {
+    if (*buf == NULL) {
         return RES_INPUT_ERR;
     }
 
@@ -60,13 +60,13 @@ int decrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     key = key % 30;
 
     for (i = 0; i < len; i++) {
-        buf[i] += (char)key;
+        (*buf)[i] += (char)key;
     }
 
     return RES_OK;
 }
 
-int get_buffered_file(const char* filepath, char** buf, size_t* filesize, size_t extra_size);
+int get_buffered_file(const char* filepath, char** buf, size_t* filesize, size_t extra_size, int allocate);
 size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc, int offset, int free_needed);
 
 int fast_modulo(uint64_t num, uint32_t pow_of_2) {
@@ -177,7 +177,7 @@ size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc,
 #endif
 }
 
-int get_buffered_file(const char* filepath, char** source, size_t* size, size_t extra_size) {
+int get_buffered_file(const char* filepath, char** source, size_t* size, size_t read_req, int allocate) {
 #if EMULATION == 1
     FILE* fp = fopen(filepath, "r");
     if(fp == NULL) {
@@ -193,12 +193,20 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
             return RES_CANNOT_READ;
         }
 
-        bufsize += extra_size;
+        if (read_req == 0) {
+            read_req = bufsize;
+        }
 
-        *source = (char* )(malloc(sizeof(char) * bufsize));
-        if(*source == NULL) {
-            fclose(fp);
-            return RES_CANNOT_ALLOC;
+        if (bufsize < read_req) {
+            read_req = bufsize;
+        }
+
+        if (allocate != 0) {
+            *source = (char* )(malloc(sizeof(char) * read_req));
+            if(*source == NULL) {
+                fclose(fp);
+                return RES_CANNOT_ALLOC;
+            }
         }
 
         if (fseek(fp, 0L, SEEK_SET) != 0) {
@@ -207,12 +215,12 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
         }
 
         // intended, fread call needed
-        size_t new_len = fread(*source, sizeof(char), bufsize, fp);
-        if (ferror(fp) != 0 || new_len != bufsize) {
+        size_t new_len = fread(*source, sizeof(char), read_req, fp);
+        if (ferror(fp) != 0 || new_len != read_req) {
             fclose(fp);
             return RES_CANNOT_READ;
         }
-        
+
     }
 
     fclose(fp);
@@ -220,7 +228,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
         return RES_CANNOT_READ;
     }
 
-    *size = bufsize;
+    *size = read_req;
     return RES_OK;
 #else
 
@@ -247,7 +255,8 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     }
 
     printk("Next action: stat kmalloc\n");
-    stat =(struct kstat *) kmalloc(sizeof(struct kstat), GFP_KERNEL);
+
+    stat = (struct kstat *) kmalloc(sizeof(struct kstat), GFP_KERNEL);
     if (!stat) {
         set_fs(fs);
         printk("Kmalloc failed\n");
@@ -256,19 +265,29 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
 
     printk("Next action: vfs_stat\n");
     vfs_stat(partition, stat);
-    *size = stat->size + extra_size;
+
+    if (read_req == 0) {
+        read_req = stat->size;
+    }
+
+    if (stat->size < read_req) {
+        read_req = stat->size;
+    }
+    *size = read_req;
     printk("File size is %lu\n", *size);
 
     kfree(stat);
     printk("Next action: buffer\n");
     printk("*size is %lu\n", *size);
-    printk("extra is %lu\n", extra_size);
-    buf = kmalloc(*size + extra_size, GFP_KERNEL);
-    if (!buf) {
-        set_fs(fs);
-        kfree(stat);
-        printk("malloc input buf error!\n");
-        return NULL;
+
+    if (allocate != 0) {
+        buf = kmalloc(*size, GFP_KERNEL);
+        if (!buf) {
+            set_fs(fs);
+            kfree(stat);
+            printk("malloc input buf error!\n");
+            return NULL;
+        }
     }
 
     printk("Next action: kernel read\n");
@@ -424,44 +443,49 @@ int delete_custom_file(uint64_t id) {
 
 int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
 
-    FILE *file;
-
     char filename[MAX_FILENAME_LEN];
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
-
-    file = fopen(filename, "r");
-    if(file == NULL) {
-        return RES_CANNOT_OPEN;
-    }
-
     memset(key + key_len, 0x00, sizeof(char));
     
-    uint64_t adjusted_len = 0;
-    uint64_t ret = 0;
+    uint64_t    adjusted_len = 0;
+    int         ret = 0;
+    size_t      actual_size;
     
     if (type == KEY_TYPE_RSA) {
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
         strcpy(key, RSA_BEGIN_LABEL);
-        ret = fread(key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN), sizeof(char), adjusted_len, file);
-        decrypt_data_at_rest(key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN), adjusted_len, pass, pass_len);
+
+        char* read_start = key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+        ret = get_buffered_file(filename, &read_start, &actual_size, key_len, 0);
+        if (ret != RES_OK) {
+            return ret;
+        }
+
+        ret = decrypt_data_at_rest(&read_start, adjusted_len, pass, pass_len);
         strcpy(key + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
-        
+
     } else if (type == KEY_TYPE_CUSTOM) {
 
         adjusted_len = key_len;
-        ret = fread(key, sizeof(char), adjusted_len, file);
-        decrypt_data_at_rest(key, adjusted_len, pass, pass_len);
+        ret = get_buffered_file(filename, &key, &actual_size, key_len, 0);
+        if (ret != RES_OK) {
+            return ret;
+        }
+        if (actual_size != key_len) {
+            return RES_CANNOT_READ;
+        }
+
+        ret = decrypt_data_at_rest(&key, adjusted_len, pass, pass_len);
         
     } else {
         return RES_NO_KEY_TYPE;
     }
 
-    fclose(file);
 
-    if(ret != adjusted_len) {
+    if(ret != RES_OK) {
         printk("Reading key from file failed\n");
-        return RES_CANNOT_OPEN;
+        return ret;
     }
 
     return RES_OK;
@@ -688,7 +712,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     }
 
     printk("Loading file to buffer\n");
-    ret = get_buffered_file(partition, &partition_metadata, &file_size, 0);
+    ret = get_buffered_file(partition, &partition_metadata, &file_size, 0, 1);
     if(ret != RES_OK) {
         return ret;
     }
@@ -1169,7 +1193,7 @@ int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const 
 
     printk("Entering: get prv key by id\n");
     printk("Next action: get buffered file\n");
-    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if (ret != RES_OK) {
         return ret;
     }
@@ -1207,7 +1231,7 @@ int get_prv_key_size_by_id(const uint64_t id, uint64_t* size, user_info proc_rig
 
     printk("Entering: get prv key size by id\n");
     printk("Next action: get buffered file\n");
-    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
         return RES_CANNOT_OPEN;
     }
@@ -1233,7 +1257,7 @@ int remove_private_key_by_id(uint64_t id, user_info proc_rights) {
 
     printk("Entering: remove prv key by id\n");
     printk("Next action: get buffered file\n");
-    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
         return RES_CANNOT_OPEN;
     }
@@ -1286,7 +1310,7 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
 #endif
 
     printk("Entering: get current key num\n");
-    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
         printk("Exiting: get current key num\n");
         return RES_CANNOT_OPEN;
@@ -1498,7 +1522,7 @@ SYSCALL_DEFINE4(get_mode, uint64_t, id, int __user *, output, int, uid, int, gid
     }
 
     printk("Next action: get buffered file\n");
-    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
         return RES_CANNOT_OPEN;
     }
@@ -1562,7 +1586,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     }
 
     printk("Next action: get buffered file\n");
-    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0);
+    ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
 
 #if EMULATION == 0
