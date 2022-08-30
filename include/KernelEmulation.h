@@ -133,7 +133,7 @@ typedef struct partition_info partition_info;
 const static char* partition = "/Users/robertostoja-lniski/.keyPartitionV2/meta";
 const static char* partition_base = "/Users/robertostoja-lniski/.keyPartitionV2/";
 #else
-const static char* partition = "/home/robert/.keyPartition";
+const static char* partition = "/home/robert/.keyPartitionV2/meta";
 const static char* partition_base = "/home/robert/.keyPartitionV2/";
 #endif
 

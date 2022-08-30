@@ -117,6 +117,7 @@ struct partition_info {
 };
 typedef struct partition_info partition_info;
 
+const static char* partition = "/krepo/meta";
 const static char* partition_base = "/krepo/";
 
 static struct semaphore sem;
