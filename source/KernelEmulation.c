@@ -1360,6 +1360,8 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     int                 uid;
     int                 gid;
 
+    printk("Entering write key\n");
+
     type = ((metadata* )data)->type;
     uid = ((metadata* )data)->user_info.uid;
     gid = ((metadata* )data)->user_info.gid;
