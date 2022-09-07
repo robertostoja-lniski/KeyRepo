@@ -56,8 +56,8 @@ int get_key_num(uint64_t* key_num) {
 int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type) {
 
     printf("Entering write key\n");
-    uint64_t usedLen = keyLen;
-    if(keyLen > strnlen(key, 4096 * 4)) {
+    uint64_t usedLen = key_len;
+    if(key_len > strnlen(key, 4096 * 4)) {
         usedLen = strnlen(key, 4096 * 4);
     }
 
@@ -85,7 +85,7 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
     user_info.uid = ids.uid;
     user_info.gid = ids.gid;
 
-    return syscall(__x64_read_key, id, key, keyLen, (void* )&user_info);
+    return syscall(__x64_read_key, id, key, key_len, (void* )&user_info);
 }
 
 int remove_key(const uint64_t id) {
