@@ -49,11 +49,11 @@ original_uids get_original_uids() {
 
 #if EMULATION == 0
 
-int get_key_num() {
-    return syscall(__x64_get_key_num);
+int get_key_num(uint64_t* key_num) {
+    return syscall(__x64_get_key_num, key_num);
 }
 
-int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
+int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type) {
 
     printf("Entering write key\n");
     uint64_t usedLen = keyLen;
@@ -65,18 +65,27 @@ int write_key(const char* key, const uint64_t keyLen, uint64_t* id) {
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
+
+    metadata metadata;
+    metadata.user_info.uid = ids.uid;
+    metadata.user_info.gid = ids.gid;
+    metadata.type = type;
 	
-    return syscall(__x64_write_key, key, usedLen, id, ids.uid, ids.gid);
+    return syscall(__x64_write_key, key, usedLen, id, (void* )&metadata);
 }
 
-int read_key(const uint64_t id, char* key, uint64_t keyLen) {
+int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len) {
 
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
     }
 
-    return syscall(__x64_read_key, id, key, keyLen, ids.uid, ids.gid);
+    user_info user_info;
+    user_info.uid = ids.uid;
+    user_info.gid = ids.gid;
+
+    return syscall(__x64_read_key, id, key, keyLen, (void* )&user_info);
 }
 
 int remove_key(const uint64_t id) {

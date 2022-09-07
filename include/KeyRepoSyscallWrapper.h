@@ -24,13 +24,27 @@
 #define __x64_set_mode      441
 #define __x64_get_key_size  442
 
-int get_key_num();
-int write_key(const char* key, const uint64_t keyLen, uint64_t* id);
-int read_key(const uint64_t id, char* key, uint64_t keyLen);
-int remove_key(const uint64_t id);
-int get_key_size(const uint64_t id, uint64_t* size);
-int get_mode(const uint64_t id, int* output);
-int set_mode(const uint64_t id, int new_mode);
+struct user_info {
+    int uid;
+    int gid;
+};
+typedef struct user_info user_info;
+
+struct metadata {
+    user_info user_info;
+    int type;
+};
+
+typedef struct metadata metadata;
+
+int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type);
+int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len);
+int remove_key(uint64_t id);
+int get_key_size(uint64_t id, uint64_t* size);
+int get_mode(uint64_t id, int* modes);
+int set_mode(uint64_t id, int new_mode);
+// password not needed, because it requires only root priviledges
+int get_key_num(uint64_t* key_num);
 
 #else
 
