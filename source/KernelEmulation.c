@@ -1359,12 +1359,25 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     int                 type;
     int                 uid;
     int                 gid;
+    metadata            user_metadata;
 
     printk("Starting write key\n");
+
+#if EMULATION == 1
 
     type = ((metadata* )data)->type;
     uid = ((metadata* )data)->user_info.uid;
     gid = ((metadata* )data)->user_info.gid;
+
+#else
+
+    copy_from_user(&user_metadata, (metadata* )data), sizeof(metadata))
+    printk("Metadata copied\n");
+    type = user_metadata.type;
+    uid = user_metadata.uid;
+    gid = user_metadata.gid;
+
+#endif
 
     printk("\n");
     printk("Continuing write key\n");
