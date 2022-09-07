@@ -36,10 +36,12 @@ int main(int argc, char *argv[])
     const char* key = "abcde";
     uint64_t id;
     printf("Key is %s\n", key);
-    int writeRet = write_key(key, (uint64_t)5, &id);
+    int writeRet = write_key(key, (uint64_t)5, "pass", (uint64_t)4, &id, 1);
     printf("Write ret: %d\n", writeRet);
-    int getKeyNumRet = get_key_num();
-    printf("Get key num: %d\n", getKeyNumRet);
+
+    uint64_t keyNum;
+    int getKeyNumRet = get_key_num(&keyNum);
+    printf("Get key num: %llu\n", keyNum);
     
     int mode;
     int getKeyModeRet = get_mode(id, &mode);
@@ -57,15 +59,15 @@ int main(int argc, char *argv[])
     printf("Get key size is: %d and size is: %llu\n", getSizeRet, size);
 
     char* buf = (char* )malloc(6);
-    int readRet = read_key(id, buf, 6);
+    int readRet = read_key(id, buf, "pass", (uint64_t)4, 6);
     printf("Get key ret is: %d and key is: %s\n", readRet, buf);
     free(buf);
 
     int removeRet = remove_key(id);
     printf("Remove key ret is: %d\n", removeRet);
 
-    int getKeyNumRetNoKey = get_key_num();
-    printf("Get key num: %d\n", getKeyNumRetNoKey);
+    int getKeyNumRetNoKey = get_key_num(&keyNum);
+    printf("Get key num: %llu\n", keyNum);
 
     return 0;
 }
