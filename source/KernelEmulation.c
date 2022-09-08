@@ -1371,7 +1371,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
 
 #else
 
-    copy_from_user(&user_metadata, (metadata* )data), sizeof(metadata))
+    copy_from_user(&user_metadata, (metadata* )data, sizeof(metadata));
     printk("Metadata copied\n");
     type = user_metadata.type;
     uid = user_metadata.user_info.uid;
