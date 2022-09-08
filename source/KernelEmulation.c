@@ -11,7 +11,6 @@
 #endif
 
 
-
 // temporary function
 // changes are done to buffer in place for optimization purposes
 int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
@@ -618,8 +617,6 @@ int init_file_if_not_defined(void) {
         printk("Allocation failed, exiting\n");
         return 1;
     }
-
-    sema_init(&sem, 1);
 
 #endif
 
@@ -1415,6 +1412,8 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
 #if EMULATION == 0
     up(&sem);
 #endif
+
+    printk("Key will be added to partition\n");
 
     ret = add_key_to_partition(key, used_key_len, pass, used_pass_len, id, proc_rights, type);
     if(ret < 0) {
