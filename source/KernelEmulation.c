@@ -1410,7 +1410,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     proc_rights.gid = gid;
 
 #if EMULATION == 0
-    up(&sem);
+//    up(&sem);
 #endif
 
     printk("Key will be added to partition\n");
@@ -1418,7 +1418,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     ret = add_key_to_partition(key, used_key_len, pass, used_pass_len, id, proc_rights, type);
     if(ret < 0) {
 #if EMULATION == 0
-        down(&sem);
+//        down(&sem);
 #endif
 
         return ret;
@@ -1427,7 +1427,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     printk("Exiting write key\n");
 
 #if EMULATION == 0
-    down(&sem);
+//    down(&sem);
 #endif
 
     return RES_OK;
@@ -1493,7 +1493,7 @@ SYSCALL_DEFINE3(remove_key, uint64_t, id, int, uid, int, gid) {
 #endif
 
 #if EMULATION == 0
-    up(&sem);
+//    up(&sem);
 #endif
 
     user_info       proc_rights;
@@ -1515,7 +1515,7 @@ SYSCALL_DEFINE3(remove_key, uint64_t, id, int, uid, int, gid) {
     ret = remove_private_key_by_id(id, proc_rights);
 
 #if EMULATION == 0
-    down(&sem);
+//    down(&sem);
 #endif
 
     return ret;
@@ -1602,7 +1602,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     }
 
 #if EMULATION == 0
-    up(&sem);
+//    up(&sem);
 #endif
 
     if (!is_repo_initialized()) {
@@ -1614,7 +1614,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     if(ret != RES_OK) {
 
 #if EMULATION == 0
-        down(&sem);
+//        down(&sem);
 #endif
         return RES_CANNOT_OPEN;
     }
@@ -1630,7 +1630,7 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     free(mapped_partition);
 #else
     kfree(mapped_partition);
-    down(&sem);
+//    down(&sem);
 #endif
         return ret;
     }
@@ -1639,13 +1639,13 @@ SYSCALL_DEFINE4(set_mode, const uint64_t, id, int, new_mode, int, uid, int, gid)
     if(set_buffered_file(partition, (char* )mapped_partition, file_size, 0, 0, 1) != file_size) {
 
 #if EMULATION == 0
-        down(&sem);
+//        down(&sem);
 #endif
         return RES_CANNOT_WRITE;
     }
 
 #if EMULATION == 0
-    down(&sem);
+//    down(&sem);
 #endif
     printk("Exiting: set mode\n");
     return RES_OK;
