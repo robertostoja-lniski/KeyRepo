@@ -47,6 +47,8 @@ original_uids get_original_uids() {
 
 }
 
+#define EMULATION 0
+
 #if EMULATION == 0
 
 int get_key_num(uint64_t* key_num) {
