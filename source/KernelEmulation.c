@@ -82,7 +82,7 @@ int get_magic_offset(void* mapped_partition) {
     printk('Step 0\n');
     first_byte = (uint64_t* )mapped_partition;
     printk('Step 1\n');
-    printk('First byte %llu\n', *first_byte)
+    printk('First byte %llu\n', *first_byte);
     current_offset = 0;
     printk('Step 2\n');
     
