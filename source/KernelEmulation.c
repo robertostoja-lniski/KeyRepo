@@ -139,6 +139,8 @@ size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc,
 
     pos = offset;
 
+    printk("Offset is %d\n", offset);
+
     printk("Next action: get fs\n");
     fs = get_fs();
     printk("Next action: set fs\n");
@@ -149,8 +151,10 @@ size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc,
     // truncate only if necessary O_TRUNC flag hugely decreses efficiency
     if(trunc) {
             fp = filp_open(partition, O_RDWR | O_TRUNC, 0644);
+            printk("Truncated if filed successfully opened\n");
     } else {
             fp = filp_open(partition, O_RDWR , 0644);
+            printk("NOT Truncated if filed successfully opened\n");
     }
 
     if (IS_ERR(fp)) {
@@ -272,11 +276,14 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     if (stat->size < read_req) {
         read_req = stat->size;
     }
+
+    printk("Qrepo wants to read %llu bytes from a buffer\n", read_req);
+
     *size = read_req;
     printk("File size is %lu\n", *size);
 
     kfree(stat);
-    printk("Next action: buffer\n");
+    printk("Next action: allocate tmp buffer\n");
     printk("*size is %lu\n", *size);
 
     if (allocate != 0) {
@@ -298,7 +305,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     printk("Next action: set_fs\n");
     set_fs(fs);
     printk("Exiting get buffer file\n");
-    return buf;
+    return RES_OK;
 #endif
 }
 
@@ -605,7 +612,7 @@ int init_file_if_not_defined(void) {
             return 1;
         }
 
-        printk("Save partition initialised\n");
+        printk("Starting partition initialization\n");
     }
 
     printk("Next action: set_fs\n");
@@ -1376,7 +1383,6 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
 
 #endif
 
-    printk("\n");
     printk("Continuing write key\n");
 
     if (type != KEY_TYPE_RSA && type != KEY_TYPE_CUSTOM) {
@@ -1404,7 +1410,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     }
 #endif
 
-    printk("Kernel space memory successfully allocated, %llu of bytes to be copied\n", key_len);
+    printk("Kernel space memory successfully allocated, %llu of password to be copied\n", key_len);
 
     proc_rights.uid = uid;
     proc_rights.gid = gid;
@@ -1420,7 +1426,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
 #if EMULATION == 0
 //        down(&sem);
 #endif
-
+        printk("Key NOT added: ret %d\n", ret);
         return ret;
     }
 
