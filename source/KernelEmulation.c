@@ -79,18 +79,31 @@ int get_magic_offset(void* mapped_partition) {
     uint64_t*           first_byte;
     int                 current_offset;
 
+    printk('Step 0\n');
     first_byte = (uint64_t* )mapped_partition;
+    printk('Step 1\n');
+    printk('First byte %llu\n', *first_byte)
     current_offset = 0;
+    printk('Step 2\n');
+    
+    printk('Magic %llu\n', MAGIC);
+    printk('Max partition size %llu\n', MAX_PARTITION_SIZE);
 
     while(*first_byte != MAGIC || current_offset > MAX_PARTITION_SIZE) {
-
+        
+        printk('First byte %llu, offset %d\n', *first_byte, current_offset);
         first_byte = (uint64_t *) ((uint8_t *) first_byte + 1);
         current_offset++;
     }
 
+    printk('First byte %llu, offset %d\n', *first_byte, current_offset)
+
     if(current_offset > MAX_PARTITION_SIZE) {
+        printk('Exiting: get magic offset, because partition is full');
         return RES_PARTITION_FULL;
     }
+
+    printk('Exiting: get magic offset');
     return current_offset;
 }
 
