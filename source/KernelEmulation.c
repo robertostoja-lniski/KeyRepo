@@ -10,6 +10,21 @@
     #include "KeyRepoHeaders.h"
 #endif
 
+// kernel functions signatures defined for user space
+#if EMULATION == 1
+void printk(const char* dummy, ...) {
+//	 printf(dummy);
+}
+void get_random_bytes(uint64_t* n, size_t size) {
+    assert(size == sizeof(*n));
+    uint64_t random_seq = 0;
+    for (int i = 0; i < 64; i++) {
+
+        random_seq = (random_seq << 1) + (rand() & 1);
+    }
+    *n = random_seq;
+}
+#endif
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
@@ -107,21 +122,7 @@ int get_magic_offset(void* mapped_partition) {
     return current_offset;
 }
 
-// kernel functions signatures defined for user space
-#if EMULATION == 1
-    void printk(const char* dummy, ...) {
-//	 printf(dummy);
-    }
-    void get_random_bytes(uint64_t* n, size_t size) {
-        assert(size == sizeof(*n));
-        uint64_t random_seq = 0;
-        for (int i = 0; i < 64; i++) {
 
-            random_seq = (random_seq << 1) + (rand() & 1);
-        }
-        *n = random_seq;
-    }
-#endif
 
 // trunc param is used only when called from kernel
 // in emulation ftrunc() function is used
@@ -393,6 +394,8 @@ uint64_t generate_random_id(partition_info* partition_metadata, int* mod){
 }
 
 int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
+
+    printk("Entering write key to custom file\n");
 
     char* key_to_encrypt = NULL;
 
@@ -805,7 +808,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     id_val = *id;
     printk("Bam\n");
 
-    ret = write_key_to_custom_file(key, key_len, pass, pass_len, *id, type);
+    ret = write_key_to_custom_file(key, key_len, pass, pass_len, id_val, type);
     if (ret < 0) {
         return ret;
     }

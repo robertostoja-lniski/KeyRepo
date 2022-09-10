@@ -47,8 +47,6 @@ original_uids get_original_uids() {
 
 }
 
-#define EMULATION 0
-
 #if EMULATION == 0
 
 int get_key_num(uint64_t* key_num) {
@@ -160,7 +158,12 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
     return do_read_key(key, id, pass, pass_len, key_len, (void* )&user_info);
 }
 
+int remove_key_uid(uint64_t id, int uid, int gid) {
+    return do_remove_key(id, uid, gid);
+}
+
 int remove_key(uint64_t id) {
+
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
         return -1;
