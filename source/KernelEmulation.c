@@ -805,8 +805,15 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     }
 
     printk("Writing key\n");
+
+#if EMULATION == 1
     id_val = *id;
-    printk("Bam\n");
+#else
+// user has acces to id now
+    printk("Assigning id\n");
+    copy_from_user(&id_val, id, sizeof(id_val));
+    printk("Copied id.\n");
+#endif
 
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, id_val, type);
     if (ret < 0) {
