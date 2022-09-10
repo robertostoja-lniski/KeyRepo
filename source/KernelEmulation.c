@@ -421,12 +421,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
     printk("Time for copying pass");
+    printk("Pass len is %lu", pass_len);
 
 #if EMULATION == 1
     local_pass = (char* )malloc(pass_len);
 #else
     local_pass = (char* )kmalloc(pass_len, GFP_KERNEL);
 #endif
+
     if (local_pass == NULL) {
 #if EMULATION == 0
         kfree(filename);

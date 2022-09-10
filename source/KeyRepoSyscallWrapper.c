@@ -60,7 +60,7 @@ int write_key_uid(const char* key, uint64_t key_len, const char* pass, uint64_t 
     metadata.user_info.gid = gid;
     metadata.type = type;
 
-    return syscall(__x64_write_key, key, usedLen, id, (void* )&metadata);
+    return syscall(__x64_write_key, key, key_len, pass, pass_len, id, (void* )&metadata);
 }
 
 int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type) {
@@ -81,7 +81,7 @@ int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass
     metadata.user_info.gid = ids.gid;
     metadata.type = type;
 	
-    return syscall(__x64_write_key, key, usedLen, id, (void* )&metadata);
+    return syscall(__x64_write_key, key, usedLen, pass, pass_len, id, (void* )&metadata);
 }
 
 int read_key_uid(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
@@ -90,7 +90,7 @@ int read_key_uid(char* key, uint64_t id, const char* pass, uint64_t pass_len, ui
     user_info.uid = ids.uid;
     user_info.gid = ids.gid;
 
-    return syscall(__x64_read_key, id, key, key_len, (void* )&user_info);
+    return syscall(__x64_read_key, key, id, pass, pass_len, key_len, (void* )&user_info);
 }
 
 int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len) {
@@ -104,7 +104,7 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
     user_info.uid = ids.uid;
     user_info.gid = ids.gid;
 
-    return syscall(__x64_read_key, id, key, key_len, (void* )&user_info);
+    return syscall(__x64_read_key, key, id, pass, pass_len, key_len, (void* )&user_info);
 }
 
 int remove_key_uid(uint64_t id, int uid, int gid) {
