@@ -396,7 +396,16 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     char* key_to_encrypt = NULL;
 
+#if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
+#else
+    char* filename;
+    filename = (char* )kmalloc(MAX_FILENAME_LEN, GFP_KERNEL);
+    if (filename == NULL) {
+        return RES_CANNOT_ALLOC
+    }
+#endif
+
 
     printk("Zeroing filename buf\n");
     memset(filename, 0x00, MAX_FILENAME_LEN);
@@ -414,7 +423,13 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     key_to_encrypt = (char* )kmalloc(key_len, GFP_KERNEL);
 #endif
     if (key_to_encrypt == NULL) {
+
+#if EMULATION == 1
         return RES_CANNOT_ALLOC;
+#else
+        kfree(filename);
+        return RES_CANNOT_ALLOC;
+#endif
     }
 
     if (type == KEY_TYPE_RSA) {
@@ -451,6 +466,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         free(key_to_encrypt);
 #else
         kfree(key_to_encrypt);
+        kfree(filename);
 #endif
         return RES_NO_KEY_TYPE;
     }
@@ -459,6 +475,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     free(key_to_encrypt);
 #else
     kfree(key_to_encrypt);
+    kfree(filename);
 #endif
 
     if(ret != adjusted_len) {
