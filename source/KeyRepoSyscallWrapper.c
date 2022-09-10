@@ -87,8 +87,8 @@ int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass
 int read_key_uid(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
 
     user_info user_info;
-    user_info.uid = ids.uid;
-    user_info.gid = ids.gid;
+    user_info.uid = uid;
+    user_info.gid = gid;
 
     return syscall(__x64_read_key, key, id, pass, pass_len, key_len, (void* )&user_info);
 }
@@ -108,7 +108,7 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
 }
 
 int remove_key_uid(uint64_t id, int uid, int gid) {
-    return syscall(__x64_remove_key, id, ids.uid, ids.gid);
+    return syscall(__x64_remove_key, id, uid, gid);
 }
 
 int remove_key(const uint64_t id) {
@@ -122,7 +122,7 @@ int remove_key(const uint64_t id) {
 }
 
 int get_key_size_uid(const uint64_t id, uint64_t* size, int uid, int gid) {
-    return syscall(__x64_get_key_size, id, size, ids.uid, ids.gid);
+    return syscall(__x64_get_key_size, id, size, uid, gid);
 }
 
 int get_key_size(const uint64_t id, uint64_t* size) {
@@ -136,7 +136,7 @@ int get_key_size(const uint64_t id, uint64_t* size) {
 }
 
 int get_mode_uid(const uint64_t id, int* output, int uid, int gid) {
-    return syscall(__x64_get_mode, id, output, ids.uid, ids.gid);
+    return syscall(__x64_get_mode, id, output, uid, gid);
 }
 
 int get_mode(const uint64_t id, int* output) {
@@ -150,7 +150,7 @@ int get_mode(const uint64_t id, int* output) {
 }
 
 int set_mode_uid(const uint64_t id, int new_mode, int uid, int gid) {
-    return syscall(__x64_set_mode, id, new_mode, ids.uid, ids.gid);
+    return syscall(__x64_set_mode, id, new_mode, uid, gid);
 }
 
 int set_mode(const uint64_t id, int new_mode) {
