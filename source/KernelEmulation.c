@@ -38,6 +38,8 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
         return RES_INPUT_ERR;
     }
 
+    printk("Buf not null, pass not null\n");
+
     // TODO - just a PoC
     int key = 0;
     size_t i;
@@ -448,7 +450,6 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
         printk("Memory copied\n");
-
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         printk("Encrypted\n");
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
@@ -468,6 +469,8 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #else
         copy_from_user(key_to_encrypt, key, key_len);
 #endif
+
+        printk("Encrypting\n");
 
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len;
