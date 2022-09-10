@@ -79,12 +79,12 @@ int get_magic_offset(void* mapped_partition) {
     uint64_t*           first_byte;
     int                 current_offset;
 
-    printk('Step 0\n');
+    printk("Step 0\n");
     first_byte = (uint64_t* )mapped_partition;
-    printk('Step 1\n');
+    printk("Step 1\n");
     printk('First byte %llu\n', *first_byte);
     current_offset = 0;
-    printk('Step 2\n');
+    printk("Step 2\n");
     
     printk('Magic %llu\n', MAGIC);
     printk('Max partition size %llu\n', MAX_PARTITION_SIZE);
@@ -253,7 +253,6 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     mm_segment_t        fs;
     loff_t              pos;
     size_t              ret;
-    char                *buf;
 
     printk("Entering get buffer file\n");
     pos = 0;
@@ -300,8 +299,8 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     printk("*size is %lu\n", *size);
 
     if (allocate != 0) {
-        buf = kmalloc(*size, GFP_KERNEL);
-        if (!buf) {
+        *source = kmalloc(*size, GFP_KERNEL);
+        if (!*source) {
             set_fs(fs);
             kfree(stat);
             printk("malloc input buf error!\n");
@@ -310,7 +309,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     }
 
     printk("Next action: kernel read\n");
-    ret = (size_t)kernel_read(fp, buf, *size, &pos);
+    ret = (size_t)kernel_read(fp, *source, *size, &pos);
     printk("Bytes read %lu : bytes wanted to be read : %lu\n", ret, *size);
 
     printk("Next action: filp_close\n");
@@ -751,6 +750,8 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     }
 
     printk("Magic is %d bytes from file start\n", magic_offset);
+
+    return -1;
 
     partition_start = (partition_info* )((uint8_t* )partition_metadata + magic_offset);
     printk("Key num is %llu\n", partition_start->number_of_keys);
