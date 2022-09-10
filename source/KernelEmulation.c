@@ -397,8 +397,12 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     char* key_to_encrypt = NULL;
 
     char filename[MAX_FILENAME_LEN];
+
+    printk("Zeroing filename buf\n");
     memset(filename, 0x00, MAX_FILENAME_LEN);
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
+
+    printk("Zeroing filename buf\n");
 
     uint64_t adjusted_len = 0;
     size_t ret = 0;
@@ -415,13 +419,25 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     if (type == KEY_TYPE_RSA) {
 
+        printk("Rsa key\n");
+
+#if EMULATION == 1
         memcpy(key_to_encrypt, key, key_len);
+#else
+        copy_from_user(key_to_encrypt, key, key_len);
+#endif
+
+        printk("Memory copied\n");
+
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
+        printk("Encrypted\n");
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
         char* key_addr;
         key_addr = key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+        printk("Setting buffered file\n");
         ret = set_buffered_file(filename, key_addr, adjusted_len, 0, 0, 0);
+        printk("Buffered file set \n");
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
@@ -748,8 +764,6 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
 
     printk("Magic is %d bytes from file start\n", magic_offset);
 
-    return -1;
-
     partition_start = (partition_info* )((uint8_t* )partition_metadata + magic_offset);
     printk("Key num is %llu\n", partition_start->number_of_keys);
 
@@ -767,6 +781,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
         return RES_CANNOT_WRITE;
     }
 
+    printk("Writing key\n");
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, *id, type);
     if (ret < 0) {
         return ret;
@@ -1099,6 +1114,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     lookup_slot*        lookup;
     int                 found;
     int                 i;
+    uint64_t            current_id;
     user_info           owner_info;
 
 
@@ -1121,7 +1137,7 @@ int set_key_mode_by_partition_pointer(void* mapped_partition, uint64_t id, int k
     map_size = partition_metadata->capacity;
     found = 0;
     for(i = 0; i < map_size; i++) {
-        uint64_t current_id = current_elem_in_map->id;
+        current_id = current_elem_in_map->id;
         if(current_id == id) {
             found = 1;
 
@@ -1207,6 +1223,7 @@ int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const 
     size_t          file_size;
     char*           mapped_partition;
     int             ret;
+    uint8_t         type;
 
     printk("Entering: get prv key by id\n");
     printk("Next action: get buffered file\n");
@@ -1218,7 +1235,6 @@ int get_prv_key_by_id(const uint64_t id, char* prv_key, uint64_t key_len, const 
     printk("Next action: get key val by pp\n");
     print_partition(mapped_partition);
 
-    uint8_t type;
     ret = get_key_by_partition_pointer(mapped_partition, id, prv_key, key_len, proc_rights, &type);
     print_partition(mapped_partition);
 
