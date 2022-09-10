@@ -396,13 +396,15 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     char* key_to_encrypt = NULL;
 
+    printk("Max filename len is %lu\n", MAX_FILENAME_LEN);
+
 #if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
 #else
     char* filename;
     filename = (char* )kmalloc(MAX_FILENAME_LEN, GFP_KERNEL);
     if (filename == NULL) {
-        return RES_CANNOT_ALLOC
+        return RES_CANNOT_ALLOC;
     }
 #endif
 
@@ -756,6 +758,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     int                 magic_offset;
     int                 ret;
     partition_info*     partition_start;
+    uint64_t            id_val;
 
     if (key_len > MAX_PARTITION_SIZE) {
         return RES_PARTITION_FULL;
@@ -799,6 +802,9 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     }
 
     printk("Writing key\n");
+    id_val = *id;
+    printk("Bam\n");
+
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, *id, type);
     if (ret < 0) {
         return ret;
