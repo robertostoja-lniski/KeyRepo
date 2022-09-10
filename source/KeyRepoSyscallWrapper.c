@@ -53,6 +53,17 @@ int get_key_num(uint64_t* key_num) {
     return syscall(__x64_get_key_num, key_num);
 }
 
+int write_key_uid(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type, int uid, int gid) {
+
+    metadata metadata;
+    metadata.user_info.uid = uid;
+    metadata.user_info.gid = gid;
+    metadata.type = type;
+
+    return syscall(__x64_write_key, key, usedLen, id, (void* )&metadata);
+}
+
+
 int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type) {
 
     printf("Entering write key\n");
@@ -86,6 +97,10 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
     user_info.gid = ids.gid;
 
     return syscall(__x64_read_key, id, key, key_len, (void* )&user_info);
+}
+
+int remove_key_uid(uint64_t id, int uid, int gid) {
+    return syscall(__x64_remove_key, id, ids.uid, ids.gid);
 }
 
 int remove_key(const uint64_t id) {
@@ -145,6 +160,17 @@ int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass
 
     return do_write_key(key, key_len, pass, pass_len, id, (void* )&metadata);
 }
+
+int write_key_uid(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type, int uid, int gid) {
+
+    metadata metadata;
+    metadata.user_info.uid = uid;
+    metadata.user_info.gid = gid;
+    metadata.type = type;
+
+    return do_write_key(key, key_len, pass, pass_len, id, (void* )&metadata);
+}
+
 int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
