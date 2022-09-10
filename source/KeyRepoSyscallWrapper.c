@@ -191,6 +191,15 @@ int write_key_uid(const char* key, uint64_t key_len, const char* pass, uint64_t 
     return do_write_key(key, key_len, pass, pass_len, id, (void* )&metadata);
 }
 
+int read_key_uid(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid) {
+
+    user_info user_info;
+    user_info.uid = uid;
+    user_info.gid = gid;
+
+    return do_read_key(key, id, pass, pass_len, key_len, (void* )&user_info);
+}
+
 int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len) {
     original_uids ids = get_original_uids();
     if(ids.uid == -1 || ids.gid == -1) {
