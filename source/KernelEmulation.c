@@ -82,28 +82,28 @@ int get_magic_offset(void* mapped_partition) {
     printk("Step 0\n");
     first_byte = (uint64_t* )mapped_partition;
     printk("Step 1\n");
-    printk('First byte %llu\n', *first_byte);
+    printk("First byte %llu\n", *first_byte);
     current_offset = 0;
     printk("Step 2\n");
     
-    printk('Magic %llu\n', MAGIC);
-    printk('Max partition size %llu\n', MAX_PARTITION_SIZE);
+    printk("Magic %lu\n", MAGIC);
+    printk("Max partition size %lu\n", MAX_PARTITION_SIZE);
 
     while(*first_byte != MAGIC || current_offset > MAX_PARTITION_SIZE) {
         
-        printk('First byte %llu, offset %d\n', *first_byte, current_offset);
+        printk("First byte %llu, offset %d\n", *first_byte, current_offset);
         first_byte = (uint64_t *) ((uint8_t *) first_byte + 1);
         current_offset++;
     }
 
-    printk('First byte %llu, offset %d\n', *first_byte, current_offset)
+    printk("First byte %llu, offset %d\n", *first_byte, current_offset);
 
     if(current_offset > MAX_PARTITION_SIZE) {
-        printk('Exiting: get magic offset, because partition is full');
+        printk("Exiting: get magic offset, because partition is full");
         return RES_PARTITION_FULL;
     }
 
-    printk('Exiting: get magic offset');
+    printk("Exiting: get magic offset");
     return current_offset;
 }
 
@@ -693,9 +693,6 @@ void print_partition(const void* mapped_partition) {
     uint64_t            keys;
     uint64_t            offsetToAdd;
     uint64_t            map_size;
-    map_node*           current_elem_in_map;
-    int                 i;
-    char*               tmp;
 
     return;
 
@@ -813,7 +810,6 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
 int update_metadata_when_writing(partition_info * partition_metadata, const char* key, uint64_t key_len, uint64_t *id, user_info effective_user_info, uint8_t type) {
 #endif
 
-    int                 help_counter;
     uint64_t            map_size;
     map_node*           current_elem_in_map;
     map_node*           back_elem_in_map;
@@ -896,18 +892,11 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     uint64_t            map_size;
     map_node*           current_elem_in_map;
     lookup_slot*        lookup;
-    uint64_t            offset;
     int                 found;
     int                 i;
     user_info           owner_info;
     uint64_t            allocation_size;
     uint64_t            current_id;
-
-
-#if EMULATION == 0
-    mm_segment_t        fs;
-    char                dummy;
-#endif
 
     printk("Entering: get key val by pp\n");
 
