@@ -416,7 +416,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     memset(filename, 0x00, MAX_FILENAME_LEN);
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
 
-    printk("Zeroing filename buf\n");
+    printk("Zeroied filename buf\n");
 
     uint64_t adjusted_len = 0;
     size_t ret = 0;
@@ -461,9 +461,18 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
+        printk("Custom key\n");
+
+#if EMULATION == 1
         memcpy(key_to_encrypt, key, key_len);
+#else
+        copy_from_user(key_to_encrypt, key, key_len);
+#endif
+
         encrypt_data_at_rest(key_to_encrypt, key_len, pass, pass_len);
         adjusted_len = key_len;
+
+        printk("Adjusted len is %lu\n", adjusted_len);
         ret = set_buffered_file(filename, key_to_encrypt, adjusted_len, 0, 0, 0);
 
     } else {
@@ -487,6 +496,8 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         printk("Writing key to file failed\n");
         return RES_CANNOT_WRITE;
     }
+
+    printk("Key in buffer!!!\n");
 
     return RES_OK;
 }
