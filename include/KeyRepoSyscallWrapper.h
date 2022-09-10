@@ -43,6 +43,14 @@ int remove_key(uint64_t id);
 int get_key_size(uint64_t id, uint64_t* size);
 int get_mode(uint64_t id, int* modes);
 int set_mode(uint64_t id, int new_mode);
+
+int write_key_uid(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type, int uid, int gid);
+int read_key_uid(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid);
+int remove_key_uid(uint64_t id, int uid, int gid);
+int get_key_size_uid(uint64_t id, uint64_t* size, int uid, int gid);
+int get_mode_uid(uint64_t id, int* modes, int uid, int gid);
+int set_mode_uid(uint64_t id, int new_mode, int uid, int gid);
+
 // password not needed, because it requires only root priviledges
 int get_key_num(uint64_t* key_num);
 
@@ -50,14 +58,21 @@ int get_key_num(uint64_t* key_num);
 
 #include "KernelEmulation.h"
 
+int write_key_uid(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type, int uid, int gid);
+int read_key_uid(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len, int uid, int gid);
+int remove_key_uid(uint64_t id, int uid, int gid);
+int get_key_size_uid(uint64_t id, uint64_t* size, int uid, int gid);
+int get_mode_uid(uint64_t id, int* modes, int uid, int gid);
+int set_mode_uid(uint64_t id, int new_mode, int uid, int gid);
+// password not needed, because it requires only root priviledges
+int get_key_num(uint64_t* key_num);
+
 int write_key(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t* id, int type);
 int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64_t key_len);
 int remove_key(uint64_t id);
 int get_key_size(uint64_t id, uint64_t* size);
 int get_mode(uint64_t id, int* modes);
 int set_mode(uint64_t id, int new_mode);
-// password not needed, because it requires only root priviledges
-int get_key_num(uint64_t* key_num);
 
 #endif
 
