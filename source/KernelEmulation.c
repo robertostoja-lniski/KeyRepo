@@ -61,13 +61,13 @@ static unsigned int test_skcipher_encdec(struct skcipher_def *sk,
 /* Initialize and trigger cipher operation */
 static int test_skcipher(void)
 {
-    struct skcipher_def sk;
-    struct crypto_skcipher *skcipher = NULL;
-    struct skcipher_request *req = NULL;
-    char *scratchpad = NULL;
-    char *ivdata = NULL;
-    unsigned char key[32];
-    int ret = -EFAULT;
+    struct          skcipher_def sk;
+    struct          crypto_skcipher *skcipher = NULL;
+    struct          skcipher_request *req = NULL;
+    char            *scratchpad = NULL;
+    char            *ivdata = NULL;
+    unsigned char   key[32];
+    int             ret = -EFAULT;
 
     skcipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
     if (IS_ERR(skcipher)) {
@@ -103,12 +103,15 @@ static int test_skcipher(void)
     get_random_bytes(ivdata, 16);
 
     /* Input data will be random */
-    scratchpad = kmalloc(16, GFP_KERNEL);
+    scratchpad = kmalloc(17, GFP_KERNEL);
     if (!scratchpad) {
         pr_info("could not allocate scratchpad\n");
         goto out;
     }
-    get_random_bytes(scratchpad, 16);
+    // get_random_bytes(scratchpad, 16);
+    memcpy(scratchpad, "1234567812345678", 16);
+    memset(scratchpad + 16, 0x00, 1);
+    printk("Scratchpad values is %s\n", scratchpad);
 
     sk.tfm = skcipher;
     sk.req = req;
@@ -118,12 +121,15 @@ static int test_skcipher(void)
     skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
     crypto_init_wait(&sk.wait);
 
+    printk("New scratchpad value is %s\n", scratchpad);
+
     /* encrypt data */
     ret = test_skcipher_encdec(&sk, 1);
     if (ret)
         goto out;
 
-    pr_info("Encryption triggered successfully\n");
+    printk("New scratchpad value after is %s\n", scratchpad);
+    printk("Encryption triggered successfully\n");
 
 out:
     if (skcipher)
