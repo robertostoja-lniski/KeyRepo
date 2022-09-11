@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     printf("Key is %s\n", key);
     // key type set for custom
     int writeRet = write_key(key, (uint64_t)5, "pass", (uint64_t)4, &id, 0);
-    printf("Write ret: %d\n", writeRet);
+    printf("Write ret: %d, id is: %llu\n", writeRet, id);
 
     uint64_t keyNum;
     int getKeyNumRet = get_key_num(&keyNum);

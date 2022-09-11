@@ -627,7 +627,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         strcpy(key + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
 #endif
 
-        printk("Key successfully copied!\n", key_buf);
+        printk("Key successfully copied!\n";
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
@@ -640,12 +640,13 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
 
         memset(key_buf, 0x00, key_len + 1);
         printk("Key buf initialised: %s\n", key_buf);
+        read_start = key_buf;
 #else
         strcpy(key, RSA_BEGIN_LABEL);
-        read_start = key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+        read_start = key;
 #endif
 
-        ret = get_buffered_file(filename, &key, &actual_size, key_len, 0);
+        ret = get_buffered_file(filename, &read_start, &actual_size, key_len, 0);
         if (ret != RES_OK) {
             return ret;
         }
@@ -653,10 +654,10 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return RES_CANNOT_READ;
         }
 
-        ret = decrypt_data_at_rest(&key, key_len, pass, pass_len);
+        ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
 
 #if EMULATION == 0
-        printk("Descrypted..\n", key_buf);
+        printk("Descrypted..\n");
         copy_to_user(key, key_buf, key_len);
 #endif
 
