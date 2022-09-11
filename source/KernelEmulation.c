@@ -422,6 +422,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     printk("Time for copying pass");
     printk("Pass len is %lu", pass_len);
+    printk("Key len is %lu", key_len);
 
 #if EMULATION == 1
     local_pass = (char* )malloc(pass_len);
@@ -476,6 +477,8 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
         printk("Encrypted\n");
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
+
+        printk("Key len %lu, adjusted len %lu\n", key_len, adjusted_len);
 
         char* key_addr;
         key_addr = key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
@@ -857,6 +860,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     printk("Copied id.\n");
 #endif
 
+    printk("Writting key of len %llu to custom file with pass of len %llu\n", key_len, pass_len);
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, id_val, type);
     if (ret < 0) {
         return ret;
@@ -1504,7 +1508,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
     }
 #endif
 
-    printk("Kernel space memory successfully allocated, %llu of password to be copied\n", key_len);
+    printk("Kernel space memory successfully allocated, %llu of key to be copied\n", key_len);
 
     proc_rights.uid = uid;
     proc_rights.gid = gid;
