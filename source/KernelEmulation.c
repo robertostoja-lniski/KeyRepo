@@ -571,31 +571,80 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     int         ret;
     size_t      actual_size;
     char*       read_start;
+    char*       key_buf;
+
+#if EMULATION == 0
+    char*       filename;
+#endif
 
     adjusted_len = 0;
     ret = 0;
 
+    printk("Entering read key to custom file\n");
+
+#if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
+#else
+    filename = (char* )kmalloc(MAX_FILENAME_LEN, GFP_KERNEL);
+    if (filename == NULL) {
+        return RES_CANNOT_ALLOC;
+    }
+#endif
+
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
     memset(key + key_len, 0x00, sizeof(char));
-    
+
     if (type == KEY_TYPE_RSA) {
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
-        strcpy(key, RSA_BEGIN_LABEL);
+#if EMULATION == 0
+        key_buf = (char *)kmalloc(adjusted_len + 1, GFP_KERNEL);
+        if (key_buf == NULL) {
+            kfree(filename);
+            return RES_CANNOT_ALLOC;
+        }
 
+        memset(key_buf, 0x00, adjusted_len + 1);
+        strcpy(key_buf, RSA_BEGIN_LABEL);
+
+        printk("Key buf initialised: %s\n", key_buf);
+        read_start = key_buf + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+#else
+        strcpy(key, RSA_BEGIN_LABEL);
         read_start = key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+#endif
+
         ret = get_buffered_file(filename, &read_start, &actual_size, key_len, 0);
         if (ret != RES_OK) {
             return ret;
         }
 
-        ret = decrypt_data_at_rest(&read_start, adjusted_len, pass, pass_len);
+#if EMULATION == 0
+        printk("Descrypted..\n", key_buf);
+        strcpy(key_buf + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
+        copy_to_user(key, key_buf, adjusted_len);
+#else
         strcpy(key + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
+#endif
+
+        printk("Key successfully copied!\n", key_buf);
 
     } else if (type == KEY_TYPE_CUSTOM) {
 
-        adjusted_len = key_len;
+#if EMULATION == 0
+        key_buf = (char *)kmalloc(key_len + 1, GFP_KERNEL);
+        if (key_buf == NULL) {
+            kfree(filename);
+            return RES_CANNOT_ALLOC;
+        }
+
+        memset(key_buf, 0x00, key_len + 1);
+        printk("Key buf initialised: %s\n", key_buf);
+#else
+        strcpy(key, RSA_BEGIN_LABEL);
+        read_start = key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+#endif
+
         ret = get_buffered_file(filename, &key, &actual_size, key_len, 0);
         if (ret != RES_OK) {
             return ret;
@@ -604,12 +653,16 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return RES_CANNOT_READ;
         }
 
-        ret = decrypt_data_at_rest(&key, adjusted_len, pass, pass_len);
-        
+        ret = decrypt_data_at_rest(&key, key_len, pass, pass_len);
+
+#if EMULATION == 0
+        printk("Descrypted..\n", key_buf);
+        copy_to_user(key, key_buf, key_len);
+#endif
+
     } else {
         return RES_NO_KEY_TYPE;
     }
-
 
     if(ret != RES_OK) {
         printk("Reading key from file failed\n");
@@ -956,6 +1009,7 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     printk("Id is\n");
     next_id = generate_random_id(partition_metadata, &mod);
 
+    printk("Id is %llu, mod is %d\n", next_id, mod);
     lookup = ((lookup_slot* )((map_node* )(partition_metadata + 1) + DEFAULT_MAP_SIZE)) + mod;
     lookup -> cnt ++;
 
@@ -1019,6 +1073,8 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
     map_size = partition_metadata->capacity;
 
     current_elem_in_map = (map_node* )(partition_metadata + 1);
+
+    printk("Id is %llu, mod is %d\n", next_id, fast_modulo(id, LOOKUP_MAP_SIZE_POW));
     lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");
@@ -1566,7 +1622,7 @@ SYSCALL_DEFINE6(read_key, char __user *, key, uint64_t, id, const char __user *,
     gid = ((user_info* )user_data)->gid;
     uid = ((user_info* )user_data)->uid;
 
-    printk("Entering: readKey recompiled\n");
+    printk("Entering: read key\n");
     // id = 0 is reserved for empty record in key map
     if (id == 0) {
         return RES_NOT_FOUND;
@@ -1583,6 +1639,8 @@ SYSCALL_DEFINE6(read_key, char __user *, key, uint64_t, id, const char __user *,
     if (!is_repo_initialized()) {
         return RES_NOT_FOUND;
     }
+
+    printk("Inputs id %llu, pass_len %llu, key_len %llu correct...\n", id, pass_len, key_len);
 
     used_pass_len = pass_len;
 #if EMULATION == 1
