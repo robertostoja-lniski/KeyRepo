@@ -400,15 +400,14 @@ uint64_t generate_random_id(partition_info* partition_metadata, int* mod){
 
 int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
 
-    printk("Entering write key to custom file\n");
-
     char*       key_to_encrypt;
     char*       local_pass;
     uint64_t    adjusted_len;
     size_t      ret;
     char*       key_addr;
 
-    printk("Max filename len is %lu\n", MAX_FILENAME_LEN);
+    printk("Entering write key to custom file\n");
+    printk("Max filename len is %u\n", MAX_FILENAME_LEN);
 
 #if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
@@ -421,7 +420,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
     printk("Time for copying pass");
-    printk("Pass len is %lu", pass_len);
+    printk("Pass len is %llu", pass_len);
     printk("Key len is %llu", key_len);
 
 #if EMULATION == 1
@@ -442,7 +441,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     memset(filename, 0x00, MAX_FILENAME_LEN);
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
 
-    printk("Zeroied filename buf\n");
+    printk("Zeroied filename buf. Filename is %s\n", filename);
 
     key_to_encrypt = NULL;
     adjusted_len = 0;
@@ -511,13 +510,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         copy_from_user(local_pass, pass, pass_len);
 #endif
 
-        printk("Encrypting\n");
-
+        printk("Encrypting key of len %llu with pass of len %llu\n", key_len, pass_len);
         encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        printk("Encrypted key is %s\n", key_to_encrypt);
         adjusted_len = key_len;
 
         printk("Adjusted len is %llu\n", adjusted_len);
         ret = set_buffered_file(filename, key_to_encrypt, adjusted_len, 0, 0, 0);
+        printk("Key saved with ret %d\n", ret);
 
     } else {
 
@@ -678,9 +678,7 @@ int init_file_if_not_defined(void) {
     partition_info*     partition_metadata;
 
     printk("Entering init file if not defined %s\n", partition);
-    printk("Next action: getting fs\n");
     fs = get_fs();
-    printk("Next action: setting fs\n");
     set_fs(KERNEL_DS);
     part_size = 0;
 
@@ -698,7 +696,7 @@ int init_file_if_not_defined(void) {
 
         vfs_stat(partition, stat);
         part_size = stat->size;
-        printk("Part size is %lu\n", part_size);
+        printk("Partitions size is %lu\n", part_size);
         kfree(stat);
         filp_close(fp, NULL);
 
@@ -828,8 +826,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
         return RES_PARTITION_FULL;
     }
 
-    printk("Entering add key node to partition\n");
-    printk("Key len is %llu\n", key_len);
+    printk("Entering add key node of %llu to partition\n", key_len);
     if(init_file_if_not_defined() != 0) {
         return RES_CANNOT_INIT;
     }
@@ -849,7 +846,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     printk("Magic is %d bytes from file start\n", magic_offset);
 
     partition_start = (partition_info* )((uint8_t* )partition_metadata + magic_offset);
-    printk("Key num is %llu\n", partition_start->number_of_keys);
+    printk("Key num is %lu\n", partition_start->number_of_keys);
 
     // check if max key num is reached
     if(partition_start->number_of_keys == DEFAULT_MAP_SIZE) {
@@ -866,25 +863,20 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
         return RES_CANNOT_WRITE;
     }
 
-    printk("Writing key\n");
-
 #if EMULATION == 1
     id_val = *id;
 #else
 // user has acces to id now
-    printk("Assigning id\n");
     copy_from_user(&id_val, id, sizeof(id_val));
-    printk("Copied id.\n");
 #endif
 
-    printk("Writting key of len %llu to custom file with pass of len %llu and type %d\n", key_len, pass_len, type);
+    printk("Writing key of len %llu to custom file with pass of len %llu and type %d\n", key_len, pass_len, type);
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, id_val, type);
     if (ret < 0) {
         return ret;
     }
 
-    printk("Key to partition added\n");
-    printk("Saving buffer with size %lu\n", file_size);
+    printk("Key, added. Saving buffer with size %lu\n", file_size);
 
     print_partition(partition_metadata);
     // we overwrite partition only if writing key succeeded
@@ -1438,7 +1430,7 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
     }
 #endif
 
-    printk("Entering: get current key num\n");
+    printk("\n Entering: get current key num\n");
     ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
         printk("Exiting: get current key num\n");
@@ -1535,7 +1527,6 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
 #endif
 
     printk("Key will be added to partition\n");
-
     ret = add_key_to_partition(key, used_key_len, pass, used_pass_len, id, proc_rights, type);
     if(ret < 0) {
 #if EMULATION == 0
