@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     const char* key = "abcde";
     uint64_t id;
     printf("Key is %s\n", key);
-    int writeRet = write_key(key, (uint64_t)5, "pass", (uint64_t)4, &id, 1);
+    // key type set for custom
+    int writeRet = write_key(key, (uint64_t)5, "pass", (uint64_t)4, &id, 0);
     printf("Write ret: %d\n", writeRet);
 
     uint64_t keyNum;

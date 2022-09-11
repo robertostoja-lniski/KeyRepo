@@ -407,6 +407,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     char*       local_pass;
     uint64_t    adjusted_len;
     size_t      ret;
+    char*       key_addr;
 
     printk("Max filename len is %lu\n", MAX_FILENAME_LEN);
 
@@ -465,6 +466,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
         printk("Rsa key\n");
 
+        if (key_len <= strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) + strnlen(RSA_END_LABEL, MAX_LABEL_LEN) + 1) {
+            kfree(local_pass);
+#if EMULATION == 0
+            kfree(filename);
+#endif
+            return RES_INPUT_ERR;
+        }
+
 #if EMULATION == 1
         memcpy(key_to_encrypt, key, key_len);
         memcpy(local_pass, pass, pass_len);
@@ -478,14 +487,13 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         printk("Encrypted\n");
 
         printk("Adjusted len now %llu\n", adjusted_len);
-        printk("RSA begin label size %llu\n", strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN));
-        printk("RSA end label size %llu\n", strnlen(RSA_END_LABEL, MAX_LABEL_LEN));
+        printk("RSA begin label size %lu\n", strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN));
+        printk("RSA end label size %lu\n", strnlen(RSA_END_LABEL, MAX_LABEL_LEN));
 
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
         printk("Key len %llu, adjusted len %llu\n", key_len, adjusted_len);
 
-        char* key_addr;
         key_addr = key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
         printk("Setting buffered file\n");
         ret = set_buffered_file(filename, key_addr, adjusted_len, 0, 0, 0);
@@ -509,7 +517,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
         adjusted_len = key_len;
 
-        printk("Adjusted len is %lu\n", adjusted_len);
+        printk("Adjusted len is %llu\n", adjusted_len);
         ret = set_buffered_file(filename, key_to_encrypt, adjusted_len, 0, 0, 0);
 
     } else {
@@ -978,8 +986,8 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     printk("New item values:\n");
     printk("id: %llu\n", current_elem_in_map->id);
     printk("size: %u\n", current_elem_in_map->key_info.size);
-    printk("uid: %lu\n", current_elem_in_map->key_info.owner_info.uid);
-    printk("gid: %lu\n", current_elem_in_map->key_info.owner_info.gid);
+    printk("uid: %u\n", current_elem_in_map->key_info.owner_info.uid);
+    printk("gid: %u\n", current_elem_in_map->key_info.owner_info.gid);
 
     partition_metadata->number_of_keys += 1;
 
