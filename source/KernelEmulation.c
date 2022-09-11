@@ -103,7 +103,6 @@ int get_magic_offset(void* mapped_partition) {
     printk("Step 0\n");
     first_byte = (uint64_t* )mapped_partition;
     printk("Step 1\n");
-    printk("First byte %llu\n", *first_byte);
     current_offset = 0;
     printk("Step 2\n");
     
@@ -862,6 +861,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
         return RES_PARTITION_FULL;
     }
 
+    printk("Updating metadata with key of type %d\n", type);
     if (update_metadata_when_writing(partition_start, key, key_len, id, rights, type) < 0) {
         return RES_CANNOT_WRITE;
     }
@@ -877,7 +877,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     printk("Copied id.\n");
 #endif
 
-    printk("Writting key of len %llu to custom file with pass of len %llu\n", key_len, pass_len);
+    printk("Writting key of len %llu to custom file with pass of len %llu and type %d\n", key_len, pass_len, type);
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, id_val, type);
     if (ret < 0) {
         return ret;
@@ -1498,7 +1498,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
 
 #endif
 
-    printk("Continuing write key\n");
+    printk("Continuing write key of type %d\n", type);
 
     if (type != KEY_TYPE_RSA && type != KEY_TYPE_CUSTOM) {
         return RES_INPUT_ERR;
