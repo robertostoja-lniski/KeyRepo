@@ -169,11 +169,11 @@ size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc,
 
     // truncate only if necessary O_TRUNC flag hugely decreses efficiency
     if(trunc) {
-            fp = filp_open(partition, O_RDWR | O_TRUNC, 0644);
-            printk("Truncated if filed successfully opened\n");
+        fp = filp_open(file, O_RDWR | O_TRUNC, 0644);
+        printk("Truncated if filed successfully opened\n");
     } else {
-            fp = filp_open(partition, O_RDWR , 0644);
-            printk("NOT Truncated if filed successfully opened\n");
+        fp = filp_open(file, O_RDWR , 0644);
+        printk("NOT Truncated if filed successfully opened\n");
     }
 
     if (IS_ERR(fp)) {
@@ -272,7 +272,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     if (IS_ERR(fp)) {
         set_fs(fs);
         printk("Open file error!\n");
-        return NULL;
+        return RES_CANNOT_OPEN;
     }
 
     printk("Next action: stat kmalloc\n");
@@ -281,7 +281,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     if (!stat) {
         set_fs(fs);
         printk("Kmalloc failed\n");
-        return NULL;
+        return RES_CANNOT_ALLOC;
     }
 
     printk("Next action: vfs_stat\n");
@@ -295,7 +295,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
         read_req = stat->size;
     }
 
-    printk("Qrepo wants to read %llu bytes from a buffer\n", read_req);
+    printk("Qrepo wants to read %lu bytes from a buffer\n", read_req);
 
     *size = read_req;
     printk("File size is %lu\n", *size);
@@ -310,7 +310,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
             set_fs(fs);
             kfree(stat);
             printk("malloc input buf error!\n");
-            return NULL;
+            return RES_CANNOT_ALLOC;
         }
     }
 
@@ -405,8 +405,6 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     uint64_t    adjusted_len;
     size_t      ret;
     char*       key_addr;
-    int         id_len;
-    uint64_t    id_copy;
 #if EMULATION == 0
     char*       filename;
 #endif
@@ -1434,7 +1432,7 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
     }
 #endif
 
-    printk("\n Entering: get current key num\n");
+    printk("Entering: get current key num\n");
     ret = get_buffered_file(partition, &mapped_partition, &file_size, 0, 1);
     if(ret != RES_OK) {
         printk("Exiting: get current key num\n");
@@ -1457,7 +1455,7 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
     kfree(mapped_partition);
 #endif
 
-    printk("Exiting: get current key num\n");
+    printk("Exiting: get current key num with RES_OK\n");
     return RES_OK;
 }
 
@@ -1540,7 +1538,7 @@ SYSCALL_DEFINE6(write_key, const char __user *, key, uint64_t, key_len, const ch
         return ret;
     }
 
-    printk("Exiting write key\n");
+    printk("Exiting: write key\n");
 
 #if EMULATION == 0
 //    down(&sem);
