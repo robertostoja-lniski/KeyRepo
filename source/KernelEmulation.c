@@ -422,7 +422,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     printk("Time for copying pass");
     printk("Pass len is %lu", pass_len);
-    printk("Key len is %lu", key_len);
+    printk("Key len is %llu", key_len);
 
 #if EMULATION == 1
     local_pass = (char* )malloc(pass_len);
@@ -476,9 +476,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         printk("Memory copied\n");
         encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
         printk("Encrypted\n");
+
+        printk("Adjusted len now %llu\n", adjusted_len);
+        printk("RSA begin label size %llu\n", strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN));
+        printk("RSA end label size %llu\n", strnlen(RSA_END_LABEL, MAX_LABEL_LEN));
+
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
-        printk("Key len %lu, adjusted len %lu\n", key_len, adjusted_len);
+        printk("Key len %llu, adjusted len %llu\n", key_len, adjusted_len);
 
         char* key_addr;
         key_addr = key_to_encrypt + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
@@ -549,20 +554,24 @@ int delete_custom_file(uint64_t id) {
 
 int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uint64_t pass_len, uint64_t id, uint8_t type) {
 
+    uint64_t    adjusted_len;
+    int         ret;
+    size_t      actual_size;
+    char*       read_start;
+
+    adjusted_len = 0;
+    ret = 0;
+
     char filename[MAX_FILENAME_LEN];
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
     memset(key + key_len, 0x00, sizeof(char));
-    
-    uint64_t    adjusted_len = 0;
-    int         ret = 0;
-    size_t      actual_size;
     
     if (type == KEY_TYPE_RSA) {
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
         strcpy(key, RSA_BEGIN_LABEL);
 
-        char* read_start = key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
+        read_start = key + strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN);
         ret = get_buffered_file(filename, &read_start, &actual_size, key_len, 0);
         if (ret != RES_OK) {
             return ret;
@@ -911,6 +920,7 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     uint64_t            next_id;
     uint64_t            i;
     int                 mod;
+    key_info            key_info;
 
     printk("Entering add key node to partition\n");
     // printk("Key value is: %s\n", key);
@@ -952,7 +962,6 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     printk("Copied and exiting map iteration.\n");
 #endif
 
-    key_info key_info;
     key_info.type = type;
     key_info.size = key_len;
     key_info.owner_info = effective_user_info;
@@ -969,8 +978,8 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     printk("New item values:\n");
     printk("id: %llu\n", current_elem_in_map->id);
     printk("size: %u\n", current_elem_in_map->key_info.size);
-    printk("uid: %llu\n", current_elem_in_map->key_info.owner_info.uid);
-    printk("gid: %llu\n", current_elem_in_map->key_info.owner_info.gid);
+    printk("uid: %lu\n", current_elem_in_map->key_info.owner_info.uid);
+    printk("gid: %lu\n", current_elem_in_map->key_info.owner_info.gid);
 
     partition_metadata->number_of_keys += 1;
 
