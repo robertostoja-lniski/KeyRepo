@@ -560,7 +560,31 @@ int delete_custom_file(uint64_t id) {
     snprintf(filename, MAX_FILENAME_LEN - 1, "%s%llu", partition_base, id);
     return remove(filename);
 #else
-    return 0;
+    char*       filename;
+    struct file         *fp;
+    mm_segment_t        fs;
+    filename = (char* )kmalloc(MAX_FILENAME_LEN, GFP_KERNEL);
+    if (filename == NULL) {
+        return RES_CANNOT_ALLOC;
+    }
+
+    snprintf(filename, MAX_FILENAME_LEN - 1, "%s%llu", partition_base, id);
+    printk("Removing file %s\n", filename);
+
+    fs = get_fs();
+    set_fs(KERNEL_DS);
+
+    fp = filp_open(filename, O_TRUNC, 0644);
+    if (IS_ERR(fp)) {
+        printk("Cannot open file\n");
+        return RES_CANNOT_OPEN;
+    }
+
+    filp_close(file, NULL);
+
+    set_fs(fs);
+
+    return RES_OK;
 #endif
 }
 
