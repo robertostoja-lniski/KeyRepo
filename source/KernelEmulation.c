@@ -13,7 +13,7 @@
 // kernel functions signatures defined for user space
 #if EMULATION == 1
 void printk(const char* dummy, ...) {
-//	 printf(dummy);
+//	 printk(dummy);
 }
 void get_random_bytes(uint64_t* n, size_t size) {
     assert(size == sizeof(*n));
@@ -536,7 +536,6 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         return RES_NO_KEY_TYPE;
     }
 
-
     kfree(local_pass);
     kfree(key_to_encrypt);
 
@@ -558,7 +557,7 @@ int delete_custom_file(uint64_t id) {
 
 #if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
-    snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
+    snprintf(filename, MAX_FILENAME_LEN - 1, "%s%llu", partition_base, id);
     return remove(filename);
 #else
     return 0;
@@ -580,7 +579,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     adjusted_len = 0;
     ret = 0;
 
-    printk("Entering read key to custom file\n");
+    printk("Entering read key from custom file\n");
 
 #if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
@@ -595,6 +594,9 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     memset(key + key_len, 0x00, sizeof(char));
 
     if (type == KEY_TYPE_RSA) {
+
+        printk("Type RSA\n");
+
         adjusted_len = key_len - strnlen(RSA_BEGIN_LABEL, MAX_LABEL_LEN) - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1;
 
 #if EMULATION == 0
@@ -619,6 +621,8 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return ret;
         }
 
+        ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
+
 #if EMULATION == 0
         printk("Decrypted..\n");
         strcpy(key_buf + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
@@ -627,9 +631,11 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         strcpy(key + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
 #endif
 
-        printk("Key successfully copied!\n";
+        printk("Key successfully copied!\n");
 
     } else if (type == KEY_TYPE_CUSTOM) {
+
+        printk("Type Custom\n");
 
 #if EMULATION == 0
         key_buf = (char *)kmalloc(key_len + 1, GFP_KERNEL);
@@ -639,10 +645,9 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         }
 
         memset(key_buf, 0x00, key_len + 1);
-        printk("Key buf initialised: %s\n", key_buf);
+        printk("Key buf of size %llu (with added 1) initialised: %s\n", key_len + 1, key_buf);
         read_start = key_buf;
 #else
-        strcpy(key, RSA_BEGIN_LABEL);
         read_start = key;
 #endif
 
@@ -650,15 +655,18 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         if (ret != RES_OK) {
             return ret;
         }
+
+        printk("Key buf read: %s\n", read_start);
         if (actual_size != key_len) {
             return RES_CANNOT_READ;
         }
 
         ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
+        printk("Key buf plain: %s\n", read_start);
 
 #if EMULATION == 0
         printk("Descrypted..\n");
-        copy_to_user(key, key_buf, key_len);
+        copy_to_user(key, read_start, key_len);
 #endif
 
     } else {
@@ -1117,7 +1125,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
         allocation_size = key_len;
     }
 
-    printk("Exiting: CHANGED get key val by pp");
+    printk("Exiting: CHANGED get key val by pp\n");
     return RES_OK;
 }
 int get_key_size_by_partition_pointer(void* mapped_partition, uint64_t id, uint64_t* key_len, user_info effective_user_info) {
@@ -1659,7 +1667,7 @@ SYSCALL_DEFINE6(read_key, char __user *, key, uint64_t, id, const char __user *,
         return ret;
     }
 
-    printk("Exiting: readKey\n");
+    printk("Exiting: read key with ret %d\n", ret);
     return RES_OK;
 }
 
