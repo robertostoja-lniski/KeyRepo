@@ -437,11 +437,11 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     }
 
 
-    printk("Zeroing filename buf\n");
+    printk("Zeroing filename buf with partition base %s and id %llu\n", partition_base, id);
     memset(filename, 0x00, MAX_FILENAME_LEN);
     snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
 
-    printk("Zeroied filename buf. Filename is %s\n", filename);
+    printk("Filled filename buf. Filename is %s\n", filename);
 
     key_to_encrypt = NULL;
     adjusted_len = 0;
@@ -870,7 +870,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     copy_from_user(&id_val, id, sizeof(id_val));
 #endif
 
-    printk("Writing key of len %llu to custom file with pass of len %llu and type %d\n", key_len, pass_len, type);
+    printk("Writing key of len %llu to custom file with pass of len %llu id val %llu and type %d\n", key_len, pass_len, id_val, type);
     ret = write_key_to_custom_file(key, key_len, pass, pass_len, id_val, type);
     if (ret < 0) {
         return ret;
@@ -957,7 +957,7 @@ int update_metadata_when_writing(partition_info * partition_metadata, const char
     // memcpy is to make emulation as close to final code, which uses copy_to_user
     memcpy(id, &next_id, sizeof(next_id));
 #else
-    printk("Assigning NEW CHANGE id\n");
+    printk("Assigning NEW CHANGE id of value %llu\n", next_id);
     copy_to_user(id, &next_id, sizeof(next_id));
     printk("Copied and exiting map iteration.\n");
 #endif
