@@ -405,6 +405,11 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
     uint64_t    adjusted_len;
     size_t      ret;
     char*       key_addr;
+    int         id_len;
+    uint64_t    id_copy;
+#if EMULATION == 0
+    char*       filename;
+#endif
 
     printk("Entering write key to custom file\n");
     printk("Max filename len is %u\n", MAX_FILENAME_LEN);
@@ -412,7 +417,6 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
 #else
-    char* filename;
     filename = (char* )kmalloc(MAX_FILENAME_LEN, GFP_KERNEL);
     if (filename == NULL) {
         return RES_CANNOT_ALLOC;
@@ -436,10 +440,10 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         return RES_CANNOT_ALLOC;
     }
 
-
-    printk("Zeroing filename buf with partition base %s and id %llu\n", partition_base, id);
+    printk("Zeroing filename buf with partition base %s and id %llu of len\n", partition_base, id);
     memset(filename, 0x00, MAX_FILENAME_LEN);
-    snprintf(filename, sizeof(filename) + sizeof(id), "%s%llu", partition_base, id);
+    // 1 for null-termination
+    snprintf(filename, MAX_FILENAME_LEN - 1, "%s%llu", partition_base, id);
 
     printk("Filled filename buf. Filename is %s\n", filename);
 
@@ -517,7 +521,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
         printk("Adjusted len is %llu\n", adjusted_len);
         ret = set_buffered_file(filename, key_to_encrypt, adjusted_len, 0, 0, 0);
-        printk("Key saved with ret %d\n", ret);
+        printk("Key saved with ret %ld\n", ret);
 
     } else {
 
@@ -846,7 +850,7 @@ int add_key_to_partition(const char* __user key, uint64_t key_len, const char* _
     printk("Magic is %d bytes from file start\n", magic_offset);
 
     partition_start = (partition_info* )((uint8_t* )partition_metadata + magic_offset);
-    printk("Key num is %lu\n", partition_start->number_of_keys);
+    printk("Key num is %u\n", partition_start->number_of_keys);
 
     // check if max key num is reached
     if(partition_start->number_of_keys == DEFAULT_MAP_SIZE) {
