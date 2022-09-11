@@ -264,7 +264,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     loff_t              pos;
     size_t              ret;
 
-    printk("Entering get buffer file\n");
+    printk("Entering get buffer file and reading file %s\n", filepath);
     pos = 0;
 
     printk("Next action: getting and setting fs for kernel pool\n");
@@ -272,7 +272,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     set_fs(KERNEL_DS);
 
     printk("Opening partion\n");
-    fp = filp_open(partition, O_RDWR, 0644);
+    fp = filp_open(filepath, O_RDWR, 0644);
     if (IS_ERR(fp)) {
         set_fs(fs);
         printk("Open file error!\n");
@@ -289,7 +289,7 @@ int get_buffered_file(const char* filepath, char** source, size_t* size, size_t 
     }
 
     printk("Next action: vfs_stat\n");
-    vfs_stat(partition, stat);
+    vfs_stat(filepath, stat);
 
     if (read_req == 0) {
         read_req = stat->size;
@@ -590,7 +590,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     }
 #endif
 
-    snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
+    snprintf(filename, MAX_FILENAME_LEN, "%s%llu", partition_base, id);
     memset(key + key_len, 0x00, sizeof(char));
 
     if (type == KEY_TYPE_RSA) {
