@@ -11,6 +11,7 @@
     #include <crypto/skcipher.h>
     #include <linux/scatterlist.h>
     #include <crypto/hash.h>
+    #define IV_SIZE 16
 #endif
 
 // kernel functions signatures defined for user space
@@ -56,6 +57,298 @@ static unsigned int test_skcipher_encdec(struct skcipher_def *sk,
             pr_info("skcipher encrypt returned with result %d\n", rc);
 
     return rc;
+}
+
+/* Initialize and trigger cipher operation */
+static int test_skcipher_4(void)
+{
+    struct          skcipher_def sk;
+    struct          crypto_skcipher *skcipher = NULL;
+    struct          skcipher_request *req = NULL;
+    char            *scratchpad = NULL;
+    char            *ivdata = NULL;
+    unsigned char   key[32];
+    int             ret = -EFAULT;
+
+    skcipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
+    if (IS_ERR(skcipher)) {
+        pr_info("could not allocate skcipher handle\n");
+        return PTR_ERR(skcipher);
+    }
+
+    req = skcipher_request_alloc(skcipher, GFP_KERNEL);
+    if (!req) {
+        pr_info("could not allocate skcipher request\n");
+        ret = -ENOMEM;
+        goto out;
+    }
+
+    skcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
+                      crypto_req_done,
+                      &sk.wait);
+
+    /* AES 256 with random key */
+    get_random_bytes(&key, 32);
+    if (crypto_skcipher_setkey(skcipher, key, 32)) {
+        pr_info("key could not be set\n");
+        ret = -EAGAIN;
+        goto out;
+    }
+
+    /* IV will be random */
+    ivdata = kmalloc(16, GFP_KERNEL);
+    if (!ivdata) {
+        pr_info("could not allocate ivdata\n");
+        goto out;
+    }
+    get_random_bytes(ivdata, 16);
+
+    /* Input data will be random */
+    scratchpad = kmalloc(17, GFP_KERNEL);
+    if (!scratchpad) {
+        pr_info("could not allocate scratchpad\n");
+        goto out;
+    }
+    // get_random_bytes(scratchpad, 16);
+    memcpy(scratchpad, "1234567812345678", 16);
+    memset(scratchpad + 16, 0x00, 1);
+    printk("Scratchpad values is %s\n", scratchpad);
+
+    sk.tfm = skcipher;
+    sk.req = req;
+
+    /* We encrypt one block */
+    sg_init_one(&sk.sg, scratchpad, 16);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    crypto_init_wait(&sk.wait);
+
+    printk("[test 4] New scratchpad value is %s\n", scratchpad);
+
+    /* encrypt data */
+    ret = test_skcipher_encdec(&sk, 1);
+    if (ret)
+        goto out;
+
+    printk("[test 4] Enc dec scratchpad value after is %s\n", scratchpad);
+    
+    char* to_decrypt = (char* )kmalloc(17, GFP_KERNEL);
+    if (to_decrypt == NULL) {
+        goto out;
+    }
+
+    sg_copy_to_buffer(&sk.sg, 1, to_decrypt, 16);
+    printk("[test 4] To decrypt %s\n", to_decrypt);
+
+    sg_init_one(&sk.sg, to_decrypt, 16);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    crypto_init_wait(&sk.wait);
+
+    /* encrypt data */
+    ret = test_skcipher_encdec(&sk, 0);
+    if (ret)
+        goto out;
+
+    printk("[test 4] Decrypted? %s\n", to_decrypt);
+
+    char* decrypted = (char* )kmalloc(17, GFP_KERNEL);
+    if (decrypted == NULL) {
+        goto out;
+    }
+
+    sg_copy_to_buffer(&sk.sg, 1, decrypted, 16);
+    printk("[test 4] Decrypted %s\n", decrypted);
+
+    kfree(to_decrypt);
+    kfree(decrypted);
+    printk("[test 4] Encryption triggered successfully\n");
+
+out:
+    if (skcipher)
+        crypto_free_skcipher(skcipher);
+    if (req)
+        skcipher_request_free(req);
+    if (ivdata)
+        kfree(ivdata);
+    if (scratchpad)
+        kfree(scratchpad);
+    return ret;
+}
+
+/* Initialize and trigger cipher operation */
+static int test_skcipher_3(void)
+{
+    struct          skcipher_def sk;
+    struct          crypto_skcipher *skcipher = NULL;
+    struct          skcipher_request *req = NULL;
+    char            *scratchpad = NULL;
+    char            *ivdata = NULL;
+    unsigned char   key[32];
+    int             ret = -EFAULT;
+
+    skcipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
+    if (IS_ERR(skcipher)) {
+        pr_info("could not allocate skcipher handle\n");
+        return PTR_ERR(skcipher);
+    }
+
+    req = skcipher_request_alloc(skcipher, GFP_KERNEL);
+    if (!req) {
+        pr_info("could not allocate skcipher request\n");
+        ret = -ENOMEM;
+        goto out;
+    }
+
+    skcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
+                      crypto_req_done,
+                      &sk.wait);
+
+    /* AES 256 with random key */
+    get_random_bytes(&key, 32);
+    if (crypto_skcipher_setkey(skcipher, key, 32)) {
+        pr_info("key could not be set\n");
+        ret = -EAGAIN;
+        goto out;
+    }
+
+    /* IV will be random */
+    ivdata = kmalloc(16, GFP_KERNEL);
+    if (!ivdata) {
+        pr_info("could not allocate ivdata\n");
+        goto out;
+    }
+    get_random_bytes(ivdata, 16);
+
+    /* Input data will be random */
+    scratchpad = kmalloc(17, GFP_KERNEL);
+    if (!scratchpad) {
+        pr_info("could not allocate scratchpad\n");
+        goto out;
+    }
+    // get_random_bytes(scratchpad, 16);
+    memcpy(scratchpad, "1234567812345678", 16);
+    memset(scratchpad + 16, 0x00, 1);
+    printk("Scratchpad values is %s\n", scratchpad);
+
+    sk.tfm = skcipher;
+    sk.req = req;
+
+    /* We encrypt one block */
+    sg_init_one(&sk.sg, scratchpad, 16);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    crypto_init_wait(&sk.wait);
+
+    printk("[test 3] New scratchpad value is %s\n", scratchpad);
+
+    /* encrypt data */
+    ret = test_skcipher_encdec(&sk, 1);
+    if (ret)
+        goto out;
+
+    printk("[test 3] New scratchpad value after is %s\n", scratchpad);
+
+    ret = test_skcipher_encdec(&sk, 0);
+    if (ret)
+        goto out;
+
+    printk("[test 3] Enc dec scratchpad value after is %s\n", scratchpad);
+
+    printk("[test 3] Encryption triggered successfully\n");
+
+out:
+    if (skcipher)
+        crypto_free_skcipher(skcipher);
+    if (req)
+        skcipher_request_free(req);
+    if (ivdata)
+        kfree(ivdata);
+    if (scratchpad)
+        kfree(scratchpad);
+    return ret;
+}
+
+/* Initialize and trigger cipher operation */
+static int test_skcipher_2(void)
+{
+    struct          skcipher_def sk;
+    struct          crypto_skcipher *skcipher = NULL;
+    struct          skcipher_request *req = NULL;
+    char            *scratchpad = NULL;
+    char            *ivdata = NULL;
+    unsigned char   key[32];
+    int             ret = -EFAULT;
+
+    skcipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
+    if (IS_ERR(skcipher)) {
+        pr_info("could not allocate skcipher handle\n");
+        return PTR_ERR(skcipher);
+    }
+
+    req = skcipher_request_alloc(skcipher, GFP_KERNEL);
+    if (!req) {
+        pr_info("could not allocate skcipher request\n");
+        ret = -ENOMEM;
+        goto out;
+    }
+
+    skcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
+                      crypto_req_done,
+                      &sk.wait);
+
+    /* AES 256 with random key */
+    get_random_bytes(&key, 32);
+    if (crypto_skcipher_setkey(skcipher, key, 32)) {
+        pr_info("key could not be set\n");
+        ret = -EAGAIN;
+        goto out;
+    }
+
+    /* IV will be random */
+    ivdata = kmalloc(16, GFP_KERNEL);
+    if (!ivdata) {
+        pr_info("could not allocate ivdata\n");
+        goto out;
+    }
+    get_random_bytes(ivdata, 16);
+
+    /* Input data will be random */
+    scratchpad = kmalloc(17, GFP_KERNEL);
+    if (!scratchpad) {
+        pr_info("could not allocate scratchpad\n");
+        goto out;
+    }
+    // get_random_bytes(scratchpad, 16);
+    memcpy(scratchpad, "1234567812345678", 16);
+    memset(scratchpad + 16, 0x00, 1);
+    printk("Scratchpad values is %s\n", scratchpad);
+
+    sk.tfm = skcipher;
+    sk.req = req;
+
+    /* We encrypt one block */
+    sg_init_one(&sk.sg, scratchpad, 16);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    crypto_init_wait(&sk.wait);
+
+    printk("[test 2] New scratchpad value is %s\n", scratchpad);
+
+    /* encrypt data */
+    ret = test_skcipher_encdec(&sk, 0);
+    if (ret)
+        goto out;
+
+    printk("[test 2] New scratchpad value after is %s\n", scratchpad);
+    printk("[test 2] Encryption triggered successfully\n");
+
+out:
+    if (skcipher)
+        crypto_free_skcipher(skcipher);
+    if (req)
+        skcipher_request_free(req);
+    if (ivdata)
+        kfree(ivdata);
+    if (scratchpad)
+        kfree(scratchpad);
+    return ret;
 }
 
 /* Initialize and trigger cipher operation */
@@ -140,6 +433,153 @@ out:
         kfree(ivdata);
     if (scratchpad)
         kfree(scratchpad);
+    return ret;
+}
+
+/* Initialize and trigger cipher operation */
+static int test_skcipher_5(char** scratchpad, char* key, int enc_dec)
+{
+    struct          skcipher_def sk;
+    struct          crypto_skcipher *skcipher = NULL;
+    struct          skcipher_request *req = NULL;
+    char            *ivdata = NULL;
+    int             ret = -EFAULT;
+
+    skcipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
+    if (IS_ERR(skcipher)) {
+        pr_info("could not allocate skcipher handle\n");
+        return PTR_ERR(skcipher);
+    }
+
+    req = skcipher_request_alloc(skcipher, GFP_KERNEL);
+    if (!req) {
+        pr_info("could not allocate skcipher request\n");
+        ret = -ENOMEM;
+        goto out;
+    }
+
+    skcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
+                      crypto_req_done,
+                      &sk.wait);
+
+    /* AES 256 with random key */
+    if (crypto_skcipher_setkey(skcipher, key, 32)) {
+        pr_info("key could not be set\n");
+        ret = -EAGAIN;
+        goto out;
+    }
+
+    /* IV will be random */
+    ivdata = kmalloc(16, GFP_KERNEL);
+    if (!ivdata) {
+        pr_info("could not allocate ivdata\n");
+        goto out;
+    }
+    memset(ivdata, 0x41, 16);
+
+    sk.tfm = skcipher;
+    sk.req = req;
+
+    printk("[1] Scratchpad ptr %p last char %c\n", scratchpad, (*scratchpad)[16]);
+
+    /* We encrypt one block */
+    sg_init_one(&sk.sg, *scratchpad, 16);
+
+    printk("[2] Scratchpad ptr %p last char %c\n", scratchpad, (*scratchpad)[16]);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    crypto_init_wait(&sk.wait);
+
+    printk("[3] Scratchpad ptr %p last char %c\n", scratchpad, (*scratchpad)[16]);
+    /* encrypt data */
+    ret = test_skcipher_encdec(&sk, enc_dec);
+    if (ret)
+        goto out;
+
+    printk("[4] Scratchpad ptr %p last char %c\n", scratchpad, (*scratchpad)[16]);
+
+    printk("New scratchpad value after %d is %s\n", enc_dec, *scratchpad);
+    printk("Encryption triggered successfully\n");
+
+out:
+    if (skcipher)
+        crypto_free_skcipher(skcipher);
+    if (req)
+        skcipher_request_free(req);
+    if (ivdata)
+        kfree(ivdata);
+    return ret;
+}
+
+int enc_dec(char** key_data, char* key, int enc_dec) {
+
+    struct          skcipher_def sk;
+    struct          crypto_skcipher *cipher = NULL;
+    struct          skcipher_request *req = NULL;
+    char            *ivdata = NULL;
+    int             ret = -EFAULT;
+
+    cipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
+    if (IS_ERR(cipher)) {
+        printk("Cannot allocate cipher\n");
+        return RES_CANNOT_ALLOC;
+    }
+
+    req = skcipher_request_alloc(cipher, GFP_KERNEL);
+    if (req == NULL) {
+        printk("Cannot request cipher alloc\n");
+        crypto_free_skcipher(cipher);
+        skcipher_request_free(req);
+        return RES_CANNOT_ALLOC;
+    }
+
+    skcipher_request_set_callback(req, 
+        CRYPTO_TFM_REQ_MAY_BACKLOG,
+        crypto_req_done,
+        &sk.wait);
+
+    if (crypto_skcipher_setkey(skcipher, key, 32)) {
+        printk("Cannot set key\n");
+        crypto_free_skcipher(cipher);
+        skcipher_request_free(req);
+        return RES_CANNOT_ALLOC;
+    }
+
+    /* 
+        IV is hardcoded in current version
+        For future releases it can be parametrised
+    */
+
+    ivdata = kmalloc(IV_SIZE, GFP_KERNEL);
+    if (ivdata == NULL) {
+        printk("Cannot set key\n");
+        crypto_free_skcipher(cipher);
+        skcipher_request_free(req);
+        return RES_CANNOT_ALLOC;
+    }
+    memset(ivdata, 0x41, IV_SIZE);
+
+    sk.tfm = skcipher;
+    sk.req = req;
+
+    /* We encrypt one block */
+    sg_init_one(&sk.sg, *key_data, 16);
+
+    printk("[2] Scratchpad ptr %p last char %c\n", key_data, (*key_data)[16]);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    crypto_init_wait(&sk.wait);
+
+    printk("[3] Scratchpad ptr %p last char %c\n", key_data, (*key_data)[16]);
+    /* encrypt data */
+    ret = test_skcipher_encdec(&sk, enc_dec);
+
+    printk("[4] Scratchpad ptr %p last char %c\n", key_data, (*key_data)[16]);
+
+    printk("New scratchpad value after %d is %s\n", enc_dec, *key_data);
+    printk("Encryption triggered successfully\n");
+
+    crypto_free_skcipher(skcipher);
+    skcipher_request_free(req);
+    kfree(ivdata);
     return ret;
 }
 
@@ -1630,8 +2070,38 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
     partition_info*     partition_metadata;
     int                 magic_offset;
     int                 ret;
-
+    
     test_skcipher();
+    test_skcipher_2();
+    test_skcipher_3();
+    test_skcipher_4();
+
+    printk("Running new code!\n");
+
+    char* scratchpad = (char* )kmalloc(17, GFP_KERNEL);
+    if (!scratchpad) {
+        pr_info("could not allocate scratchpad\n");
+        return RES_OK;
+    }
+    // get_random_bytes(scratchpad, 16);
+    memcpy(scratchpad, "1234567812345678", 16);
+    memset(scratchpad + 16, 0x00, 1);
+    printk("Scratchpad values is %s\n", scratchpad);
+
+    char* key = (char* )kmalloc(33, GFP_KERNEL);
+    memset(key, 0x42, 32);
+    key[32] = NULL;
+    printk("Test skcipher 5 with key %s\n", key);
+    enc_dec(&scratchpad, key, 1);
+    printk("Logic returned: key %s\n", key);
+    printk("Scratchpad values after enc are %s\n", scratchpad);
+
+    printk("Test skcipher 5 dec with key %s\n", key);
+    enc_dec(&scratchpad, key, 0);
+    printk("Scratchpad values after dec are %s\n", scratchpad);
+
+    kfree(scratchpad);
+    kfree(key);
     return RES_OK;
 
 #if EMULATION == 1
