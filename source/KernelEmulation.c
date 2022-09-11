@@ -34,6 +34,9 @@ void kfree(char* to_dealloc) {
 // changes are done to buffer in place for optimization purposes
 int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
 
+    size_t  i;
+    int     key;
+
     if (buf == NULL) {
         return RES_INPUT_ERR;
     }
@@ -44,9 +47,8 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
     printk("Buf not null, pass not null\n");
 
+    key = 0;
     // TODO - just a PoC
-    int key = 0;
-    size_t i;
     for (i = 0; i < pass_len; i++) {
         key += pass[i];
     }
@@ -55,13 +57,16 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     for (i = 0; i < len; i++) {
         buf[i] -= (char)key;
     }
-
+ 
     return RES_OK;
 }
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
 int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_len) {
+
+    int         key;
+    size_t      i;
 
     if (*buf == NULL) {
         return RES_INPUT_ERR;
@@ -72,8 +77,7 @@ int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_l
     }
 
     // TODO - just a PoC
-    int key = 0;
-    size_t i;
+    key = 0;
     for (i = 0; i < pass_len; i++) {
         key += pass[i];
     }
@@ -107,7 +111,7 @@ int get_magic_offset(void* mapped_partition) {
     printk("Step 2\n");
     
     printk("Magic %lu\n", MAGIC);
-    printk("Max partition size %lu\n", MAX_PARTITION_SIZE);
+    printk("Max partition size %u\n", MAX_PARTITION_SIZE);
 
     while(*first_byte != MAGIC || current_offset > MAX_PARTITION_SIZE) {
         
@@ -165,14 +169,14 @@ size_t set_buffered_file(const char* file, char* buf, size_t bufsize, int trunc,
     printk("Next action: set fs\n");
     set_fs(KERNEL_DS);
 
-    printk("File open\n");
+    printk("File %s to be open (or created if does not exist!)\n", file);
 
     // truncate only if necessary O_TRUNC flag hugely decreses efficiency
     if(trunc) {
-        fp = filp_open(file, O_RDWR | O_TRUNC, 0644);
+        fp = filp_open(file, O_RDWR | O_TRUNC | O_CREAT, 0644);
         printk("Truncated if filed successfully opened\n");
     } else {
-        fp = filp_open(file, O_RDWR , 0644);
+        fp = filp_open(file, O_RDWR | O_CREAT, 0644);
         printk("NOT Truncated if filed successfully opened\n");
     }
 
