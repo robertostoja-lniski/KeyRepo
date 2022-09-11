@@ -439,7 +439,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 
     printk("Zeroing filename buf with partition base %s and id %llu\n", partition_base, id);
     memset(filename, 0x00, MAX_FILENAME_LEN);
-    snprintf(filename, sizeof(filename), "%s%llu", partition_base, id);
+    snprintf(filename, sizeof(filename) + sizeof(id), "%s%llu", partition_base, id);
 
     printk("Filled filename buf. Filename is %s\n", filename);
 
