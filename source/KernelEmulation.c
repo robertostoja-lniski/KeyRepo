@@ -620,7 +620,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         }
 
 #if EMULATION == 0
-        printk("Descrypted..\n", key_buf);
+        printk("Decrypted..\n");
         strcpy(key_buf + key_len - strnlen(RSA_END_LABEL, MAX_LABEL_LEN) - 1, RSA_END_LABEL);
         copy_to_user(key, key_buf, adjusted_len);
 #else
@@ -1074,7 +1074,7 @@ int get_key_by_partition_pointer(void* mapped_partition, uint64_t id, char* keyV
 
     current_elem_in_map = (map_node* )(partition_metadata + 1);
 
-    printk("Id is %llu, mod is %d\n", next_id, fast_modulo(id, LOOKUP_MAP_SIZE_POW));
+    printk("Id is %llu, mod is %d\n", id, fast_modulo(id, LOOKUP_MAP_SIZE_POW));
     lookup = ((lookup_slot* )(current_elem_in_map + DEFAULT_MAP_SIZE)) + fast_modulo(id, LOOKUP_MAP_SIZE_POW);
     if (lookup -> cnt == 0) {
         printk("Not found by cached info\n");

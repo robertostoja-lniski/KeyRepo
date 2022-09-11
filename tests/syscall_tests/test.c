@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     printf("Get key size is: %d and size is: %llu\n", getSizeRet, size);
 
     char* buf = (char* )malloc(6);
-    int readRet = read_key(id, buf, "pass", (uint64_t)4, 6);
+    int readRet = read_key(buf, id, "pass", (uint64_t)4, 6);
     printf("Get key ret is: %d and key is: %s\n", readRet, buf);
     free(buf);
 

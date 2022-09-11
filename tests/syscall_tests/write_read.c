@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     printf("Write ret: %d\n", writeRet);
 
     char* buf = (char* )malloc(6);
-    int readRet = read_key(id, buf, "pass", (uint64_t)4, 6);
+    int readRet = read_key(buf, id, "pass", (uint64_t)4, 6);
     printf("Get key ret is: %d and key is: %s\n", readRet, buf);
     free(buf);
 
