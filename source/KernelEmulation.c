@@ -78,7 +78,7 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
         printk("Aes key will be shortened to 128 bits\n");
         aes_key_len = 16;
     } else {
-        printk("Aes key too short\n");
+        printk("Aes key of len %d is too short (use min 16 byte key)\n", aes_key_len);
         return RES_INPUT_ERR;
     }
 
