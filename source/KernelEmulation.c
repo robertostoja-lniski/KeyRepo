@@ -74,7 +74,7 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
     } else if (aes_key_len > 24) {
         printk("Aes key will be shortened to 196 bits\n");
         aes_key_len = 24;
-    } else if (aes_key_len > 16) {
+    } else if (aes_key_len >= 16) {
         printk("Aes key will be shortened to 128 bits\n");
         aes_key_len = 16;
     } else {
@@ -623,12 +623,14 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
         printk("Memory copied\n");
         ret = encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
         if (ret != RES_OK) {
+            printk("Cannot encrypt... Exiting!\n");
             kfree(local_pass);
             kfree(key_to_encrypt);
 
 #if EMULATION == 0
         kfree(filename);
 #endif
+            return ret;
         }
         printk("Encrypted\n");
 
@@ -789,6 +791,14 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         }
 
         ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
+        if (ret != RES_OK) {
+            printk("Cannot decrypt... Exiting!\n");
+
+#if EMULATION == 0
+        kfree(filename);
+#endif
+            return ret;
+        }
 
 #if EMULATION == 0
         printk("Decrypted..\n");
