@@ -822,7 +822,8 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return ret;
         }
 
-        printk("Key buf read: %s\n", read_start);
+        printk("Key buf read: [%s]\n", read_start);
+        printk("Actual size: %llu, key isze %llu", actual_size, key_len);
         if (actual_size != key_len) {
             return RES_CANNOT_READ;
         }
