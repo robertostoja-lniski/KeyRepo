@@ -58,13 +58,27 @@ int run_enc_dec(struct skcipher_def *sk, int enc)
     return rc;
 }
 
-int enc_dec(char** key_data, char* key, int enc_dec) {
+int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_dec) {
 
     struct          skcipher_def sk;
     struct          crypto_skcipher *cipher = NULL;
     struct          skcipher_request *req = NULL;
     char            *ivdata = NULL;
-    int             ret = -EFAULT;
+    int             ret = RES_INPUT_ERR;
+
+    if (aes_key_len > 32) {
+        printk("Aes key too long. Will be shortened to 256 bits\n");
+        aes_key_len = 32;
+    } else if (aes_key_len > 24) {
+        printk("Aes key will be shortened to 196 bits\n");
+        aes_key_len = 24;
+    } else if (aes_key_len > 16) {
+        printk("Aes key will be shortened to 128 bits\n");
+        aes_key_len = 16;
+    } else {
+        printk("Aes key too short\n");
+        return RES_INPUT_ERR;
+    }
 
     cipher = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
     if (IS_ERR(cipher)) {
@@ -85,7 +99,7 @@ int enc_dec(char** key_data, char* key, int enc_dec) {
         crypto_req_done,
         &sk.wait);
 
-    if (crypto_skcipher_setkey(cipher, key, 32)) {
+    if (crypto_skcipher_setkey(cipher, key, aes_key_len)) {
         printk("Cannot set key\n");
         crypto_free_skcipher(cipher);
         skcipher_request_free(req);
@@ -110,8 +124,8 @@ int enc_dec(char** key_data, char* key, int enc_dec) {
     sk.req = req;
 
     /* We encrypt one block */
-    sg_init_one(&sk.sg, *key_data, 16);
-    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, 16, ivdata);
+    sg_init_one(&sk.sg, *key_data, key_len);
+    skcipher_request_set_crypt(req, &sk.sg, &sk.sg, key_len, ivdata);
     crypto_init_wait(&sk.wait);
     ret = run_enc_dec(&sk, enc_dec);
 
@@ -1614,26 +1628,26 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
     
     printk("Running new code!\n");
 
-    char* scratchpad = (char* )kmalloc(17, GFP_KERNEL);
+    char* scratchpad = (char* )kmalloc(18, GFP_KERNEL);
     if (!scratchpad) {
         pr_info("could not allocate scratchpad\n");
         return RES_OK;
     }
     // get_random_bytes(scratchpad, 16);
-    memcpy(scratchpad, "1234567812345678", 16);
-    memset(scratchpad + 16, 0x00, 1);
+    memcpy(scratchpad, "12345678123456789", 17);
+    memset(scratchpad + 17, 0x00, 1);
     printk("Scratchpad values is %s\n", scratchpad);
 
-    char* key = (char* )kmalloc(33, GFP_KERNEL);
-    memset(key, 0x42, 32);
-    key[32] = NULL;
+    char* key = (char* )kmalloc(200, GFP_KERNEL);
+    memset(key, 0x42, 200);
+    key[200] = NULL;
     printk("Test skcipher 5 with key %s\n", key);
+    
+    int ret = enc_dec(&scratchpad, 17, key, 200, 1);
+    printk("[ret: %d] Scratchpad values after enc are %s\n", ret, scratchpad);
 
-    enc_dec(&scratchpad, key, 1);
-    printk("Scratchpad values after enc are %s\n", scratchpad);
-
-    enc_dec(&scratchpad, key, 0);
-    printk("Scratchpad values after dec are %s\n", scratchpad);
+    ret = enc_dec(&scratchpad, 17, key, 200, 0);
+    printk("[ret: %d] Scratchpad values after dec are %s\n", ret, scratchpad);
 
     kfree(scratchpad);
     kfree(key);
