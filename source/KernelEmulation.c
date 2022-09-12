@@ -746,6 +746,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
     ret = 0;
 
     printk("Entering read key from custom file\n");
+    printk("Key len is %llu, pass len is %llu\n", key_len, pass_len);
 
 #if EMULATION == 1
     char filename[MAX_FILENAME_LEN];
@@ -823,7 +824,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         }
 
         printk("Key buf read: [%s]\n", read_start);
-        printk("Actual size: %llu, key isze %llu", actual_size, key_len);
+        printk("Actual size: %lu, key size %llu", actual_size, key_len);
         if (actual_size != key_len) {
             return RES_CANNOT_READ;
         }
