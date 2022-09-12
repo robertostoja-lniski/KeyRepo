@@ -21,6 +21,10 @@ add_library(key_repo_lib SHARED
         source/KernelEmulation.c
         source/KeyRepoSyscallWrapper.c
         )
+# For real partition -- change in include file EMULATION to 0
+# add_library(key_repo_lib SHARED
+#         source/KeyRepoSyscallWrapper.c
+#         )
 
 set_target_properties(key_repo_lib PROPERTIES SOVERSION 1)
 include(GNUInstallDirs)
