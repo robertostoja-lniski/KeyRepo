@@ -66,6 +66,8 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
     char            *ivdata = NULL;
     int             ret = RES_INPUT_ERR;
 
+    printk("Starting encrypt decrypt\n");
+
     if (aes_key_len > 32) {
         printk("Aes key too long. Will be shortened to 256 bits\n");
         aes_key_len = 32;
@@ -149,6 +151,7 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
 #if EMULATION == 0
     int ret;
+    printk("[EXPERIMENTAL AES] ENC\n");
     // no support for const char in internal Kernel API
     ret = enc_dec(&buf, len, (char* )pass, pass_len, 1);
     return ret;
@@ -185,10 +188,11 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int decrypt_data_at_rest(char** buf, size_t len, char* pass, size_t pass_len) {
+int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_len) {
 
 #if EMULATION == 0
     int ret;
+    printk("[EXPERIMENTAL AES] DEC\n");
     // no support for const char in internal Kernel API
     ret = enc_dec(buf, len, (char* )pass, pass_len, 0);
     return ret;
@@ -617,7 +621,15 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
         printk("Memory copied\n");
-        encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        ret = encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        if (ret != RES_OK) {
+            kfree(local_pass);
+            kfree(key_to_encrypt);
+
+#if EMULATION == 0
+        kfree(filename);
+#endif
+        }
         printk("Encrypted\n");
 
         printk("Adjusted len now %llu\n", adjusted_len);
