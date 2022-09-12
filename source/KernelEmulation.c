@@ -135,12 +135,24 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
     crypto_free_skcipher(cipher);
     skcipher_request_free(req);
     kfree(ivdata);
-    return ret;
+
+    if(ret == 0) {
+        return RES_NON_INTEGRAL;
+    }
+
+    return RES_OK;
 }
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
 int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
+
+#if EMULATION == 0
+    int ret;
+    // no support for const char in internal Kernel API
+    ret = enc_dec(&buf, len, (char* )pass, pass_len, 1);
+    return ret;
+#else
 
     size_t  i;
     int     key;
@@ -167,11 +179,20 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     }
  
     return RES_OK;
+
+#endif
 }
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_len) {
+int decrypt_data_at_rest(char** buf, size_t len, char* pass, size_t pass_len) {
+
+#if EMULATION == 0
+    int ret;
+    // no support for const char in internal Kernel API
+    ret = enc_dec(buf, len, (char* )pass, pass_len, 0);
+    return ret;
+#else
 
     int         key;
     size_t      i;
@@ -196,6 +217,7 @@ int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_l
     }
 
     return RES_OK;
+#endif
 }
 
 int get_buffered_file(const char* filepath, char** buf, size_t* filesize, size_t extra_size, int allocate);
@@ -1625,33 +1647,6 @@ SYSCALL_DEFINE1(get_key_num, uint64_t __user*, key_num) {
     partition_info*     partition_metadata;
     int                 magic_offset;
     int                 ret;
-    
-    printk("Running new code!\n");
-
-    char* scratchpad = (char* )kmalloc(18, GFP_KERNEL);
-    if (!scratchpad) {
-        pr_info("could not allocate scratchpad\n");
-        return RES_OK;
-    }
-    // get_random_bytes(scratchpad, 16);
-    memcpy(scratchpad, "12345678123456789", 17);
-    memset(scratchpad + 17, 0x00, 1);
-    printk("Scratchpad values is %s\n", scratchpad);
-
-    char* key = (char* )kmalloc(200, GFP_KERNEL);
-    memset(key, 0x42, 200);
-    key[200] = NULL;
-    printk("Test skcipher 5 with key %s\n", key);
-    
-    int ret = enc_dec(&scratchpad, 17, key, 200, 1);
-    printk("[ret: %d] Scratchpad values after enc are %s\n", ret, scratchpad);
-
-    ret = enc_dec(&scratchpad, 17, key, 200, 0);
-    printk("[ret: %d] Scratchpad values after dec are %s\n", ret, scratchpad);
-
-    kfree(scratchpad);
-    kfree(key);
-    return RES_OK;
 
 #if EMULATION == 1
     if (!is_repo_initialized()) {
