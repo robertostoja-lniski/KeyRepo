@@ -40,11 +40,11 @@ int main(int argc, char *argv[])
     printf("Key is %s\n", key);
     // key type set for custom
     int writeRet = write_key(key, key_len, "passpasspasspass", pass_len, &id, 0);
-    printf("Write ret: %d, id is: %llu\n", writeRet, id);
+    printf("Write ret: %d, id is: %lu\n", writeRet, id);
 
     uint64_t keyNum;
     int getKeyNumRet = get_key_num(&keyNum);
-    printf("Get key num: %llu\n", keyNum);
+    printf("Get key num: %lu\n", keyNum);
     
     int mode;
     int getKeyModeRet = get_mode(id, &mode);
@@ -58,19 +58,26 @@ int main(int argc, char *argv[])
 
     uint64_t size;
     int getSizeRet = get_key_size(id, &size);
-    printf("Get key size is: %d and size is: %llu\n", getSizeRet, size);
+    printf("Get key size is: %d and size is: %lu\n", getSizeRet, size);
 
     char* buf = (char* )malloc(17);
-    buf[16] = NULL;
+    if (buf == NULL) {
+        return 1;
+    }
+    memset(buf + 16, 0x00, 1);
     int readRet = read_key(buf, id, "passpasspasspass", pass_len, key_len);
     printf("Get key ret is: %d and key is: %s\n", readRet, buf);
     free(buf);
+
+    char dummy;
+    printf("Press any button to remove key...");
+    scanf("%c", &dummy);
 
     int removeRet = remove_key(id);
     printf("Remove key ret is: %d\n", removeRet);
 
     int getKeyNumRetNoKey = get_key_num(&keyNum);
-    printf("Get key num: %llu\n", keyNum);
+    printf("Get key num: %lu\n", keyNum);
 
     return 0;
 }

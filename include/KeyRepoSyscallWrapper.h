@@ -16,6 +16,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#define FILE_PATH_LEN 128
+
 #define __x64_get_key_num   436
 #define __x64_write_key     437
 #define __x64_read_key      438

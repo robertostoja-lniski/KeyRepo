@@ -3,6 +3,9 @@
 //
 #include "../include/KeyRepoSyscallWrapper.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 // private structures and functions
 struct original_uids {
     int uid;
@@ -12,8 +15,8 @@ typedef struct original_uids original_uids;
 
 original_uids get_original_uids() {
 
-    const char* uid;
-    const char* gid;
+    char* uid;
+    char* gid;
     int num_uid = -1;
     int num_gid = -1;
 
@@ -108,7 +111,17 @@ int read_key(char* key, uint64_t id, const char* pass, uint64_t pass_len, uint64
 }
 
 int remove_key_uid(uint64_t id, int uid, int gid) {
-    return syscall(__x64_remove_key, id, uid, gid);
+    int ret = syscall(__x64_remove_key, id, uid, gid);
+    if (ret != 0) {
+        return ret;
+    }
+
+    // kernel flushed file, libs remove it
+    char filename[FILE_PATH_LEN];
+    memset(filename, 0x00, FILE_PATH_LEN);
+    snprintf(filename, FILE_PATH_LEN, "/krepo/%lu", id);
+    remove(filename);
+    return ret;
 }
 
 int remove_key(const uint64_t id) {
@@ -118,7 +131,17 @@ int remove_key(const uint64_t id) {
         return -1;
     }
 
-    return syscall(__x64_remove_key, id, ids.uid, ids.gid);
+    int ret = syscall(__x64_remove_key, id, ids.uid, ids.gid);
+    if (ret != 0) {
+        return ret;
+    }
+
+    // kernel flushed file, libs remove it
+    char filename[FILE_PATH_LEN];
+    memset(filename, 0x00, FILE_PATH_LEN);
+    snprintf(filename, FILE_PATH_LEN, "/krepo/%lu", id);
+    remove(filename);
+    return ret;
 }
 
 int get_key_size_uid(const uint64_t id, uint64_t* size, int uid, int gid) {
