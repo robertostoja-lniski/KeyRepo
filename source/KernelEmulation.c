@@ -54,7 +54,10 @@ int run_enc_dec(struct skcipher_def *sk, int enc)
         rc = crypto_wait_req(crypto_skcipher_decrypt(sk->req), &sk->wait);
     }
 
-    pr_info("skcipher encrypt returned with result %d\n", rc);
+    printk("skcipher encrypt returned with result %d\n", rc);
+    if (rc == -22) {
+        printk("[ERROR] Nothing encrypted, data too short\n");
+    }
     return RES_OK;
 }
 
@@ -149,6 +152,7 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     printk("[EXPERIMENTAL AES] ENC\n");
     // no support for const char in internal Kernel API
     ret = enc_dec(&buf, len, (char* )pass, pass_len, 1);
+    printk("[EXPERIMENTAL AES] end with ret %d\n", ret);
     return ret;
 #else
 
@@ -190,6 +194,7 @@ int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_l
     printk("[EXPERIMENTAL AES] DEC\n");
     // no support for const char in internal Kernel API
     ret = enc_dec(buf, len, (char* )pass, pass_len, 0);
+    printk("[EXPERIMENTAL AES] DEC end with ret %d\n", ret);
     return ret;
 #else
 

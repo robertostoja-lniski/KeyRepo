@@ -33,11 +33,13 @@ int main(int argc, char *argv[])
     strcat(action, ".keyPartition");
 
     printf("Running %s\n", action);
-    const char* key = "abcde";
+    const char* key = "1234567812345678";
+    uint64_t key_len = 16;
+    uint64_t pass_len = 16;
     uint64_t id;
     printf("Key is %s\n", key);
     // key type set for custom
-    int writeRet = write_key(key, (uint64_t)5, "passpasspasspass", (uint64_t)16, &id, 0);
+    int writeRet = write_key(key, key_len, "passpasspasspass", pass_len, &id, 0);
     printf("Write ret: %d, id is: %llu\n", writeRet, id);
 
     uint64_t keyNum;
@@ -58,8 +60,9 @@ int main(int argc, char *argv[])
     int getSizeRet = get_key_size(id, &size);
     printf("Get key size is: %d and size is: %llu\n", getSizeRet, size);
 
-    char* buf = (char* )malloc(6);
-    int readRet = read_key(buf, id, "passpasspasspass", (uint64_t)16, 6);
+    char* buf = (char* )malloc(17);
+    buf[16] = NULL;
+    int readRet = read_key(buf, id, "passpasspasspass", pass_len, key_len);
     printf("Get key ret is: %d and key is: %s\n", readRet, buf);
     free(buf);
 
