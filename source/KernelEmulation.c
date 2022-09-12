@@ -134,8 +134,6 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
     crypto_init_wait(&sk.wait);
     ret = run_enc_dec(&sk, enc_dec);
 
-    printk("New scratchpad value after %d is %s\n", enc_dec, *key_data);
-
     crypto_free_skcipher(cipher);
     skcipher_request_free(req);
     kfree(ivdata);
