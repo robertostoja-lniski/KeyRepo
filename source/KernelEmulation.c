@@ -55,7 +55,7 @@ int run_enc_dec(struct skcipher_def *sk, int enc)
     }
 
     pr_info("skcipher encrypt returned with result %d\n", rc);
-    return rc;
+    return RES_OK;
 }
 
 int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_dec) {
@@ -132,17 +132,12 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
     ret = run_enc_dec(&sk, enc_dec);
 
     printk("New scratchpad value after %d is %s\n", enc_dec, *key_data);
-    printk("Encryption triggered successfully\n");
 
     crypto_free_skcipher(cipher);
     skcipher_request_free(req);
     kfree(ivdata);
 
-    if(ret == 0) {
-        return RES_NON_INTEGRAL;
-    }
-
-    return RES_OK;
+    return ret;
 }
 
 // temporary function
@@ -661,7 +656,18 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
         printk("Encrypting key of len %llu with pass of len %llu\n", key_len, pass_len);
-        encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        ret = encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        if (ret != RES_OK) {
+            printk("Cannot encrypt... Exiting!\n");
+            kfree(local_pass);
+            kfree(key_to_encrypt);
+
+#if EMULATION == 0
+        kfree(filename);
+#endif
+            return ret;
+        }
+        
         printk("Encrypted key is %s\n", key_to_encrypt);
         adjusted_len = key_len;
 
@@ -833,6 +839,10 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return ret;
         }
 
+#if EMULATION == 0
+        kfree(filename);
+#endif
+
         printk("Key buf read: [%s]\n", read_start);
         printk("Actual size: %lu, key size %llu", actual_size, key_len);
         if (actual_size != key_len) {
@@ -840,10 +850,13 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
         }
 
         ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
-        printk("Key buf plain: %s\n", read_start);
+        if (ret != RES_OK) {
+            printk("Cannot decrypt... Exiting!\n");
+            return ret;
+        }
 
 #if EMULATION == 0
-        printk("Descrypted..\n");
+        printk("Decrypted..\n");
         copy_to_user(key, read_start, key_len);
 #endif
 
