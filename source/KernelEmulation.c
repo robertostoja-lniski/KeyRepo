@@ -34,6 +34,8 @@ void kfree(char* to_dealloc) {
 }
 #endif
 
+#if EMULATION == 0
+
 /* tie all data structures together */
 struct skcipher_def {
     struct scatterlist sg;
@@ -141,15 +143,17 @@ int enc_dec(char** key_data, int key_len, char* key, int aes_key_len, int enc_de
     return ret;
 }
 
+#endif
+
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_len) {
+int encrypt_data(char** buf, size_t len, const char* pass, size_t pass_len) {
 
 #if EMULATION == 0
     int ret;
     printk("[EXPERIMENTAL AES] ENC\n");
     // no support for const char in internal Kernel API
-    ret = enc_dec(&buf, len, (char* )pass, pass_len, 1);
+    ret = enc_dec(buf, len, (char* )pass, pass_len, 1);
     printk("[EXPERIMENTAL AES] end with ret %d\n", ret);
     return ret;
 #else
@@ -157,7 +161,7 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     size_t  i;
     int     key;
 
-    if (buf == NULL) {
+    if (*buf == NULL) {
         return RES_INPUT_ERR;
     }
 
@@ -175,7 +179,7 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
     key = key % 30;
 
     for (i = 0; i < len; i++) {
-        buf[i] -= (char)key;
+        (*buf)[i] -= (char)key;
     }
  
     return RES_OK;
@@ -185,7 +189,7 @@ int encrypt_data_at_rest(char* buf, size_t len, const char* pass, size_t pass_le
 
 // temporary function
 // changes are done to buffer in place for optimization purposes
-int decrypt_data_at_rest(char** buf, size_t len, const char* pass, size_t pass_len) {
+int decrypt_data(char** buf, size_t len, const char* pass, size_t pass_len) {
 
 #if EMULATION == 0
     int ret;
@@ -619,7 +623,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
         printk("Memory copied\n");
-        ret = encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        ret = encrypt_data(&key_to_encrypt, key_len, local_pass, pass_len);
         if (ret != RES_OK) {
             printk("Cannot encrypt... Exiting!\n");
             kfree(local_pass);
@@ -659,7 +663,7 @@ int write_key_to_custom_file(const char* key, uint64_t key_len, const char* pass
 #endif
 
         printk("Encrypting key of len %llu with pass of len %llu\n", key_len, pass_len);
-        ret = encrypt_data_at_rest(key_to_encrypt, key_len, local_pass, pass_len);
+        ret = encrypt_data(&key_to_encrypt, key_len, local_pass, pass_len);
         if (ret != RES_OK) {
             printk("Cannot encrypt... Exiting!\n");
             kfree(local_pass);
@@ -799,7 +803,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return ret;
         }
 
-        ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
+        ret = decrypt_data(&read_start, key_len, pass, pass_len);
         if (ret != RES_OK) {
             printk("Cannot decrypt... Exiting!\n");
 
@@ -852,7 +856,7 @@ int read_key_from_custom_file(char* key, uint64_t key_len, const char* pass, uin
             return RES_CANNOT_READ;
         }
 
-        ret = decrypt_data_at_rest(&read_start, key_len, pass, pass_len);
+        ret = decrypt_data(&read_start, key_len, pass, pass_len);
         if (ret != RES_OK) {
             printk("Cannot decrypt... Exiting!\n");
             return ret;
